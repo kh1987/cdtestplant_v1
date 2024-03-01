@@ -5,12 +5,16 @@ from ninja_extra.permissions import IsAuthenticated
 from ninja.pagination import paginate
 from utils.chen_pagination import MyPagination
 from django.db import transaction
+from django.shortcuts import get_object_or_404
 from typing import List
 from utils.chen_response import ChenResponse
 from utils.chen_crud import multi_delete
 from apps.project.models import Design, Dut, Round, TestDemand, TestDemandContent
 from apps.project.schemas.testDemand import DeleteSchema, TestDemandModelOutSchema, TestDemandFilterSchema, \
-    TestDemandTreeReturnSchema, TestDemandTreeInputSchema, TestDemandCreateOutSchema, TestDemandCreateInputSchema
+    TestDemandTreeReturnSchema, TestDemandTreeInputSchema, TestDemandCreateOutSchema, TestDemandCreateInputSchema, \
+    TestDemandRelatedSchema, TestDemandExistRelatedSchema
+# 导入ORM
+from apps.project.models import Project
 
 @api_controller("/project", auth=JWTAuth(), permissions=[IsAuthenticated], tags=['测试项接口'])
 class TestDemandController(ControllerBase):
@@ -122,3 +126,65 @@ class TestDemandController(ControllerBase):
             index = index + 1
             single_qs.save()
         return ChenResponse(message="测试需求删除成功！")
+
+    # 查询一个项目的所以测试项
+    @route.get("/testDemand/getRelatedTestDemand", url_name="design-getRelatedTestDemand")
+    @transaction.atomic
+    def getRelatedTestDemand(self, id: int, round: str):
+        project_qs = get_object_or_404(Project, id=id)
+        # 找出属于该轮次的所有测试项
+        round_qs = project_qs.pField.filter(key=round).first()
+        designs = round_qs.rsField.all()
+        data_list = []
+        for design in designs:
+            design_dict = {'label': design.name, 'value': design.id, 'children': []}
+            for test_item in design.dtField.all():
+                test_item_dict = {'label': test_item.name, 'value': test_item.id}
+                design_dict['children'].append(test_item_dict)
+            data_list.append(design_dict)
+        return ChenResponse(message='获取成功', data=data_list)
+
+    # 处理desgin关联testDemand接口
+    @route.post('/testDemand/solveRelatedTestDemand', url_name="design-solveRelatedTestDemand")
+    @transaction.atomic
+    def solveRelatedTestDemand(self, data: TestDemandRelatedSchema):
+        test_item_ids = data.data
+        non_exist_ids = [x for x in test_item_ids]
+        project_qs = get_object_or_404(Project, id=data.project_id)
+        key_str = "-".join([data.round_key, data.dut_key, data.design_key])
+        design_item = project_qs.psField.filter(key=key_str).first()
+        if design_item:
+            # 将test_item_ids中本身具有的测试项从id数组中移除
+            for test_id in test_item_ids:
+                for ti in design_item.dtField.all():
+                    if ti.pk == test_id:
+                        non_exist_ids.remove(test_id)
+            if len(non_exist_ids) <= 0 and len(test_item_ids) > 0:
+                return ChenResponse(status=400, code=200, message='选择的测试项全部存在于当前设计需求中，请重新选择...')
+            # 先查询现在有的关联测试项
+            for item in design_item.odField.values('id'):
+                item_id = item.get('id', None)
+                if not item_id in test_item_ids:
+                    test_item_obj = TestDemand.objects.filter(id=item_id).first()
+                    design_item.odField.remove(test_item_obj)
+            for test_item_id in non_exist_ids:
+                test_items = design_item.odField.filter(id=test_item_id)
+                if len(test_items) <= 0:
+                    # 查询testDemand
+                    design_item.odField.add(TestDemand.objects.filter(id=test_item_id).first())
+        else:
+            return ChenResponse(status=400, code=400, message='设计需求不存在，请检查...')
+        return ChenResponse(status=200, code=200, message='添加关联测试项成功...')
+
+    # 找出已关联的测试项给前端的cascader
+    @route.post('/testDemand/getExistRelatedTestDemand', url_name="design-getExistRelatedTestDemand")
+    @transaction.atomic
+    def getExistRelatedTestDemand(self, data: TestDemandExistRelatedSchema):
+        project_qs = get_object_or_404(Project, id=data.project_id)
+        key_str = "-".join([data.round_key, data.dut_key, data.design_key])
+        design_item = project_qs.psField.filter(key=key_str).first()
+        ids = []
+        if design_item:
+            for item in design_item.odField.all():
+                ids.append(item.id)
+        return ids

@@ -183,9 +183,11 @@ class TestDemand(CoreModel):
     round = models.ForeignKey(to="Round", db_constraint=False, related_name="rtField", on_delete=models.CASCADE,
                               verbose_name='归属轮次', help_text='归属轮次', related_query_name='dutQuery')
     dut = models.ForeignKey(to="Dut", db_constraint=False, related_name="dutField", on_delete=models.CASCADE,
-                            verbose_name='归属轮次', help_text='归属轮次', related_query_name='dtQuery')
+                            verbose_name='归属被测件', help_text='归属被测件', related_query_name='dtQuery')
     design = models.ForeignKey(to="Design", db_constraint=False, related_name="dtField", on_delete=models.CASCADE,
-                               verbose_name='归属轮次', help_text='归属轮次', related_query_name='dtQuery')
+                               verbose_name='归属设计需求', help_text='归属设计需求', related_query_name='dtQuery')
+    otherDesign = models.ManyToManyField(to="Design", db_constraint=False, related_name="odField",
+                                         related_query_name='odQuery', null=True, blank=True)
 
 class TestDemandContent(CoreModel):
     testXuQiu = models.CharField(max_length=1024, blank=True, null=True, verbose_name="测试需求条目",

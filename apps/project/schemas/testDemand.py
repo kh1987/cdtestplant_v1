@@ -69,3 +69,18 @@ class TestDemandCreateInputSchema(Schema):
     testContent: List[TestContentInputSchema] = []
     testMethod: List[str] = []
     testType: str = Field(None, alias="testType")
+
+# 处理前端请求-设计需求关联测试需求（测试项）
+class TestDemandRelatedSchema(Schema):
+    data: List[int] = None
+    project_id: int = Field(None, alias="project_id")
+    round_key: str = Field(None, alias="roundNumber")
+    dut_key: str = Field(None, alias="dutNumber")
+    design_key: str = Field(None, alias="designDemandNumber")
+
+# 处理前端请求-设计需求已关联测试需求（测试项）
+class TestDemandExistRelatedSchema(Schema):
+    project_id: int = Field(None, alias="project_id")
+    round_key: str = Field(None, alias="roundNumber")
+    dut_key: str = Field(None, alias="dutNumber")
+    design_key: str = Field(None, alias="designDemandNumber")

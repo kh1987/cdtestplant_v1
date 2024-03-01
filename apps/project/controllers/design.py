@@ -25,7 +25,8 @@ class DesignController(ControllerBase):
         qs = Design.objects.filter(project__id=datafilter.project_id, dut__key=dut_key,
                                    ident__icontains=datafilter.ident,
                                    name__icontains=datafilter.name,
-                                   demandType__contains=datafilter.demandType,chapter__icontains=datafilter.chapter).order_by("key")
+                                   demandType__contains=datafilter.demandType,
+                                   chapter__icontains=datafilter.chapter).order_by("key")
         return qs
 
     # 处理树状数据
@@ -93,3 +94,5 @@ class DesignController(ControllerBase):
             index = index + 1
             single_qs.save()
         return ChenResponse(message="研制需求删除成功！")
+
+

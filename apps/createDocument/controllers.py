@@ -75,14 +75,20 @@ class GenerateController(ControllerBase):
                     desc_list.append(InlineImage(doc, io.BytesIO(base64_bytes), width=Mm(115)))
                 else:
                     desc_list.append(strOrList)
+            # 查询关联design以及普通design
+            doc_list = [{'dut_name': single_qs.dut.name, 'design_chapter': single_qs.design.chapter,
+                         'design_name': single_qs.design.name}]
+            for relate_design in single_qs.otherDesign.all():
+                ddict = {'dut_name': relate_design.dut.name, 'design_chapter': relate_design.chapter,
+                         'design_name': relate_design.name}
+                doc_list.append(ddict)
+
             # 组装单个测试项
             testdemand_dict = {
                 "name": single_qs.name,
                 "ident": get_ident(single_qs),
                 "priority": get_str_dict(single_qs.priority, "priority"),
-                "dut_name": single_qs.dut.name,
-                "design_chapter": single_qs.design.chapter,
-                "design_name": single_qs.design.name,
+                "doc_list": doc_list,
                 "design_description": desc_list,
                 "test_demand_content": content_list,
                 "testMethod": testmethod_str,
