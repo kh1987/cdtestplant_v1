@@ -47,6 +47,8 @@ class DutCreateInputSchema(Schema):
     version: str = Field(None, alias="version")
     release_union: str = Field(None, alias="release_union")
     release_date: str = Field(None, alias="release_date")
+    # 新增用户标识
+    ref: str = Field(None, alias='ref')
 
 class DutCreateOutSchema(ModelSchema):
     class Config:

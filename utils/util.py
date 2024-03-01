@@ -6,6 +6,18 @@ from django.shortcuts import get_object_or_404
 def get_str_dict(a, dict_code):
     return DictItem.objects.get(dict__code=dict_code, key=a).title
 
+# 找到testType字典中的缩写，例如“DC”“FT”
+def get_testType(a, dict_code):
+    return DictItem.objects.get(dict__code=dict_code, key=a).show_title
+
+# 获取测试需求（测试项的）生成文档的ident（标识）
+def get_ident(test_item):
+    key_index = int(test_item.key.split("-")[-1]) + 1
+    test_index = str(key_index).rjust(3, '0')
+    reveal_ident = "_".join(
+        ["XQ", get_testType(test_item.testType, "testType"), test_item.ident, test_index])
+    return reveal_ident
+
 # 传入字典code，以及字符串数组返回一个数组，每个数组是dict
 def get_list_dict(dict_code, str_list):
     result = []
@@ -21,10 +33,7 @@ def get_list_dict(dict_code, str_list):
                 result.append(res)
     return result
 
-
 # 简单HTML解析器 - 解析富文本的parser
-from html.parser import HTMLParser
-
 class MyHTMLParser(HTMLParser):
     def __init__(self):
         HTMLParser.__init__(self)
@@ -37,6 +46,16 @@ class MyHTMLParser(HTMLParser):
         if tag == 'img':
             img_base64 = attrs[0][1]
             self.allStrList.append(img_base64)
+
+    def handle_data(self, data):
+        if data != '\n':
+            self.allStrList.append(data)
+
+# 不提取图片的HTML解析器
+class MyHTMLParser_p(HTMLParser):
+    def __init__(self):
+        HTMLParser.__init__(self)
+        self.allStrList = []
 
     def handle_data(self, data):
         if data != '\n':

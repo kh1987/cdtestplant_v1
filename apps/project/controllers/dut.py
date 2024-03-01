@@ -1,3 +1,4 @@
+import datetime
 from ninja_extra import api_controller, ControllerBase, route
 from ninja import Query
 from ninja_jwt.authentication import JWTAuth
@@ -21,7 +22,6 @@ class DutController(ControllerBase):
         for attr, value in filters.__dict__.items():
             if getattr(filters, attr) is None:
                 setattr(filters, attr, '')
-        print(filters)
         qs = Dut.objects.filter(project__id=filters.project_id, round__key=filters.round_id,
                                 ident__icontains=filters.ident,
                                 name__icontains=filters.name,

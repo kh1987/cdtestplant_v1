@@ -1,6 +1,6 @@
 from ninja_schema import ModelSchema
 from apps.dict.models import Dict, DictItem
-from apps.project.models import Contact
+from apps.project.models import Contact, Abbreviation
 from ninja import Field, Schema
 from typing import List
 
@@ -18,8 +18,9 @@ class DictItemOut(ModelSchema):
     class Config:
         model = DictItem
         include = (
-        'id', 'update_datetime', 'sort', 'title', 'key', 'status', 'remark', 'show_title', 'doc_name', 'publish_date',
-        'source')
+            'id', 'update_datetime', 'sort', 'title', 'key', 'status', 'remark', 'show_title', 'doc_name',
+            'publish_date',
+            'source')
 
 class DictIndexInput(Schema):
     name: str = Field(None, alias='name')
@@ -83,3 +84,13 @@ class ContactListInputSchema(Schema):
     name: str = Field(None, alias='name')
     entrust_person: str = Field(None, alias='entrust_person')
     addr: str = Field(None, alias='addr')
+
+#############缩略语处理##############
+class AbbreviationOut(ModelSchema):
+    class Config:
+        model = Abbreviation
+        include = ('id', 'title', 'des')
+
+class AbbreviationListInputSchema(Schema):
+    title: str = Field(None, alias='title')
+    des: str = Field(None, alias='des')
