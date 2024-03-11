@@ -18,6 +18,13 @@ def get_ident(test_item):
         ["XQ", get_testType(test_item.testType, "testType"), test_item.ident, test_index])
     return reveal_ident
 
+# 传入demand的ident以及case，返回case的ident
+def get_case_ident(demand_ident, case):
+    key_index = int(case.key.split("-")[-1]) + 1
+    test_index = str(key_index).rjust(3, '0')
+    reveal_ident = "_".join([demand_ident.replace("XQ", "YL"), test_index])
+    return reveal_ident
+
 # 传入字典code，以及字符串数组返回一个数组，每个数组是dict
 def get_list_dict(dict_code, str_list):
     result = []

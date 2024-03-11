@@ -6,6 +6,8 @@ import sys
 
 def main():
     """Run administrative tasks."""
+    # 这里可设置开发环境配置 TODO:有了开发环境配置文件再设置
+    # os.environ.setdefault('DJANGO_SETTINGS_MODULE','cdtestplant_v1.config.dev')
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'cdtestplant_v1.settings')
     try:
         from django.core.management import execute_from_command_line

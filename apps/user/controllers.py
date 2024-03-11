@@ -29,7 +29,7 @@ class UserTokenController(TokenObtainPairController):
         user = user_token._user
         token = AccessToken.for_user(user)
         refresh = RefreshToken.for_user(user)
-        # 这里完成了用户认证了，用户找不到则jwt自动报错401
+        # 这里完成了用户认证了，找不到则jwt自动报错401
         return ChenResponse(code=200,
                             data={'token': str(token), 'refresh': str(refresh),
                                   'token_exp_data': datetime.utcfromtimestamp(token["exp"])})
