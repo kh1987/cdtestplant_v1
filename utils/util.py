@@ -10,7 +10,7 @@ def get_str_dict(a, dict_code):
 def get_testType(a, dict_code):
     return DictItem.objects.get(dict__code=dict_code, key=a).show_title
 
-# 获取测试需求（测试项的）生成文档的ident（标识）
+# 标识处理：获取测试需求（测试项的）生成文档的ident（标识）
 def get_ident(test_item):
     key_index = int(test_item.key.split("-")[-1]) + 1
     test_index = str(key_index).rjust(3, '0')
@@ -18,7 +18,7 @@ def get_ident(test_item):
         ["XQ", get_testType(test_item.testType, "testType"), test_item.ident, test_index])
     return reveal_ident
 
-# 传入demand的ident以及case，返回case的ident
+# 标识处理：传入demand的ident以及case，返回case的ident
 def get_case_ident(demand_ident, case):
     key_index = int(case.key.split("-")[-1]) + 1
     test_index = str(key_index).rjust(3, '0')

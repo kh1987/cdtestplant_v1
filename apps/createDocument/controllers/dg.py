@@ -19,17 +19,7 @@ from utils.chapter_tools.csx_chapter import create_csx_chapter_dict
 from utils.util import MyHTMLParser, MyHTMLParser_p
 from django.shortcuts import get_object_or_404
 from django.forms.models import model_to_dict
-
-# 工具函数，传入dg模版名称，和context，自动在output文件夹生成文档
-def create_dg_docx(template_name: str, context: dict) -> ChenResponse:
-    input_path = Path.cwd() / 'media' / 'form_template' / 'dg' / template_name
-    doc = DocxTemplate(input_path)
-    doc.render(context)
-    try:
-        doc.save(Path.cwd() / "media/output_dir" / template_name)
-        return ChenResponse(status=200, code=200, message="文档生成成功！")
-    except PermissionError as e:
-        return ChenResponse(status=400, code=400, message="模版文件已打开，请关闭后再试，{0}".format(e))
+from apps.createDocument.extensions.util import create_dg_docx
 
 # @api_controller("/generate", tags=['生成大纲文档'], auth=JWTAuth(), permissions=[IsAuthenticated])
 @api_controller("/generate", tags=['生成大纲文档'])

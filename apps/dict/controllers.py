@@ -206,7 +206,6 @@ class CommonController(ControllerBase):
         item_list.append(item2)
         return item_list
 
-# 缩略语处理接口
 @api_controller("/system", tags=['缩略语接口'], auth=JWTAuth(), permissions=[IsAuthenticated])
 class AbbreviationController(ControllerBase):
     @route.get("/abbreviation/getlist", response=List[AbbreviationOut], url_name="abbreviation-search")
