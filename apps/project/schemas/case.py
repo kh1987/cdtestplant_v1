@@ -39,6 +39,8 @@ class CaseTreeReturnSchema(Schema):
     title: str = Field(..., alias='title')
     key: str = Field(..., alias='key')
     level: str = Field(..., alias='level')
+    # 3月13日新增字段，让case作为树状尾部节点
+    isLeaf: bool = Field(None, alias='isLeaf')
 
 class CaseTreeInputSchema(Schema):
     # 注意这里有alias
@@ -67,12 +69,12 @@ class CaseCreateInputSchema(Schema):
     design_key: str = Field(..., alias="designDemand")
     test_key: str = Field(..., alias="testDemand")
     # 其他字段
-    ident: str = Field(None, alias='ident')
-    name: str = Field(None, alias='name')
-    designPerson: str = Field(None, alias='designPerson')
-    testPerson: str = Field(None, alias='testPerson')
-    monitorPerson: str = Field(None, alias='monitorPerson')
-    summarize: str = Field(None, alias='summarize')
-    initialization: str = Field(None, alias='initialization')
-    premise: str = Field(None, alias='premise')
+    ident: str = Field('', alias='ident')
+    name: str = Field('', alias='name')
+    designPerson: str = Field('', alias='designPerson')
+    testPerson: str = Field('', alias='testPerson')
+    monitorPerson: str = Field('', alias='monitorPerson')
+    summarize: str = Field('', alias='summarize')
+    initialization: str = Field('', alias='initialization')
+    premise: str = Field('', alias='premise')
     testStep: List[CaseInputSchema]

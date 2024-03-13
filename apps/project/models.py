@@ -211,6 +211,7 @@ class Case(CoreModel):
                                      help_text="审核人员")
     project = models.ForeignKey(to="Project", db_constraint=False, related_name="pcField", on_delete=models.CASCADE,
                                 verbose_name='归属项目', help_text='归属项目', related_query_name='pcQuery')
+    isLeaf = models.BooleanField(default=True, verbose_name="树状图最后一个节点", help_text="树状图最后一个节点")
     round = models.ForeignKey(to="Round", db_constraint=False, related_name="rcField", on_delete=models.CASCADE,
                               verbose_name='归属轮次', help_text='归属轮次', related_query_name='rcQuery')
     dut = models.ForeignKey(to="Dut", db_constraint=False, related_name="ducField", on_delete=models.CASCADE,
@@ -267,31 +268,16 @@ class Problem(CoreModel):
     revokePerson = models.CharField(max_length=16, blank=True, null=True, verbose_name="撤销人员", help_text="撤销人员")
     revokeDate = models.DateField(auto_now_add=True, null=True, blank=True, help_text="撤销日期",
                                   verbose_name="撤销日期")
-    isLeaf = models.BooleanField(default=True, verbose_name="树状图最后一个节点", help_text="树状图最后一个节点")
-    title = models.CharField(max_length=64, blank=True, null=True, verbose_name="树-名称", help_text="树-名称")
-    key = models.CharField(max_length=16, blank=True, null=True,
-                           verbose_name="round-dut-designkey-testdemand-case-problem",
-                           help_text="round-dut-designkey-testdemand-case-problem")
-    level = models.CharField(max_length=16, blank=True, null=True, verbose_name="树-level", help_text="树-level",
-                             default=5)  # 默认为5
     project = models.ForeignKey(to="Project", db_constraint=False, related_name="projField", on_delete=models.CASCADE,
                                 verbose_name='归属项目', help_text='归属项目', related_query_name='projQuery')
-    round = models.ForeignKey(to="Round", db_constraint=False, related_name="roundField", on_delete=models.CASCADE,
-                              verbose_name='归属轮次', help_text='归属轮次', related_query_name='roundQuery')
-    dut = models.ForeignKey(to="Dut", db_constraint=False, related_name="dutcField", on_delete=models.CASCADE,
-                            verbose_name='归属被测件', help_text='归属被测件', related_query_name='dutcQuery')
-    design = models.ForeignKey(to="Design", db_constraint=False, related_name="designField", on_delete=models.CASCADE,
-                               verbose_name='归属设计需求', help_text='归属设计需求', related_query_name='designQuery')
-    test = models.ForeignKey(to="TestDemand", db_constraint=False, related_name="testField", on_delete=models.CASCADE,
-                             verbose_name='归属测试需求', help_text='归属测试需求', related_query_name='testQuery')
-    case = models.ForeignKey(to="Case", db_constraint=False, related_name="caseField", on_delete=models.CASCADE,
-                             verbose_name='归属测试用例', help_text='归属测试用例', related_query_name='caseQuery')
+    case = models.ManyToManyField(to="Case", db_constraint=False, related_name="caseField", verbose_name='归属测试用例',
+                             help_text='归属测试用例-多对多', related_query_name='caseQuery')
 
     class Meta:
         db_table = 'project_problem'
         verbose_name = "问题单"
         verbose_name_plural = verbose_name
-        ordering = ('key',)
+        ordering = ('id',)
 
 class Contact(CoreModel):
     entrust_person = models.CharField(max_length=16, blank=True, verbose_name="法人", help_text="法人")

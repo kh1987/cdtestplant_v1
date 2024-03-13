@@ -45,7 +45,7 @@ class GenerateSeitaiController(ControllerBase):
         if isinstance(result, dict):
             return ChenResponse(status=400, code=400, message=result.get('msg', 'dg未报出错误原因，反正在生成文档出错'))
         dg_replace_path, dg_seitai_final_path = result
-
+        # behavior
         doc = DocxTemplate(dg_replace_path)
         start = time.time()
         doc.render(context)  # 耗时最长，TODO:异步任务处理？或前端等待？

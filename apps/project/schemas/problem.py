@@ -9,9 +9,10 @@ class DeleteSchema(Schema):
 
 # 测试项-输出schema
 class ProblemModelOutSchema(ModelSchema):
+    related:bool = Field(False) # 给前端反应是否为关联的问题单
     class Config:
         model = Problem
-        model_exclude = ['project', 'round', 'dut', 'design', 'test', 'case', 'remark', 'sort']
+        model_exclude = ['case', 'remark', 'sort']
 
 # 查询测试项
 class ProblemFilterSchema(Schema):
@@ -21,6 +22,7 @@ class ProblemFilterSchema(Schema):
     design_id: str = Field(None, alias='designDemand')
     test_id: str = Field(None, alias='testDemand')
     case_id: str = Field(None, alias='case')
+    key: str = Field(None, alias='key')
     # 其他字段
     ident: str = Field(None, alias='ident')
     name: str = Field(None, alias='name')
@@ -48,8 +50,9 @@ class ProblemTreeInputSchema(Schema):
 class ProblemCreateOutSchema(ModelSchema):
     class Config:
         model = Problem
-        model_exclude = ['remark', 'sort', 'project', 'round', 'dut', 'design', 'case']
+        model_exclude = ['remark', 'sort', 'case']
 
+# 带round_key、dut_key、design_key、test_key、case_key的更新Schema
 class ProblemCreateInputSchema(Schema):
     project_id: int = Field(..., alias="projectId")
     round_key: str = Field(..., alias="round")
@@ -78,12 +81,35 @@ class ProblemCreateInputSchema(Schema):
     verifyDate: str = Field(None, alias='verifyDate')
     closeMethod: List[str]
 
+# 不带round_key、dut_key、design_key、test_key、case_key的更新Schema
+class ProblemUpdateInputSchema(Schema):
+    project_id: int = Field(..., alias="projectId")
+    # 其他字段
+    ident: str = Field(None, alias='ident')
+    name: str = Field(None, alias='name')
+    rules: str = Field(None, alias='rules')
+    expect: str = Field(None, alias='expect')
+    grade: str = Field(None, alias='grade')
+    operation: str = Field(None, alias='operation')
+    result: str = Field(None, alias='result')
+    status: str = Field(None, alias='status')
+    suggest: str = Field(None, alias='suggest')
+    type: str = Field(None, alias='type')
+    postPerson: str = Field(None, alias='postPerson')
+    postDate: str = Field(None, alias='postDate')
+    designerPerson: str = Field(None, alias='designerPerson')
+    designDate: str = Field(None, alias='designDate')
+    revokePerson: str = Field(None, alias='revokePerson')
+    revokeDate: str = Field(None, alias='revokeDate')
+    verifyPerson: str = Field(None, alias='verifyPerson')
+    verifyDate: str = Field(None, alias='verifyDate')
+    closeMethod: List[str]
+
 class ProblemSingleInputSchema(Schema):
-    project_id:int = Field(...,alias="projectId")
-    round_id:str = Field(...,alias="round")
+    project_id: int = Field(..., alias="projectId")
+    round_id: str = Field(..., alias="round")
     dut_id: str = Field(..., alias="dut")
     design_id: str = Field(..., alias="designDemand")
     test_id: str = Field(..., alias="testDemand")
     case_id: str = Field(..., alias="case")
     problem_id: str = Field(..., alias="problem")
-
