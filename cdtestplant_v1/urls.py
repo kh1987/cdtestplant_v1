@@ -1,4 +1,3 @@
-from django.contrib import admin
 from django.urls import path,re_path
 from django.views.static import serve
 from cdtestplant_v1 import settings

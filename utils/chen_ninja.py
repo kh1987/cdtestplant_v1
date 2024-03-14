@@ -2,7 +2,7 @@ from ninja_extra import NinjaExtraAPI
 from django.http import HttpRequest, HttpResponse
 from typing import Any
 
-# 重写ninja返回 - 全局
+# 重写ninja返回 - 全局统一视图函数返回，如果None则如下返回
 class ChenNinjaAPI(NinjaExtraAPI):
     def create_response(
             self, request: HttpRequest, data: Any, *, status: int = 200, code: int = 200, message: str = "请求成功",

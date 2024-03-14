@@ -115,6 +115,12 @@ class GenerateControllerJL(ControllerBase):
                     execution_str = '未执行'
                 else:
                     execution_str = '已执行'
+                # 查询所有的problem
+                problem_list = []
+                problem_prefix = "PT"
+                proj_ident = project_obj.ident
+                for problem in case.caseField.all():
+                    problem_list.append("_".join([problem_prefix,proj_ident,problem.ident]))
                 # 组装用例的dict
                 case_dict = {
                     'name': case.name,
@@ -128,6 +134,7 @@ class GenerateControllerJL(ControllerBase):
                     'step': step_list,
                     'execution': execution_str,
                     'time': str(case.update_datetime),
+                    'problems':"、".join(problem_list)
                 }
                 demand_dict['item'].append(case_dict)
 
@@ -149,9 +156,9 @@ class GenerateControllerJL(ControllerBase):
         output_list = sorted(output_list, key=(lambda x: x["sort"]))
         context["data"] = output_list
 
-        # doc.render(context)
-        # try:
-        #     doc.save(Path.cwd() / "media/output_dir/jl" / "测试用例记录.docx")
-        #     return ChenResponse(status=200, code=200, message="文档生成成功！")
-        # except PermissionError as e:
-        #     return ChenResponse(status=400, code=400, message="模版文件已打开，请关闭后再试，{0}".format(e))
+        doc.render(context)
+        try:
+            doc.save(Path.cwd() / "media/output_dir/jl" / "测试用例记录.docx")
+            return ChenResponse(status=200, code=200, message="文档生成成功！")
+        except PermissionError as e:
+            return ChenResponse(status=400, code=400, message="模版文件已打开，请关闭后再试，{0}".format(e))

@@ -191,11 +191,11 @@ class ProblemController(ControllerBase):
         problem_obj = Problem.objects.filter(id=problem_id).first()
         flag = False  # 是否操作成功的标志
         if val:
-            # 这分支是进行关联
+            # 这分支是进行关联操作
             case_obj.caseField.add(problem_obj)
             flag = True
         else:
-            # 这分支是取消关联
+            # 这分支是取消关联操作
             case_obj.caseField.remove(problem_obj)
             flag = True
         return ChenResponse(code=200, status=200, message='关联或取消关联成功...', data={'isOK': flag})
