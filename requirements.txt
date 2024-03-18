@@ -1,4 +1,4 @@
-Django==4.2.9
+Django==4.2.11
 django_tinymce==3.6.1
 docxtpl==0.16.7
 django-ninja==0.22.2

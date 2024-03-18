@@ -91,3 +91,24 @@ class GenerateSeitaiController(ControllerBase):
             return ChenResponse(status=200, code=200, message="最终大纲生成成功！")
         except PermissionError as e:
             return ChenResponse(status=400, code=400, message="模版文件已打开，请关闭后再试，{0}".format(e))
+
+    @route.get('/jlDocument', url_name='create-jlDocument')
+    @transaction.atomic
+    def create_smDocument(self, id: int):
+        project_obj = get_object_or_404(Project, id=id)
+        # seitai文档所需变量
+        ## 1.判断是否为JD
+        member = project_obj.member[0] if len(project_obj.member) > 0 else project_obj.duty_person
+        context = {'name': project_obj.name, 'ident': project_obj.ident, 'is_JD': False, 'sec_title': "公开",
+                   'duty_person': project_obj.duty_person, 'member': member}
+        if project_obj.report_type == '9':
+            context['is_JD'] = True
+        ## 2.判断被测件是否有需求文档/设计文档/手册文档
+        for dut in project_obj.pdField.all():
+            if dut.type == 'XQ':
+                context['demandDocName'] = dut.name
+            if dut.type == 'SJ':
+                context['designDocName'] = dut.name
+
+
+        print(context)
