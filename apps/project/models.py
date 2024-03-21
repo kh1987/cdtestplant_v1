@@ -51,6 +51,12 @@ class Project(CoreModel):
     step = models.CharField(max_length=8, blank=True, null=True, verbose_name="项目阶段", help_text="项目阶段")
     # ~~~~2024年2月27日新增：缩略语~~~~
     abbreviation = models.JSONField(null=True, blank=True, help_text="缩略语", verbose_name="缩略语", default=[])
+    # ~~~~2024年3月32日新增：软件类型（新研，改造）~~~~ 非必填有默认值1
+    soft_type = models.SmallIntegerField(verbose_name='软件类型', choices=((1, '新研'), (2, '改造')), default=1)
+    runtime = models.CharField(max_length=8, blank=True, null=True, verbose_name="运行环境",
+                               help_text="运行环境")
+    devplant = models.CharField(max_length=8, blank=True, null=True, verbose_name="开发环境",
+                                help_text="开发环境")
 
     class Meta:
         db_table = 'project_project'
@@ -271,7 +277,7 @@ class Problem(CoreModel):
     project = models.ForeignKey(to="Project", db_constraint=False, related_name="projField", on_delete=models.CASCADE,
                                 verbose_name='归属项目', help_text='归属项目', related_query_name='projQuery')
     case = models.ManyToManyField(to="Case", db_constraint=False, related_name="caseField", verbose_name='归属测试用例',
-                             help_text='归属测试用例-多对多', related_query_name='caseQuery')
+                                  help_text='归属测试用例-多对多', related_query_name='caseQuery')
 
     class Meta:
         db_table = 'project_problem'

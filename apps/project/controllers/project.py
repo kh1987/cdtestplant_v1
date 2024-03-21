@@ -1,3 +1,4 @@
+from django.db.models import Q
 from ninja_extra import api_controller, ControllerBase, route
 from ninja_extra.permissions import IsAuthenticated
 from ninja_jwt.authentication import JWTAuth
@@ -7,8 +8,8 @@ from utils.chen_pagination import MyPagination
 from ninja.pagination import paginate
 from ninja import Query
 from utils.chen_response import ChenResponse
-from utils.chen_crud import create,multi_delete
-from apps.project.models import Project,Round
+from utils.chen_crud import create, multi_delete
+from apps.project.models import Project, Round
 from apps.project.schemas.project import ProjectRetrieveSchema, ProjectFilterSchema, ProjectCreateInput, DeleteSchema
 
 @api_controller("/testmanage/project", auth=JWTAuth(), permissions=[IsAuthenticated], tags=['项目表相关'])
@@ -32,11 +33,16 @@ class ProjectController(ControllerBase):
         for key, value in self.context.request.GET.items():
             if key.find('member') != -1:
                 member_list.append(self.context.request.GET[key])
-        qs = Project.objects.filter(ident__icontains=filters.ident, name__icontains=filters.name,
-                                    beginTime__range=date_list, duty_person__icontains=filters.duty_person,
-                                    security_level__icontains=filters.security_level,
-                                    report_type__icontains=filters.report_type, step__icontains=filters.step,
-                                    member__contains=member_list).order_by("-create_datetime")
+        qs = Project.objects.filter(
+            ident__icontains=filters.ident, name__icontains=filters.name,
+            beginTime__range=date_list, duty_person__icontains=filters.duty_person,
+            security_level__icontains=filters.security_level,
+            report_type__icontains=filters.report_type, step__icontains=filters.step,
+            member__contains=member_list).order_by(
+            "-create_datetime")
+        # 对软件类型进行处理
+        if filters.soft_type != '':
+            qs = qs.filter(soft_type=filters.soft_type)
         return qs
 
     @route.post("/save")
@@ -48,7 +54,8 @@ class ProjectController(ControllerBase):
         qs = create(self.context.request, data_dict, Project)
         # 创建项目时候添加第一轮测试
         if qs:
-            Round.objects.create(project_id=qs.id,key='0',level='0',title='第1轮测试',name='第1轮测试',remark='第一轮测试',ident=''.join([qs.ident,'-R1']))
+            Round.objects.create(project_id=qs.id, key='0', level='0', title='第1轮测试', name='第1轮测试',
+                                 remark='第一轮测试', ident=''.join([qs.ident, '-R1']))
             return ChenResponse(code=200, status=200, message="添加项目成功，并添加第一轮测试")
 
     @route.put("/update/{project_id}")
@@ -62,6 +69,6 @@ class ProjectController(ControllerBase):
         return ChenResponse(code=200, status=200, message="项目更新成功")
 
     @route.delete("/delete")
-    def delete(self,data:DeleteSchema):
+    def delete(self, data: DeleteSchema):
         multi_delete(data.ids, Project)
         return ChenResponse(message="删除成功！")

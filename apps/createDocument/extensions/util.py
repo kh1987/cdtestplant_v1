@@ -3,6 +3,8 @@ from docx import Document
 from docxtpl import DocxTemplate
 from docx.table import Table
 from utils.chen_response import ChenResponse
+from typing import Any
+from apps.project.models import Problem, Round, Project
 
 def merge_all_cell(table: Table) -> None:
     """逐个找第二列和第三列单元格的text，如果一致则合并"""
@@ -44,3 +46,32 @@ def create_dg_docx(template_name: str, context: dict) -> ChenResponse:
         return ChenResponse(status=200, code=200, message="文档生成成功！")
     except PermissionError as e:
         return ChenResponse(status=400, code=400, message="模版文件已打开，请关闭后再试，{0}".format(e))
+
+# 生成文档的工具函数 -bg
+def create_bg_docx(template_name: str, context: dict) -> ChenResponse:
+    input_path = Path.cwd() / 'media' / 'form_template' / 'bg' / template_name
+    doc = DocxTemplate(input_path)
+    doc.render(context)
+    try:
+        doc.save(Path.cwd() / "media/output_dir/bg" / template_name)
+        return ChenResponse(status=200, code=200, message="文档生成成功！")
+    except PermissionError as e:
+        return ChenResponse(status=400, code=400, message="模版文件已打开，请关闭后再试，{0}".format(e))
+
+# 找到轮次下面的所有problem_qs
+def get_round1_problem(project: Project) -> Any:
+    """
+    :param project: 项目Model对象
+    :return: 问题单的列表
+    """
+    all_problem_qs = project.projField.all()
+    # 遍历每个问题，找出第一轮的问题
+    problem_set = set()
+    for problem in all_problem_qs:
+        flag = False
+        for case in problem.case.all():
+            if case.round.key == '0':
+                flag = True
+        if flag:
+            problem_set.add(problem)
+    return list(problem_set)

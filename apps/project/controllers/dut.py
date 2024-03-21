@@ -40,6 +40,9 @@ class DutController(ControllerBase):
     @transaction.atomic
     def create_dut(self, payload: DutCreateInputSchema):
         asert_dict = payload.dict(exclude_none=True)
+        # 当被测件为SO时，一个轮次只运行有一个
+        if Dut.objects.filter(project__id=payload.project_id, round__key=payload.round_key, type='SO').exists():
+            return ChenResponse(code=400, status=400, message='源代码被测件一个轮次只能添加一个')
         # 判重标识
         if Dut.objects.filter(project__id=payload.project_id, round__key=payload.round_key,
                               ident=payload.ident).exists():

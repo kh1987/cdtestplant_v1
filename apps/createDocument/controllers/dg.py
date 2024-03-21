@@ -184,10 +184,11 @@ class GenerateControllerDG(ControllerBase):
         designStart = (beginTime + timedelta(days=7)).strftime("%Y%m%d")
         designEnd = (beginTime + timedelta(days=13)).strftime("%Y%m%d")
         # 生成文档
+        begin_time = project_qs.beginTime
         context = {
-            'year': project_qs.beginTime.year,
-            'month': project_qs.beginTime.month,
-            'day': project_qs.beginTime.day,
+            'year': begin_time.year,
+            'month': begin_time.month,
+            'day': begin_time.day,
             'beginTime_strf': beginTime_strf,
             'dgCompileStart': dgCompileStart,
             'dgCompileEnd': dgCompileEnd,
@@ -294,6 +295,8 @@ class GenerateControllerDG(ControllerBase):
         project_qs = get_object_or_404(Project, id=id)
         security = get_str_dict(project_qs.security_level, 'security_level')
         languages = get_list_dict('language', project_qs.language)
+        runtime = get_str_dict(project_qs.runtime, 'runtime')
+        devplant = get_str_dict(project_qs.devplant, 'devplant')
         language_list = []
         for language in languages:
             language_list.append(language.get('ident_version'))
@@ -312,6 +315,9 @@ class GenerateControllerDG(ControllerBase):
             'line_count': line_count,
             'recv_date': project_qs.beginTime.strftime("%Y-%m-%d"),
             'dev_unit': dev_unit,
+            'soft_type': project_qs.get_soft_type_display(),
+            'runtime': runtime,
+            'devplant': devplant
         }
         return create_dg_docx('被测软件基本信息.docx', context)
 

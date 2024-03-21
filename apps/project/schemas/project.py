@@ -1,6 +1,6 @@
 from apps.project.models import Project
 from ninja import Field, Schema, ModelSchema
-from typing import List
+from typing import List, Literal, Optional
 
 class ProjectRetrieveSchema(ModelSchema):
     class Config:
@@ -8,12 +8,14 @@ class ProjectRetrieveSchema(ModelSchema):
         model_exclude = ['update_datetime', 'create_datetime', 'remark']
 
 class ProjectFilterSchema(Schema):
-    ident: str = Field(None, alias='ident')
-    name: str = Field(None, alias='name')
-    duty_person: str = Field(None, alias='duty_person')
-    security_level: str = Field(None, alias='security_level')
-    report_type: str = Field(None, alias="report_type")
-    step: str = Field(None, alias="step")
+    ident: Optional[str] = None
+    name: Optional[str] = None
+    duty_person: Optional[str] = None
+    security_level: Optional[str] = None
+    report_type: Optional[str] = None
+    step: Optional[str] = None
+    # 新增软件类型：新研/改造
+    soft_type: Literal[1, 2] = None
 
 class ProjectCreateInput(ModelSchema):
     class Config:

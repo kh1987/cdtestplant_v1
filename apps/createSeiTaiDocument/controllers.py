@@ -1,6 +1,3 @@
-import os
-from pathlib import Path
-from io import BytesIO
 # 测试运行时间
 import time
 from ninja_extra.controllers import api_controller, ControllerBase, route
@@ -79,7 +76,7 @@ class GenerateSeitaiController(ControllerBase):
         result = generate_temp_doc('sm')
         if isinstance(result, dict):
             return ChenResponse(code=400, status=400, message=result.get('msg', '无错误原因'))
-        sm_to_tpl_file, sm_seitai_final_file = generate_temp_doc('sm')
+        sm_to_tpl_file, sm_seitai_final_file = result
 
         doc = DocxTemplate(sm_to_tpl_file)
         start = time.time()
@@ -94,7 +91,7 @@ class GenerateSeitaiController(ControllerBase):
 
     @route.get('/jlDocument', url_name='create-jlDocument')
     @transaction.atomic
-    def create_smDocument(self, id: int):
+    def create_jlDocument(self, id: int):
         project_obj = get_object_or_404(Project, id=id)
         # seitai文档所需变量
         ## 1.判断是否为JD
@@ -109,6 +106,23 @@ class GenerateSeitaiController(ControllerBase):
                 context['demandDocName'] = dut.name
             if dut.type == 'SJ':
                 context['designDocName'] = dut.name
+            # TODO:设置手册文档名称-暂时dut没有手册这个类型
+            context['manualDocName'] = False
+            context['isC'] = True if '1' in project_obj.language else False
+            context['isCplus'] = True if '2' in project_obj.language else False
 
+        result = generate_temp_doc('jl')
+        if isinstance(result, dict):
+            return ChenResponse(code=400, status=400, message=result.get('msg', '无错误原因'))
+        jl_to_tpl_file, jl_seitai_final_file = result
 
-        print(context)
+        doc = DocxTemplate(jl_to_tpl_file)
+        start = time.time()
+        doc.render(context)  # 耗时最长，TODO:异步任务处理？或前端等待？
+        end = time.time()
+        print('渲染耗时：', end - start)
+        try:
+            doc.save(jl_seitai_final_file)
+            return ChenResponse(status=200, code=200, message="最终大纲生成成功！")
+        except PermissionError as e:
+            return ChenResponse(status=400, code=400, message="模版文件已打开，请关闭后再试，{0}".format(e))
