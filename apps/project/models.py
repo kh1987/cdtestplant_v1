@@ -253,8 +253,11 @@ class CaseStep(CoreModel):
 class Problem(CoreModel):
     ident = models.CharField(max_length=64, blank=True, null=True, verbose_name="问题单标识", help_text="问题单标识")
     name = models.CharField(max_length=64, blank=True, null=True, verbose_name="问题单名称", help_text="问题单名称")
+    # 问题状态1-已闭环 2-开放 3-推迟 4-撤销
     status = models.CharField(max_length=8, blank=True, null=True, verbose_name="缺陷状态", help_text="缺陷状态")
+    # 问题等级1-一般 2-严重 3-建议 4-致命
     grade = models.CharField(max_length=8, blank=True, null=True, verbose_name="缺陷等级", help_text="缺陷等级")
+    # 问题类型1-其他问题 2-文档问题 3-程序问题 4-设计问题 5-需求问题 6-数据问题
     type = models.CharField(max_length=8, blank=True, null=True, verbose_name="缺陷类型", help_text="缺陷类型")
     closeMethod = models.JSONField(null=True, blank=True, help_text="闭环方式", verbose_name="闭环方式", default=['1'])
     operation = HTMLField(blank=True, null=True, verbose_name="问题出现操作", help_text="问题出现操作")

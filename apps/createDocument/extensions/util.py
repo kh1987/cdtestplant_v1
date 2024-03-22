@@ -75,3 +75,4 @@ def get_round1_problem(project: Project) -> Any:
         if flag:
             problem_set.add(problem)
     return list(problem_set)
+
