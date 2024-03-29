@@ -204,7 +204,8 @@ class GenerateControllerDG(ControllerBase):
         # 获取context数据
         project_qs = get_object_or_404(Project, id=id)
         funcList = []
-        for designDemand in project_qs.psField.all():
+        # 只取第一轮的设计需求，且只能是非其他
+        for designDemand in project_qs.psField.filter(~Q(demandType='6'), round__key='0'):
             func = {}
             # 如果需求类型字典值为1
             if designDemand.demandType == '1':
@@ -463,12 +464,41 @@ class GenerateControllerDG(ControllerBase):
             testType_list, last_chapter_items = create_csx_chapter_dict(project_round_one)
             # 找出第一轮的被测件为'XQ'
             xq_dut = project_round_one.rdField.filter(type='XQ').first()
+            # 找出第一轮被测件为'SO'，其中的测试项
+            so_dut = project_round_one.rdField.filter(type='SO').first()
+            if so_dut:
+                so_designs = so_dut.rsField.all()
+                for design in so_designs:
+                    design_dict = {'name': "/", 'chapter': "/", 'test_demand': []}
+                    # 获取一个design的所有测试项
+                    test_items = []
+                    test_items.extend(design.dtField.all())
+                    test_items.extend(design.odField.all())
+
+                    for test_item in test_items:
+                        # 只对文档审查、静态分析、代码走查、代码审查进行处理
+                        if test_item.testType in ['8', '15', '3', '2']:
+                            key_index = int(test_item.key.split("-")[-1]) + 1
+                            test_index = str(key_index).rjust(3, '0')
+                            reveal_ident = "_".join(
+                                ["XQ", get_testType(test_item.testType, "testType"), test_item.ident, test_index])
+                            # 查字典方式确认章节号最后一位
+                            test_item_last_chapter = last_chapter_items[test_item.testType].index(test_item.key) + 1
+                            test_chapter = ".".join([test_item_prefix, str(testType_list.index(test_item.testType) + 1),
+                                                     str(test_item_last_chapter)])
+                            test_item_dict = {'name': test_item.name, 'chapter': test_chapter, 'ident': reveal_ident}
+                            design_dict['test_demand'].append(test_item_dict)
+                    design_list.append(design_dict)
+
             if xq_dut:
                 xq_designs = xq_dut.rsField.all()
                 for design in xq_designs:
                     design_dict = {'name': design.name, 'chapter': design.chapter, 'test_demand': []}
                     # 获取一个design的所有测试项
-                    test_items = design.dtField.all()
+                    test_items = []
+                    test_items.extend(design.dtField.all())
+                    test_items.extend(design.odField.all())
+
                     for test_item in test_items:
                         key_index = int(test_item.key.split("-")[-1]) + 1
                         test_index = str(key_index).rjust(3, '0')
@@ -480,13 +510,14 @@ class GenerateControllerDG(ControllerBase):
                                                  str(test_item_last_chapter)])
                         test_item_dict = {'name': test_item.name, 'chapter': test_chapter, 'ident': reveal_ident}
                         design_dict['test_demand'].append(test_item_dict)
+
                     design_list.append(design_dict)
                 context = {
                     'design_list': design_list
                 }
                 return create_dg_docx('需求规格说明追踪表.docx', context)
 
-    # 生成测试项-需求规格说明关系表
+    # 生成测试项-需求规格说明关系表【反向】
     @route.get('/create/fanXqComparison', url_name='create-fanXqComparison')
     def create_fanXqComparison(self, id: int):
         project_qs = get_object_or_404(Project, id=id)
@@ -495,12 +526,14 @@ class GenerateControllerDG(ControllerBase):
         project_round_one = project_qs.pField.filter(key=0).first()
         testType_list, last_chapter_items = create_csx_chapter_dict(project_round_one)
         # 查询第一轮所有测试项
-        test_items = project_round_one.rtField.all()
+        test_items = []
+        test_items.extend(project_round_one.rtField.all())
         # 最后渲染列表
         items_list = []
         for test_item in test_items:
-            # 只处理XQ
-            if test_item.dut.type == 'XQ':
+            # 第二个处理被测件为"XQ"，第二个处理被测件为'SO'，并且为测试项testType为['8', '15', '3', '2']的
+            if test_item.dut.type == 'XQ' or (test_item.dut.type == 'SO' and test_item.testType in ['8', '15', '3',
+                                                                                                    '2']):
                 key_index = int(test_item.key.split("-")[-1]) + 1
                 test_index = str(key_index).rjust(3, '0')
                 reveal_ident = "_".join(
@@ -509,9 +542,17 @@ class GenerateControllerDG(ControllerBase):
                 test_item_last_chapter = last_chapter_items[test_item.testType].index(test_item.key) + 1
                 test_chapter = ".".join([test_item_prefix, str(testType_list.index(test_item.testType) + 1),
                                          str(test_item_last_chapter)])
-                test_item_dict = {'name': test_item.name, 'chapter': test_chapter, 'ident': reveal_ident, 'design': {
-                    'name': test_item.design.name, 'chapter': test_item.design.chapter
-                }}
+                # 如果是SO里面的
+                if test_item.testType in ['8', '15', '3', '2'] and test_item.dut.type == 'SO':
+                    test_item_dict = {'name': test_item.name, 'chapter': test_chapter, 'ident': reveal_ident,
+                                      'design': {
+                                          'name': "/", 'chapter': "/"
+                                      }}
+                else:
+                    test_item_dict = {'name': test_item.name, 'chapter': test_chapter, 'ident': reveal_ident,
+                                      'design': {
+                                          'name': test_item.design.name, 'chapter': test_item.design.chapter
+                                      }}
                 items_list.append(test_item_dict)
         context = {
             'items_list': items_list,

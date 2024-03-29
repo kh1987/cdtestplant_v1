@@ -8,7 +8,7 @@ from django.db import transaction
 from django.shortcuts import get_object_or_404
 from typing import List
 from utils.chen_response import ChenResponse
-from utils.chen_crud import multi_delete
+from utils.chen_crud import multi_delete_testDemand
 from apps.project.models import Design, Dut, Round, TestDemand, TestDemandContent
 from apps.project.schemas.testDemand import DeleteSchema, TestDemandModelOutSchema, TestDemandFilterSchema, \
     TestDemandTreeReturnSchema, TestDemandTreeInputSchema, TestDemandCreateOutSchema, TestDemandCreateInputSchema, \
@@ -117,7 +117,7 @@ class TestDemandController(ControllerBase):
         test_demand_single = TestDemand.objects.filter(id=data.ids[0])[0]
         design_id = test_demand_single.design.id
         design_key = test_demand_single.design.key
-        multi_delete(data.ids, TestDemand)
+        multi_delete_testDemand(data.ids, TestDemand)
         index = 0
         test_demand_all_qs = TestDemand.objects.filter(design__id=design_id)
         for single_qs in test_demand_all_qs:

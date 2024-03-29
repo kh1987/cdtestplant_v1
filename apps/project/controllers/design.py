@@ -7,7 +7,7 @@ from utils.chen_pagination import MyPagination
 from django.db import transaction
 from typing import List
 from utils.chen_response import ChenResponse
-from utils.chen_crud import multi_delete
+from utils.chen_crud import multi_delete_design
 from apps.project.models import Design, Dut, Round
 from apps.project.schemas.design import DeleteSchema, DesignFilterSchema, DesignModelOutSchema, DesignTreeReturnSchema, \
     DesignTreeInputSchema, DesignCreateOutSchema, DesignCreateInputSchema
@@ -85,7 +85,7 @@ class DesignController(ControllerBase):
         design_single = Design.objects.filter(id=data.ids[0])[0]
         dut_id = design_single.dut.id
         dut_key = design_single.dut.key
-        multi_delete(data.ids, Design)
+        multi_delete_design(data.ids, Design)
         index = 0
         design_all_qs = Design.objects.filter(dut__id=dut_id)
         for single_qs in design_all_qs:

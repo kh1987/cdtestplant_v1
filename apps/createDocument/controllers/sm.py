@@ -199,9 +199,40 @@ class GenerateControllerSM(ControllerBase):
         project_obj = get_object_or_404(Project, id=id)
         demand_prefix = '6.2'
         design_list = []
-        project_round_one = project_obj.pField.filter(key=0).first()
+        project_round_one = project_obj.pField.filter(key='0').first()
         if project_round_one:
             testType_list, last_chapter_items = create_csx_chapter_dict(project_round_one)
+            # 找出第一轮被测件为'SO'的
+            so_dut = project_round_one.rdField.filter(type='SO').first()
+            if so_dut:
+                so_designs = so_dut.rsField.filter()
+                for design in so_designs:
+                    design_dict = {'name': design.name, 'chapter': design.chapter, 'test_demand': []}
+                    test_items = []
+                    test_items.extend(design.dtField.all())
+                    test_items.extend(design.odField.all())
+                    for test_item in test_items:
+                        if test_item.testType in ['2', '3', '15', '8']:
+                            design_dict.update({'name': "/", 'chapter': "/"})
+                        key_index = int(test_item.key.split("-")[-1]) + 1
+                        test_index = str(key_index).rjust(3, '0')
+                        reveal_ident = "_".join(
+                            ["XQ", get_testType(test_item.testType, "testType"), test_item.ident, test_index])
+                        # 查字典方式确认章节号最后一位
+                        test_item_last_chapter = last_chapter_items[test_item.testType].index(test_item.key) + 1
+                        test_chapter = ".".join([demand_prefix, str(testType_list.index(test_item.testType) + 1),
+                                                 str(test_item_last_chapter)])
+                        test_item_dict = {'name': test_item.name, 'chapter': test_chapter, 'ident': reveal_ident,
+                                          'case_list': []}
+                        for case in test_item.tcField.all():
+                            case_dict = {
+                                'name': case.name,
+                                'ident': get_case_ident(reveal_ident, case)
+                            }
+                            test_item_dict['case_list'].append(case_dict)
+                        design_dict['test_demand'].append(test_item_dict)
+                    design_list.append(design_dict)
+
             # 找出第一轮的被测件为'XQ'的第一个
             xq_dut = project_round_one.rdField.filter(type='XQ').first()
             if xq_dut:
@@ -209,7 +240,10 @@ class GenerateControllerSM(ControllerBase):
                 for design in xq_designs:
                     design_dict = {'name': design.name, 'chapter': design.chapter, 'test_demand': []}
                     # 获取一个design的所有测试项
-                    test_items = design.dtField.all()
+                    # 注意：这里有关联测试项!!!需要多对多关系拼接
+                    test_items = []
+                    test_items.extend(design.dtField.all())
+                    test_items.extend(design.odField.all())
                     for test_item in test_items:
                         key_index = int(test_item.key.split("-")[-1]) + 1
                         test_index = str(key_index).rjust(3, '0')
@@ -248,7 +282,7 @@ class GenerateControllerSM(ControllerBase):
                         util.merge_all_cell(docu.tables[0])
                         # 储存到合适位置
                         docu.save(out_put_file)
-                        return ChenResponse(code=200,status=200,message='文档生成成功...')
+                        return ChenResponse(code=200, status=200, message='文档生成成功...')
                     except PermissionError as e:
                         return ChenResponse(code=400, status=400, message='请检查文件是否打开，如果打开则关闭...')
                 else:

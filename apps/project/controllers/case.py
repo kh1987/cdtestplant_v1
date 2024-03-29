@@ -7,7 +7,7 @@ from utils.chen_pagination import MyPagination
 from django.db import transaction
 from typing import List
 from utils.chen_response import ChenResponse
-from utils.chen_crud import multi_delete
+from utils.chen_crud import multi_delete, multi_delete_case
 from apps.project.models import Design, Dut, Round, TestDemand, TestDemandContent, Case, CaseStep
 from apps.project.schemas.case import DeleteSchema, CaseModelOutSchema, CaseFilterSchema, CaseTreeReturnSchema, \
     CaseTreeInputSchema, CaseTreeInputSchema, CaseCreateOutSchema, CaseCreateInputSchema
@@ -123,7 +123,7 @@ class CaseController(ControllerBase):
         case_single = Case.objects.filter(id=data.ids[0])[0]
         test_id = case_single.test.id
         test_key = case_single.test.key
-        multi_delete(data.ids, Case)
+        multi_delete_case(data.ids, Case)
         index = 0
         case_all_qs = Case.objects.filter(test__id=test_id)
         for single_qs in case_all_qs:

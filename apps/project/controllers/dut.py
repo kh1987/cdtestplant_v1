@@ -1,4 +1,5 @@
 import datetime
+from copy import deepcopy
 from ninja_extra import api_controller, ControllerBase, route
 from ninja import Query
 from ninja_jwt.authentication import JWTAuth
@@ -8,10 +9,11 @@ from utils.chen_pagination import MyPagination
 from django.db import transaction
 from typing import List
 from utils.chen_response import ChenResponse
-from utils.chen_crud import multi_delete
-from apps.project.models import Dut, Round
+from utils.chen_crud import multi_delete_dut
+from apps.project.models import Dut, Round, Project
+from django.shortcuts import get_object_or_404
 from apps.project.schemas.dut import DutModelOutSchema, DutFilterSchema, DutTreeReturnSchema, DutTreeInputSchema, \
-    DutCreateInputSchema, DutCreateOutSchema, DeleteSchema
+    DutCreateInputSchema, DutCreateOutSchema, DeleteSchema, DutCreateR1SoDutSchema
 
 @api_controller("/project", auth=JWTAuth(), permissions=[IsAuthenticated], tags=['被测件数据'])
 class DutController(ControllerBase):
@@ -41,8 +43,9 @@ class DutController(ControllerBase):
     def create_dut(self, payload: DutCreateInputSchema):
         asert_dict = payload.dict(exclude_none=True)
         # 当被测件为SO时，一个轮次只运行有一个
-        if Dut.objects.filter(project__id=payload.project_id, round__key=payload.round_key, type='SO').exists():
-            return ChenResponse(code=400, status=400, message='源代码被测件一个轮次只能添加一个')
+        if payload.type == 'SO':
+            if Dut.objects.filter(project__id=payload.project_id, round__key=payload.round_key, type='SO').exists():
+                return ChenResponse(code=400, status=400, message='源代码被测件一个轮次只能添加一个')
         # 判重标识
         if Dut.objects.filter(project__id=payload.project_id, round__key=payload.round_key,
                               ident=payload.ident).exists():
@@ -96,13 +99,23 @@ class DutController(ControllerBase):
     @route.delete("/dut/delete", url_name="dut-delete")
     @transaction.atomic
     def delete_dut(self, data: DeleteSchema):
+        # 查询某一个dut对象
         dut_single = Dut.objects.filter(id=data.ids[0])[0]
+        # 查询出dut所属的轮次id、key
         round_id = dut_single.round.id
         round_key = dut_single.round.key
         # blink1->>>>>> 这里不仅重排key，还要重排ident中编号,先取出前面的RXXXX-RX等信息,这里必须要在删除之前
+        # 查询出当前轮次所有dut
+        ids = deepcopy(data.ids)
+        message = '被测件删除成功'
+        for id in data.ids:
+            dut_obj = Dut.objects.filter(type='SO', id=id).first()
+            if dut_obj:
+                ids.remove(id)
+                message = '源代码被测件不能删除，其他被测件删除成功...'
+        multi_delete_dut(ids, Dut)
         dut_all_qs = Dut.objects.filter(round__id=round_id)
-        ident_before_string = dut_all_qs[0].ident.split("UT")[0]
-        multi_delete(data.ids, Dut)
+        ident_before_string = dut_all_qs[0].ident.split("UT")[0]  # 输出类似于“R2233-R1-”
         index = 0
         for single_qs in dut_all_qs:
             dut_key = "".join([round_key, '-', str(index)])
@@ -110,4 +123,34 @@ class DutController(ControllerBase):
             single_qs.ident = ident_before_string + "UT" + str(index + 1)
             index = index + 1
             single_qs.save()
-        return ChenResponse(message="被测件删除成功！")
+        return ChenResponse(message=message)
+
+    # 查询项目中第一轮次是否存在源代码的被测件
+    @route.get("/dut/soExist", url_name="dut-soExist")
+    @transaction.atomic
+    def delete_soExist(self, id: int):
+        project_obj = get_object_or_404(Project, id=id)
+        so_dut = project_obj.pdField.filter(round__key='0', type='SO')
+        if so_dut:
+            return ChenResponse(data={'exists': True}, code=200, status=200, message='检测到已有第一轮的源代码')
+        else:
+            return ChenResponse(data={'exists': False}, status=200)
+
+    # 弹窗添加第一轮被测件源代码信息
+    @route.post("/dut/createR1Sodut", response=DutCreateOutSchema, url_name='dut-r1SoDut')
+    @transaction.atomic
+    def create_r1_so_dut(self, data: DutCreateR1SoDutSchema):
+        asert_dict = data.dict(exclude_none=True)
+        project_obj = get_object_or_404(Project, id=data.project_id)
+        if Dut.objects.filter(project__id=data.project_id, round__key='0', type='SO').exists():
+            return ChenResponse(code=400, status=400, message='源代码被测件一个轮次只能添加一个')
+        # 查询当前key应该为多少
+        dut_count = Dut.objects.filter(project__id=data.project_id, round__key='0').count()
+        key_string = ''.join(['0', "-", str(dut_count)])
+        asert_dict['ident'] = "-".join([project_obj.ident, 'R1', 'UT', str(dut_count + 1)]).replace("UT-", "UT")
+        # 查询round_id
+        round_id = project_obj.pField.filter(key='0').first().id
+        asert_dict['round_id'] = round_id
+        asert_dict.update({'key': key_string, 'title': '软件源代码', 'type': 'SO', 'name': '软件源代码', 'level': '1'})
+        qs = Dut.objects.create(**asert_dict)
+        return qs

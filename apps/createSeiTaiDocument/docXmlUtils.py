@@ -49,6 +49,10 @@ def generate_temp_doc(doc_type: str):
         template_file = prefix / 'form_template' / 'products' / '回归测试记录.docx'
         to_tpl_file = prefix / 'temp' / '回归测试记录.docx'
         seitai_final_file: Path = prefix / 'final_seitai' / '回归测试记录.docx'
+    elif doc_type == 'wtd':
+        template_file = prefix / 'form_template' / 'products' / '测试问题单.docx'
+        to_tpl_file = prefix / 'temp' / '测试问题单.docx'
+        seitai_final_file: Path = prefix / 'final_seitai' / '测试问题单.docx'
     # 定义找寻被复制文件根路径 - 后续会根据type找子路径
     output_files_path = prefix / 'output_dir'
     # 这里可能修改：TODO:现在是找不到的被拷贝的文件，去根路径找大纲的被拷贝文件，看后续有什么要求进行修改
@@ -60,7 +64,7 @@ def generate_temp_doc(doc_type: str):
             if file.suffix == '.docx':
                 dg_copied_files.append(file)
         elif file.is_dir():
-            if file.stem == doc_type:  # 这里要求在output_dir中专属文件夹必须是sm/jl/hsm/hjl/bg不然无法生成
+            if file.stem == doc_type:  # 这里要求在output_dir中专属文件夹必须是sm/jl/hsm/hjl/bg/wtd不然无法生成
                 for f in file.iterdir():
                     if f.suffix == '.docx':
                         exclusive_copied_files.append(f)

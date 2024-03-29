@@ -8,7 +8,7 @@ from utils.chen_pagination import MyPagination
 from ninja.pagination import paginate
 from ninja import Query
 from utils.chen_response import ChenResponse
-from utils.chen_crud import create, multi_delete
+from utils.chen_crud import create, multi_delete_project
 from apps.project.models import Project, Round
 from apps.project.schemas.project import ProjectRetrieveSchema, ProjectFilterSchema, ProjectCreateInput, DeleteSchema
 
@@ -70,5 +70,5 @@ class ProjectController(ControllerBase):
 
     @route.delete("/delete")
     def delete(self, data: DeleteSchema):
-        multi_delete(data.ids, Project)
+        multi_delete_project(data.ids, Project)
         return ChenResponse(message="删除成功！")

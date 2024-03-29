@@ -87,6 +87,14 @@ class ProblemController(ControllerBase):
             if closeMethod2 in arr:
                 query_final.append(query)
                 continue
+        # 遍历所有problem，查询是有否有关联case，如果有则设置hang为True，否则False
+        hang = True
+        for pro_obj in query_final:
+            case_exists = pro_obj.case.exists()
+            if not case_exists:
+                hang = False
+            setattr(pro_obj, "hang", hang)
+
         # 查询当前的case
         case_obj = Case.objects.filter(key=data.key).first()
         if case_obj:

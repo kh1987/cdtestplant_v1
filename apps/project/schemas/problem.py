@@ -1,7 +1,7 @@
 import json
 from apps.project.models import Problem
 from ninja import Field, Schema, ModelSchema
-from typing import List
+from typing import List, Optional
 
 # 删除schema
 class DeleteSchema(Schema):
@@ -9,7 +9,9 @@ class DeleteSchema(Schema):
 
 # 测试项-输出schema
 class ProblemModelOutSchema(ModelSchema):
-    related:bool = Field(False) # 给前端反应是否为关联的问题单
+    related: bool = Field(False)  # 给前端反应是否为关联的问题单
+    hang:bool = Field(False) # 给前端反应是否是悬挂状态（即没有关联case）
+
     class Config:
         model = Problem
         model_exclude = ['case', 'remark', 'sort']
@@ -52,7 +54,7 @@ class ProblemCreateOutSchema(ModelSchema):
         model = Problem
         model_exclude = ['remark', 'sort', 'case']
 
-# 带round_key、dut_key、design_key、test_key、case_key的更新Schema
+# 更新，新增schema
 class ProblemCreateInputSchema(Schema):
     project_id: int = Field(..., alias="projectId")
     round_key: str = Field(..., alias="round")
@@ -80,6 +82,8 @@ class ProblemCreateInputSchema(Schema):
     verifyPerson: str = Field(None, alias='verifyPerson')
     verifyDate: str = Field(None, alias='verifyDate')
     closeMethod: List[str]
+    # 2024年3月27日新增-处理方式字段
+    solve: Optional[str] = None
 
 # 不带round_key、dut_key、design_key、test_key、case_key的更新Schema
 class ProblemUpdateInputSchema(Schema):

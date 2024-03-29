@@ -1,6 +1,7 @@
 from apps.project.models import Dut
 from ninja import Field, Schema, ModelSchema
 from typing import List
+from datetime import date
 
 class DutModelOutSchema(ModelSchema):
     class Config:
@@ -58,3 +59,17 @@ class DutCreateOutSchema(ModelSchema):
 # 删除schema
 class DeleteSchema(Schema):
     ids: List[int]
+
+# 第一轮如果没有源代码被测的新增so的schema
+class DutCreateR1SoDutSchema(Schema):
+    project_id: int
+    version: str
+    ref: str = Field(..., alias='userRef')
+    release_union: str = Field(...,alias='unit')
+    release_date: date = Field(...,alias='date')
+    black_line: int = None
+    pure_code_line: int = None
+    mix_line: int = None
+    total_comment_line: int = None
+    total_code_line: int = None
+    total_line: int = None

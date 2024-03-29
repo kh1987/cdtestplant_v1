@@ -6,7 +6,8 @@ from .design import DesignController
 from .testDemand import TestDemandController
 from .case import CaseController
 from .problem import ProblemController
+from .treeOperation import TreeController
 
 # 将导入的控制器以列表方式放入下面数组
 __all__ = ['ProjectController', 'RoundController', 'DutController', 'DesignController', 'TestDemandController',
-           'CaseController', 'ProblemController']
+           'CaseController', 'ProblemController', 'TreeController']

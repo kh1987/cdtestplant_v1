@@ -9,6 +9,10 @@ from typing import List, Dict, Any
 def get_str_dict(a, dict_code):
     return DictItem.objects.get(dict__code=dict_code, key=a).title
 
+# 传入一个字符串数字以及字典标志code，返回字典所属的缩写(show_title)
+def get_str_abbr(a, dict_code):
+    return DictItem.objects.get(dict__code=dict_code, key=a).show_title
+
 # 传入一个字符串数组（测试项类型），字典标志code，返回(真实title,sort)
 def get_str_dict_plus(a, dict_code):
     info = DictItem.objects.get(dict__code=dict_code, key=a)
@@ -61,6 +65,17 @@ def get_list_dict_info(dict_code, str_list):
                 res['index'] = qs.sort
                 result.append(res)
     return result
+
+# 传入字典code，以及单个字典字符串，输出一个dict带信息
+def get_dict_info(dict_code, item_str):
+    """传入字典的字符串单个表示，输出dict包含排序index字段"""
+    qss = DictItem.objects.filter(dict__code=dict_code)
+    res = {}
+    for qs in qss:
+        if item_str == qs.key:
+            res['title'] = qs.title
+            res['index'] = qs.sort
+    return res
 
 # 简单HTML解析器 - 解析富文本的parser
 class MyHTMLParser(HTMLParser):
@@ -292,3 +307,12 @@ def create_problem_table(problems):
         else:
             res_list[index]['non_closed_count'] += 1
     return res_list
+
+def get_demand_testTypes(demand_qs) -> str:
+    """传入测试项qs，返回字符串类似于“静态分析、代码审查、功能测试等”"""
+    testType_list = list(demand_qs.values("testType").distinct().order_by('testType'))
+    t_code_list = [item['testType'] for item in testType_list]
+    t_code_list = get_list_dict_info('testType', t_code_list)
+    t_code_list.sort(key=lambda x: int(x['index']))
+    t_str = [item['title'] for item in t_code_list]
+    return '、'.join(t_str) if len(t_str) > 0 else "测试"

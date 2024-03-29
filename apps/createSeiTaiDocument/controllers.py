@@ -126,3 +126,59 @@ class GenerateSeitaiController(ControllerBase):
             return ChenResponse(status=200, code=200, message="最终大纲生成成功！")
         except PermissionError as e:
             return ChenResponse(status=400, code=400, message="模版文件已打开，请关闭后再试，{0}".format(e))
+
+    @route.get('/bgDocument', url_name='create-bgDocument')
+    @transaction.atomic
+    def create_bgDocument(self, id: int):
+        """生成最后的报告文档"""
+        project_obj = get_object_or_404(Project, id=id)
+        # seitai文档所需变量
+        ## 1.判断是否为JD
+        member = project_obj.member[0] if len(project_obj.member) > 0 else project_obj.duty_person
+        context = {'name': project_obj.name, 'ident': project_obj.ident, 'is_JD': False, 'sec_title': "公开",
+                   'duty_person': project_obj.duty_person, 'member': member}
+        if project_obj.report_type == '9':
+            context['is_JD'] = True
+        context['entrust_unit'] = project_obj.entrust_unit
+
+        result = generate_temp_doc('bg')
+        if isinstance(result, dict):
+            return ChenResponse(status=400, code=400, message=result.get('msg', 'bg未报出错误原因，反正在生成文档出错'))
+        bg_replace_path, bg_seitai_final_path = result
+        # behavior
+        doc = DocxTemplate(bg_replace_path)
+        start = time.time()
+        doc.render(context)  # 耗时最长，TODO:异步任务处理？或前端等待？
+        end = time.time()
+        print('渲染耗时：', end - start)
+        try:
+            doc.save(bg_seitai_final_path)
+            return ChenResponse(status=200, code=200, message="最终报告生成成功！")
+        except PermissionError as e:
+            return ChenResponse(status=400, code=400, message="模版文件已打开，请关闭后再试，{0}".format(e))
+
+    @route.get('/wtdDocument', url_name='create-wtdDocument')
+    @transaction.atomic
+    def create_wtdDocument(self, id: int):
+        """生成最后的问题单"""
+        project_obj = get_object_or_404(Project, id=id)
+        # seitai文档所需变量
+        member = project_obj.member[0] if len(project_obj.member) > 0 else project_obj.duty_person
+        context = {'name': project_obj.name, 'ident': project_obj.ident, 'sec_title': "公开",
+                   'duty_person': project_obj.duty_person, 'member': member}
+
+        result = generate_temp_doc('wtd')
+        if isinstance(result, dict):
+            return ChenResponse(status=400, code=400, message=result.get('msg', 'wtd未报出错误原因，反正在生成文档出错'))
+        wtd_replace_path, wtd_seitai_final_path = result
+        # behavior
+        doc = DocxTemplate(wtd_replace_path)
+        start = time.time()
+        doc.render(context)  # 耗时最长，TODO:异步任务处理？或前端等待？
+        end = time.time()
+        print('渲染耗时：', end - start)
+        try:
+            doc.save(wtd_seitai_final_path)
+            return ChenResponse(status=200, code=200, message="问题单生成成功！")
+        except PermissionError as e:
+            return ChenResponse(status=400, code=400, message="模版文件已打开，请关闭后再试，{0}".format(e))

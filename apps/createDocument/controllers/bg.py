@@ -1,14 +1,24 @@
 from datetime import date, timedelta
+from pathlib import Path
 from ninja_extra import api_controller, ControllerBase, route
 from django.db import transaction
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
+from docxtpl import DocxTemplate, InlineImage
+from typing import Optional
+from docx import Document
 # 导入模型
-from apps.project.models import Project, Dut, TestDemand
+from apps.project.models import Project, Dut, TestDemand, Round, Problem
 # 工具类函数
+from apps.createDocument.extensions import util
+from utils.chen_response import ChenResponse
 from apps.createDocument.extensions.util import create_bg_docx, get_round1_problem
 from utils.util import get_str_dict, get_list_dict, create_problem_grade_str, create_str_testType_list, \
-    create_demand_summary, create_problem_type_str, create_problem_table
+    create_demand_summary, create_problem_type_str, create_problem_table, MyHTMLParser_p
+# 根据轮次生成测评内容文档context
+from apps.createDocument.extensions.content_result_tool import create_round_context
+from apps.createDocument.extensions.zhui import create_bg_round1_zhui
+from apps.createDocument.extensions.solve_problem import create_one_problem_dit
 
 # @api_controller("/generateBG", tags=['生成报告文档系列'], auth=JWTAuth(), permissions=[IsAuthenticated])
 @api_controller("/generateBG", tags=['生成报告文档系列'])
@@ -117,7 +127,6 @@ class GenerateControllerBG(ControllerBase):
         project_obj = get_object_or_404(Project, id=id)
         # 找到第一轮轮次对象、第二轮轮次对象
         round1 = project_obj.pField.filter(key='0').first()
-        round2 = project_obj.pField.filter(key='1').first()
         # 第一轮用例个数
         round1_case_qs = round1.rcField.all()
         # 这部分找出第一轮的所以测试类型，输出字符串，并排序
@@ -131,12 +140,28 @@ class GenerateControllerBG(ControllerBase):
         so_dut_verson = "$请添加第一轮的源代码信息$"
         if so_dut:
             so_dut_verson = so_dut.version
-        # 这里找出第二轮，源代码被测件，并获取版本
-        round2_version = "$请添加第二轮的源代码信息$"
-        if round2:
-            so_dut_2: Dut = round2.rdField.filter(type='SO').first()
-            if so_dut_2:
-                round2_version = so_dut_2.version
+        # 这里找出除第一轮的其他轮次
+        rounds = project_obj.pField.exclude(key='0')
+        rounds_str_chinese = ['一', '二', '三', '四', '五', '六', '七', '八', '九', '十']
+        round_list = []
+        for r in rounds:
+            # 找所属dut的so-dut
+            so_dut = r.rdField.filter(type='SO').first()
+            # 找出上一轮dut的so-dut
+            last_problem_count = Problem.objects.filter(case__round__key=str(int(r.key) - 1)).distinct().count()
+            current_round_problem_count = Problem.objects.filter(case__round__key=r.key).distinct().count()
+            if current_round_problem_count > 0:
+                current_round_description = f'引入新问题{current_round_problem_count}个'
+            else:
+                current_round_description = '经测试软件更改正确，并且未引入新的问题'
+            r_dict = {
+                'version': so_dut.version if so_dut else '$请添加该轮次源代码信息$',
+                'round_index': rounds_str_chinese[int(r.key)],
+                'last_problem_count': last_problem_count,
+                'current_round_description': current_round_description,
+            }
+            round_list.append(r_dict)
+
         # 这部分找到第一轮的问题
         problem_qs = get_round1_problem(project_obj)
         context = {
@@ -148,9 +173,9 @@ class GenerateControllerBG(ControllerBase):
             'round1_testType_str': '、'.join(round1_testType_list),
             'round1_version': so_dut_verson,
             'round1_problem_count': len(problem_qs),
-            'round2_version': round2_version,
             'end_time_year': date.today().year,
-            'end_time_month': date.today().month
+            'end_time_month': date.today().month,
+            'round_list': round_list
         }
         return create_bg_docx('测评完成情况.docx', context)
 
@@ -209,9 +234,9 @@ class GenerateControllerBG(ControllerBase):
         return create_bg_docx('综述.docx', context)
 
     # 生成测试内容和结果[报告非常关键的一环-大模块] TODO:以后考虑解耦
-    @route.get('/create/contentandresults', url_name='create-contentandreasults')
+    @route.get('/create/contentandresults_1', url_name='create-contentandresults_1')
     @transaction.atomic
-    def create_content_results(self, id: int):
+    def create_content_results_1(self, id: int):
         project_obj = get_object_or_404(Project, id=id)
         project_ident = project_obj.ident
         # ~~~~首轮信息~~~~
@@ -254,7 +279,6 @@ class GenerateControllerBG(ControllerBase):
         problems_dynamic_r1 = problems_r1.filter(~Q(case__test__testType='2'), ~Q(case__test__testType='3'),
                                                  ~Q(case__test__testType='8'),
                                                  ~Q(case__test__testType='15'))  # !critical:大变量:第一轮动态问题单qs
-        ## 为避免重复问题单:因为有case多对多，所以使用set
         problem_dynamic_r1_type_str = create_problem_type_str(problems_dynamic_r1)
         problem_dynamic_r1_grade_str = create_problem_grade_str(problems_dynamic_r1)
 
@@ -280,8 +304,302 @@ class GenerateControllerBG(ControllerBase):
             'r1_dynamic_problem_grade_str': problem_dynamic_r1_grade_str,
             'r1_problem_all_count': problems_r1.count(),
             'r1_problem_all_grade_str': f'{"，其中" + create_problem_grade_str(problems_r1) if problems_r1.count() > 0 else "即未发现问题"}',
-            'r1_problem_closed_count': problems_r1.filter(status=1).count(),
-            'r1_problem_noclosed_count': problems_r1.count() - problems_r1.filter(status=1).count(),
+            'r1_problem_closed_count': problems_r1.filter(status='1').count(),
+            'r1_problem_noclosed_count': problems_r1.count() - problems_r1.filter(status='1').count(),
             'r1_problem_table': create_problem_table(problems_r1),
         }
-        return create_bg_docx("测试内容和结果.docx", context)
+        return create_bg_docx("测试内容和结果_第一轮次.docx", context)
+
+    # 查询除第一轮以外，生成其他轮次测试内容和结果
+    @route.get('/create/contentandresults_2', url_name='create-contentandresults_2')
+    @transaction.atomic
+    def create_content_results_2(self, id: int):
+        project_obj = get_object_or_404(Project, id=id)
+        # 查询除第一轮，其他有几轮
+        round_qs = project_obj.pField.filter(~Q(key='0'))
+        round_str_list = [item.key for item in round_qs]
+        # 每个轮次都需要生成一个测试内容和标题
+        for round_str in round_str_list:
+            context = create_round_context(project_obj, round_str)
+            template_path = Path.cwd() / 'media' / 'form_template' / 'bg' / '测试内容和结果_第二轮次.docx'
+            doc = DocxTemplate(template_path)
+            doc.render(context)
+            try:
+                doc.save(Path.cwd() / "media/output_dir/bg" / f"测试内容和结果_第{context['round_id']}轮次.docx")
+            except PermissionError as e:
+                ChenResponse(code=400, status=400, message='您已打开生成文件，请关闭后再试...')
+
+    # 测试有效性充分性说明
+    @route.get('/create/effect_and_adquacy', url_name='create-effect_and_adquacy')
+    @transaction.atomic
+    def create_effect_and_adquacy(self, id: int):
+        project_obj = get_object_or_404(Project, id=id)
+        # 判断是否为鉴定
+        is_JD = False
+        if project_obj.report_type == '9':
+            is_JD = True
+        # 统计测试项数量
+        demand_qs = project_obj.ptField
+        # 统计用例个数
+        case_qs = project_obj.pcField
+        # 测试用例的类型统计个数
+        testType_list, testType_count = create_str_testType_list(case_qs.all())
+        # 问题单总个数
+        problem_qs = project_obj.projField
+
+        context = {
+            'project_name': project_obj.name,
+            'demand_count': demand_qs.count(),
+            'case_count': case_qs.count(),
+            'testType_list': "、".join(testType_list),
+            'testType_count': testType_count,
+            'problem_count': problem_qs.count(),
+            'is_JD': is_JD,
+        }
+        return create_bg_docx('测试有效性充分性说明.docx', context)
+
+    # 需求指标符合性情况
+    @route.get('/create/demand_effective', url_name='create-demand_effective')
+    @transaction.atomic
+    def create_demand_effective(self, id: int):
+        project_obj = get_object_or_404(Project, id=id)
+        # 查询所有需求规格说明的 - 设计需求
+        round1_design_qs = project_obj.psField.filter(round__key='0', dut__type='XQ')  # qs:第一轮需求文档的设计需求
+        # 将第一轮需求文档名称
+        dut_name = f"《{project_obj.name}软件需求规格说明》"
+        data_list = []
+        for design in round1_design_qs:
+            design_dict = {'source': "".join([dut_name, design.name, ':', design.chapter])}
+            # 将设计需求描述筛入
+            parser = MyHTMLParser_p()
+            parser.feed(design.description)
+            p_list = parser.allStrList
+            design_dict['description'] = '\a'.join(p_list)
+            # 找出其中所有demand
+            demand_qs = design.dtField.all()
+            if not demand_qs.exists():
+                design_dict['demands'] = '未关联测试项'
+            else:
+                demand_list = []
+                index = 0
+                for demand in demand_qs:
+                    index += 1
+                    demand_list.append(f'{index}、{demand.ident}-{demand.name}')
+                design_dict['demands'] = '\a'.join(demand_list)
+            # 通过还是未通过
+            design_dict['pass'] = '通过'
+            data_list.append(design_dict)
+
+        # ~~~~指标符合性表~~~~
+        data_yz_list = []
+        # qs:第一轮需求文档的设计需求
+        has_YZ = False
+        round1_design_yz_qs = project_obj.psField.filter(round__key='0', dut__type='YZ')
+        if round1_design_yz_qs.exists():
+            has_YZ = True
+            # 如果有研制总要求的dut，继续
+            for design in round1_design_yz_qs:
+                parser = MyHTMLParser_p()
+                parser.feed(design.description)
+                p_list = parser.allStrList
+                design_dict = {'yz_des': "".join([design.chapter, '章节：', design.name, '\a', '\a'.join(p_list)])}
+                # 找出其中所有demand
+                demand_qs = design.dtField.all()
+                if not demand_qs.exists():
+                    design_dict['demands'] = '未关联测评大纲条款'
+                else:
+                    # 大纲条款的列表
+                    demand_list = []
+                    demand_step_list = []
+                    index = 0
+                    for demand in demand_qs:
+                        index += 1
+                        demand_list.append(f'{index}、{demand.ident}-{demand.name}')
+                        # 测试需求步骤的列表
+                        step_list = []
+                        for step in demand.testQField.all():
+                            step_list.append(step.testXuQiu)
+                        demand_step_list.append('\a'.join(step_list))
+
+                    design_dict['demands'] = '\a'.join(demand_list)
+                    design_dict['steps'] = '\a'.join(demand_step_list)
+
+                # 通过还是未通过
+                design_dict['pass'] = '通过'
+                data_yz_list.append(design_dict)
+                # 处理没有steps字段
+                if 'steps' not in design_dict:
+                    design_dict['steps'] = '该设计需求未关联测评大纲条款'
+
+        context = {
+            'data_list': data_list,
+            'data_yz_list': data_yz_list,
+            'has_YZ': has_YZ,
+        }
+        return create_bg_docx('需求指标符合性情况.docx', context)
+
+    # 软件质量评价
+    @route.get('/create/quality_evaluate', url_name='create-quality_evaluate')
+    @transaction.atomic
+    def create_quality_evaluate(self, id: int):
+        project_obj = get_object_or_404(Project, id=id)
+        # 找出最后一轮
+        rounds = project_obj.pField.order_by('-key')  # qs：轮次
+        last_dut_so: Optional[Dut] = None
+        for round in rounds:
+            # 查询其源代码dut
+            dut_so = round.rdField.filter(type='SO').first()
+            if dut_so:
+                last_dut_so = dut_so
+                break
+        # 计算千行缺陷率
+        problem_count = project_obj.projField.count()
+
+        context = {
+            'last_version': last_dut_so.version,  # 最后轮次代码版本
+            'comment_percent': last_dut_so.comment_line,  # 最后轮次代码注释率
+            'qian_comment_rate': format(problem_count / int(last_dut_so.total_code_line) * 1000, '.4f'),
+        }
+        return create_bg_docx('软件质量评价.docx', context)
+
+    # 软件总体结论
+    @route.get('/create/entire', url_name='create-entire')
+    @transaction.atomic
+    def create_entire(self, id: int):
+        project_obj = get_object_or_404(Project, id=id)
+        # 是否鉴定
+        is_JD = False
+        if project_obj.report_type == '9':
+            is_JD = True
+        # 找出最后一轮并且有源代码的dut
+        rounds = project_obj.pField.order_by('-key')  # qs：轮次
+        last_dut_so: Optional[Dut] = None
+        for round in rounds:
+            # 查询其源代码dut
+            dut_so = round.rdField.filter(type='SO').first()
+            if dut_so:
+                last_dut_so = dut_so
+                break
+
+        context = {
+            'name': project_obj.name,
+            'last_version': last_dut_so.version,
+            'is_JD': is_JD,
+        }
+        return create_bg_docx('总体结论.docx', context)
+
+    # 研总需求追踪 - 注意生成每个轮次的追踪 # TODO：优先完成回归测试说明文档
+    @route.get('/create/yzxq_track', url_name='create-yzxq_track')
+    @transaction.atomic
+    def create_yzxq_track(self, id: int):
+        project_obj = get_object_or_404(Project, id=id)
+        # 是否是鉴定的变量，如果为鉴定，则需要研总的追踪
+        is_JD = False
+        if project_obj.report_type == '9':
+            is_JD = True
+        # 查询多少个轮次
+        round_count = project_obj.pField.count()
+        round_str_list = [str(i) for i in range(round_count)]
+        # 生成研总的design_list
+        design_list_all = []
+        for round_str in round_str_list:
+            # 找寻轮次里面源代码版本
+            dut_version = 'XXX'
+            dut_so = Dut.objects.filter(round__key=round_str, type='SO').first()
+            if dut_so:
+                dut_version = dut_so.version
+            if is_JD:
+                design_list_yz = create_bg_round1_zhui(project_obj, dut_str='YZ', round_str=round_str)
+                one_table_dict = {
+                    'design_list': design_list_yz,
+                    'version': 'V' + dut_version,
+                    'title': '研制总要求'
+                }
+                design_list_all.append(one_table_dict)
+                design_list_xq = create_bg_round1_zhui(project_obj, dut_str='XQ', round_str=round_str)
+                one_table_dict_xq = {
+                    'design_list': design_list_xq,
+                    'version': 'V' + dut_version,
+                    'title': '需求规格说明'
+                }
+                design_list_all.append(one_table_dict_xq)
+            else:
+                design_list_xq = create_bg_round1_zhui(project_obj, dut_str='XQ', round_str=round_str)
+                one_table_dict_xq = {
+                    'design_list': design_list_xq,
+                    'version': 'V' + dut_version,
+                    'title': '需求规格说明'
+                }
+                design_list_all.append(one_table_dict_xq)
+        context = {
+            'design_list_all': design_list_all,
+        }
+
+        # 手动渲染tpl文档
+        input_file = Path.cwd() / 'media' / 'form_template' / 'bg' / '研总需归追踪.docx'
+        temporary_file = Path.cwd() / 'media' / 'form_template' / 'bg' / 'temporary' / '研总需归追踪_temp.docx'
+        out_put_file = Path.cwd() / 'media' / 'output_dir' / 'bg' / '研总需归追踪.docx'
+        doc = DocxTemplate(input_file)
+        doc.render(context)
+        doc.save(temporary_file)
+        # 通过docx合并单元格
+        if temporary_file.is_file():
+            try:
+                docu = Document(temporary_file)
+                # 循环找到表格
+                for table in docu.tables:
+                    util.merge_all_cell(table)
+                # 储存到合适位置
+                docu.save(out_put_file)
+                return ChenResponse(code=200, status=200, message='文档生成成功...')
+            except PermissionError as e:
+                return ChenResponse(code=400, status=400, message='请检查文件是否打开，如果打开则关闭...')
+        else:
+            return ChenResponse(code=400, status=400, message='中间文档未找到，请检查你模版是否存在...')
+
+    # 生成问题汇总表
+    @route.get('/create/problems_summary', url_name='create-problem_summary')
+    @transaction.atomic
+    def create_problem_summary(self, id: int):
+        tpl_doc = Path.cwd() / "media" / "form_template" / "bg" / "问题汇总表.docx"
+        doc = DocxTemplate(tpl_doc)
+        project_obj = get_object_or_404(Project, id=id)
+        problem_prefix = "_".join(['PT', project_obj.ident])
+        problems = project_obj.projField
+        # 先查询有多少轮次
+        round_count = project_obj.pField.count()
+        round_str_list = [str(x) for x in range(round_count)]
+        data_list = []
+        for round_str in round_str_list:
+            # 查询所属当前轮次的SO-dut
+            so_dut = Dut.objects.filter(round__key=round_str, type='SO').first()
+            round_dict = {
+                'static': [],
+                'dynamic': [],
+                'version': so_dut.version if so_dut else "v1.0",
+            }
+            # 找出轮次中静态问题
+            r1_static_problems = problems.filter(case__round__key=round_str,
+                                                 case__test__testType__in=['2', '3', '8', '15']).distinct()
+            for problem in r1_static_problems:
+                problem_dict = create_one_problem_dit(problem, problem_prefix, doc)
+                round_dict['static'].append(problem_dict)
+
+            # 找出轮次中动态问题
+            r1_dynamic_problems = problems.filter(case__round__key=round_str).exclude(
+                case__test__testType__in=['2', '3', '8', '15']).distinct()
+            for problem in r1_dynamic_problems:
+                problem_dict = create_one_problem_dit(problem, problem_prefix, doc)
+                round_dict['dynamic'].append(problem_dict)
+            data_list.append(round_dict)
+
+        context = {
+            'data_list': data_list
+        }
+
+        doc.render(context)
+        try:
+            doc.save(Path.cwd() / "media/output_dir/bg" / "问题汇总表.docx")
+            return ChenResponse(status=200, code=200, message="文档生成成功！")
+        except PermissionError as e:
+            return ChenResponse(status=400, code=400, message="模版文件已打开，请关闭后再试，{0}".format(e))

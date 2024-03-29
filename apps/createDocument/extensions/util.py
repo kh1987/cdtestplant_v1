@@ -58,6 +58,17 @@ def create_bg_docx(template_name: str, context: dict) -> ChenResponse:
     except PermissionError as e:
         return ChenResponse(status=400, code=400, message="模版文件已打开，请关闭后再试，{0}".format(e))
 
+# 生成文档的工具函数 -wtd
+def create_wtd_docx(template_name: str, context: dict) -> ChenResponse:
+    input_path = Path.cwd() / 'media' / 'form_template' / 'wtd' / template_name
+    doc = DocxTemplate(input_path)
+    doc.render(context)
+    try:
+        doc.save(Path.cwd() / "media/output_dir/wtd" / template_name)
+        return ChenResponse(status=200, code=200, message="文档生成成功！")
+    except PermissionError as e:
+        return ChenResponse(status=400, code=400, message="模版文件已打开，请关闭后再试，{0}".format(e))
+
 # 找到轮次下面的所有problem_qs
 def get_round1_problem(project: Project) -> Any:
     """
@@ -75,4 +86,3 @@ def get_round1_problem(project: Project) -> Any:
         if flag:
             problem_set.add(problem)
     return list(problem_set)
-

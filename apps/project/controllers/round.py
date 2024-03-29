@@ -46,6 +46,11 @@ class RoundController(ControllerBase):
         instance = self.get_object_or_exception(Round, project__id=project_id, key=data.key)
         if instance.key == '0':
             return ChenResponse(code=400, status=400, message="无法删除初始轮次")
+        # （多对多）删除下面case关联的problem关系
+        cases = instance.rcField.all()
+        for case in cases:
+            case.caseField.clear()
+        # 注意：这里删除整个轮次和关联的所以东西TODO:如何设计减少删除损失
         instance.delete()
         # 注意：删除中间key必须发生变化，重写key
         ## 先查询出当前有多少轮次

@@ -281,6 +281,9 @@ class Problem(CoreModel):
                                 verbose_name='归属项目', help_text='归属项目', related_query_name='projQuery')
     case = models.ManyToManyField(to="Case", db_constraint=False, related_name="caseField", verbose_name='归属测试用例',
                                   help_text='归属测试用例-多对多', related_query_name='caseQuery')
+    # ~~~~~3月27日新增字段：问题处理方式~~~~~
+    solve = models.TextField(verbose_name='问题处理方式', help_text='问题处理方式，该字段需要关联“status=1”', blank=True,
+                             null=True)
 
     class Meta:
         db_table = 'project_problem'
