@@ -19,7 +19,7 @@ def getParentRunNode(node):
         return node
     return getParentRunNode(node.getparent())
 
-def generate_temp_doc(doc_type: str):
+def generate_temp_doc(doc_type: str, round_num=None):
     """ 该函数参数：
     :param doc_type:大纲 sm:说明 jl:记录 bg:报告 hsm:回归测试说明 hjl:回归测试记录,默认路径为dg -> 所以如果传错就生成生成大纲了
     :return (to_tpl_file路径, seitai_final_file路径)
@@ -43,12 +43,12 @@ def generate_temp_doc(doc_type: str):
         seitai_final_file: Path = prefix / 'final_seitai' / '测评报告.docx'
     elif doc_type == 'hsm':
         template_file = prefix / 'form_template' / 'products' / '回归测试说明.docx'
-        to_tpl_file = prefix / 'temp' / '回归测试说明.docx'
-        seitai_final_file: Path = prefix / 'final_seitai' / '回归测试说明.docx'
+        to_tpl_file = prefix / 'temp' / f'第{round_num}轮回归测试说明.docx'
+        seitai_final_file: Path = prefix / 'final_seitai' / f'第{round_num}轮回归测试说明.docx'
     elif doc_type == 'hjl':
         template_file = prefix / 'form_template' / 'products' / '回归测试记录.docx'
-        to_tpl_file = prefix / 'temp' / '回归测试记录.docx'
-        seitai_final_file: Path = prefix / 'final_seitai' / '回归测试记录.docx'
+        to_tpl_file = prefix / 'temp' / f'第{round_num}轮回归测试记录.docx'
+        seitai_final_file: Path = prefix / 'final_seitai' / f'第{round_num}轮回归测试记录.docx'
     elif doc_type == 'wtd':
         template_file = prefix / 'form_template' / 'products' / '测试问题单.docx'
         to_tpl_file = prefix / 'temp' / '测试问题单.docx'
@@ -90,7 +90,7 @@ def generate_temp_doc(doc_type: str):
                 elem.clear()
                 if len(area_name_list) > 0:
                     area_pop_name = area_name_list.pop(0)
-                    # 取到“域名称”，这里先去找media/output_dir/sm下文件，然后找media/output下文件
+                    # 取到“域名称”，这里先去找media/output_dir/xx下文件，然后找media/output下文件
                     copied_file_path = ""
                     # TODO:还是那个问题，只区别了大纲 -> dg
                     if doc_type == 'dg':
@@ -98,14 +98,24 @@ def generate_temp_doc(doc_type: str):
                             if file.stem == area_pop_name:
                                 copied_file_path = file
                     else:
-                        for file in exclusive_copied_files:
-                            if file.stem == area_pop_name:
-                                copied_file_path = file
-                        # 这里判断是否copied_file_path没取到文件，然后遍历output_dir下文件
-                        if not copied_file_path:
-                            for file in dg_copied_files:
+                        if round_num is None:
+                            for file in exclusive_copied_files:
                                 if file.stem == area_pop_name:
                                     copied_file_path = file
+                            # 这里判断是否copied_file_path没取到文件，然后遍历output_dir下文件
+                            if not copied_file_path:
+                                for file in dg_copied_files:
+                                    if file.stem == area_pop_name:
+                                        copied_file_path = file
+                        else:
+                            # 因为回归的轮次，前面会加 -> 第{round_num}轮
+                            for file in exclusive_copied_files:  # 这里多了第{round_num}轮
+                                if file.stem == f"第{round_num}轮{area_pop_name}":
+                                    copied_file_path = file
+                            if not copied_file_path:
+                                for file in dg_copied_files:
+                                    if file.stem == area_pop_name:
+                                        copied_file_path = file
                     # 找到所需的文件，将其数据复制到对应area_name的“域”
                     if copied_file_path:
                         doc_copied = Document(copied_file_path)

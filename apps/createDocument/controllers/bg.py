@@ -7,6 +7,8 @@ from django.db.models import Q
 from docxtpl import DocxTemplate, InlineImage
 from typing import Optional
 from docx import Document
+from ninja_extra.permissions import IsAuthenticated
+from ninja_jwt.authentication import JWTAuth
 # 导入模型
 from apps.project.models import Project, Dut, TestDemand, Round, Problem
 # 工具类函数

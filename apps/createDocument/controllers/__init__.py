@@ -4,7 +4,9 @@ from apps.createDocument.controllers.sm import GenerateControllerSM
 from apps.createDocument.controllers.jl import GenerateControllerJL
 from apps.createDocument.controllers.bg import GenerateControllerBG
 from apps.createDocument.controllers.wtd import GenerateControllerWtd
+from apps.createDocument.controllers.hsm import GenerateControllerHSM
+from apps.createDocument.controllers.hjl import GenerateControllerHJL
 
 # 给外部导入
 __all__ = ['GenerateControllerDG', 'GenerateControllerSM', 'GenerateControllerJL', 'GenerateControllerBG',
-           'GenerateControllerWtd']
+           'GenerateControllerWtd', 'GenerateControllerHSM', 'GenerateControllerHJL']

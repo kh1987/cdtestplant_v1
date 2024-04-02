@@ -5,6 +5,7 @@ from ninja_jwt.authentication import JWTAuth
 from ninja_extra.permissions import IsAuthenticated
 from django.db import transaction
 from django.shortcuts import get_object_or_404
+from django.db.models import QuerySet
 # 文档处理相关库
 from docxtpl import DocxTemplate
 # 导入docx进行文件“域”替换操作
@@ -12,7 +13,7 @@ from apps.createSeiTaiDocument.docXmlUtils import generate_temp_doc
 # 自己的工具模块
 from utils.chen_response import ChenResponse
 # 模型模块
-from apps.project.models import Project
+from apps.project.models import Project, Dut, Round
 
 # @api_controller("/create", tags=['生成产品文档接口'], auth=JWTAuth(), permissions=[IsAuthenticated])
 @api_controller("/create", tags=['生成产品文档接口'])
@@ -182,3 +183,72 @@ class GenerateSeitaiController(ControllerBase):
             return ChenResponse(status=200, code=200, message="问题单生成成功！")
         except PermissionError as e:
             return ChenResponse(status=400, code=400, message="模版文件已打开，请关闭后再试，{0}".format(e))
+
+    @route.get('/hsmDocument', url_name='create-hsmDocument')
+    @transaction.atomic
+    def create_hsmDocument(self, id: int):
+        """生成最后的回归测试说明-（多个文档）"""
+        project_obj: Project = get_object_or_404(Project, id=id)
+        chinese_round_name: list = ['一', '二', '三', '四', '五', '六', '七', '八', '九', '十']
+        # 取非第一轮次
+        hround_list: QuerySet = project_obj.pField.exclude(key='0')
+        if len(hround_list) < 1:
+            return ChenResponse(code=400, status=400, message='无其他轮次，请生成后再试')
+        for hround in hround_list:
+            # 取出当前轮次key减1就是上一轮次
+            cname = chinese_round_name[int(hround.key)]  # 输出二、三...
+            member = project_obj.member[0] if len(project_obj.member) > 0 else project_obj.duty_person
+            context = {'name': project_obj.name, 'ident': project_obj.ident, 'is_JD': False, 'sec_title': "公开",
+                       'duty_person': project_obj.duty_person, 'member': member, 'round_han': cname,
+                       'round_num': int(hround.key) + 1}
+            if project_obj.report_type == '9':
+                context['is_JD'] = True
+            # 受测软件标识从源代码dut取出
+            so_dut: Dut = hround.rdField.filter(type='SO').first()
+            if not so_dut:
+                return ChenResponse(status=400, code=400, message=f'您缺少第{cname}轮的源代码被测件')
+            context['user_ref'] = so_dut.ref
+            result = generate_temp_doc('hsm', round_num=cname)
+            if isinstance(result, dict):
+                return ChenResponse(status=400, code=400,
+                                    message=result.get('msg', 'hsm未报出错误原因，反正在生成文档出错'))
+            hsm_replace_path, hsm_seitai_final_path = result
+            doc = DocxTemplate(hsm_replace_path)
+            doc.render(context)
+            try:
+                doc.save(hsm_seitai_final_path)
+            except PermissionError as e:
+                return ChenResponse(status=400, code=400, message="模版文件已打开，请关闭后再试，{0}".format(e))
+        return ChenResponse(status=200, code=200, message="回归测试说明文档生成成功")
+
+    @route.get('/hjlDocument', url_name='create-hjlDocument')
+    @transaction.atomic
+    def create_hjlDocument(self, id: int):
+        """生成最后的回归测试记录-（多个文档）"""
+        project_obj: Project = get_object_or_404(Project, id=id)
+        chinese_round_name: list = ['一', '二', '三', '四', '五', '六', '七', '八', '九', '十']
+        # 取非第一轮次
+        hround_list: QuerySet = project_obj.pField.exclude(key='0')
+        if len(hround_list) < 1:
+            return ChenResponse(code=400, status=400, message='无其他轮次，请生成后再试')
+        for hround in hround_list:
+            # 取出当前轮次key减1就是上一轮次
+            cname = chinese_round_name[int(hround.key)]  # 输出二、三...
+            member = project_obj.member[0] if len(project_obj.member) > 0 else project_obj.duty_person
+            context = {'name': project_obj.name, 'ident': project_obj.ident, 'is_JD': False, 'sec_title': "公开",
+                       'duty_person': project_obj.duty_person, 'member': member, 'round_han': cname,
+                       'round_num': int(hround.key) + 1}
+            if project_obj.report_type == '9':
+                context['is_JD'] = True
+            result = generate_temp_doc('hjl', round_num=cname)
+            if isinstance(result, dict):
+                return ChenResponse(status=400, code=400,
+                                    message=result.get('msg', 'hjl未报出错误原因，反正在生成文档出错'))
+            hjl_replace_path, hjl_seitai_final_path = result
+            doc = DocxTemplate(hjl_replace_path)
+            doc.render(context)
+            try:
+                doc.save(hjl_seitai_final_path)
+            except PermissionError as e:
+                return ChenResponse(status=400, code=400, message="模版文件已打开，请关闭后再试，{0}".format(e))
+        return ChenResponse(status=200, code=200, message="回归测试记录文档生成成功")

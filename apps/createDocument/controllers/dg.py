@@ -92,7 +92,7 @@ class GenerateControllerDG(ControllerBase):
 
         # 定义渲染context字典
         context = {
-            "project_name": "测试项目!!!!"
+            "project_name": project_qs.name
         }
         output_list = []
 
