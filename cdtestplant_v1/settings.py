@@ -47,8 +47,7 @@ ROOT_URLCONF = 'cdtestplant_v1.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates']
-        ,
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -71,6 +70,18 @@ DATABASES = {
         "USER": DATABASE_USER,
         "PASSWORD": DATABASE_PASSWORD,
         "NAME": DATABASE_NAME,
+    }
+}
+
+# 配置缓存
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/1",  # 这里直接使用redis别名作为host ip地址
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            "PASSWORD": "yourpassword",  # 换成你自己密码
+        },
     }
 }
 
@@ -116,9 +127,7 @@ NINJA_JWT = {
     "REFRESH_TOKEN_LIFETIME": datetime.timedelta(days=1),
 }
 # Extra配置
-NINJA_EXTRA = {
-
-}
+NINJA_EXTRA = {}
 
 # 配置MEDIA_ROOT和MEDIA_URL
 MEDIA_URL = "/media/"

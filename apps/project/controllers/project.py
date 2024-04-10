@@ -14,7 +14,7 @@ from apps.project.schemas.project import ProjectRetrieveSchema, ProjectFilterSch
 
 @api_controller("/testmanage/project", auth=JWTAuth(), permissions=[IsAuthenticated], tags=['项目表相关'])
 class ProjectController(ControllerBase):
-    @route.get("index", response=List[ProjectRetrieveSchema])
+    @route.get("/index", response=List[ProjectRetrieveSchema])
     @paginate(MyPagination)
     def list_project(self, filters: ProjectFilterSchema = Query(...)):
         for attr, value in filters.__dict__.items():
