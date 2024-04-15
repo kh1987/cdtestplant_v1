@@ -26,13 +26,15 @@ def multi_delete(ids, model):
 
 # project删除，多对多关系也要删除
 def multi_delete_project(ids, model):
+    idents = []
     for item in ids:
         instance = get_object_or_404(model, pk=item)
         # (project所属problem全部删除，且关联关系删除)
         for problem in instance.projField.all():
             problem.case.clear()
+        idents.append(instance.ident)
         instance.delete()
-    pass
+    return idents
 
 # testDemand多个id删除便捷函数，参数1:ids数组，参数2：ORM模型
 def multi_delete_testDemand(ids, model):

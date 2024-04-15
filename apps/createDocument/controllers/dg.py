@@ -20,6 +20,7 @@ from utils.util import MyHTMLParser, MyHTMLParser_p
 from django.shortcuts import get_object_or_404
 from django.forms.models import model_to_dict
 from apps.createDocument.extensions.util import create_dg_docx
+from utils.path_utils import project_path
 
 # @api_controller("/generate", tags=['生成大纲文档'], auth=JWTAuth(), permissions=[IsAuthenticated])
 @api_controller("/generate", tags=['生成大纲文档'])
@@ -28,7 +29,7 @@ class GenerateControllerDG(ControllerBase):
     @transaction.atomic
     def create_testdemand(self, id: int):
         """目前生成第一轮测试项"""
-        tplTestDemandGenerate_path = Path.cwd() / "media" / "form_template" / "dg" / "测试项及方法.docx"
+        tplTestDemandGenerate_path = Path.cwd() / "media" / project_path(id) / "form_template" / "dg" / "测试项及方法.docx"
         doc = DocxTemplate(tplTestDemandGenerate_path)
         # 获取指定的项目对象
         project_qs = get_object_or_404(Project, id=id)
@@ -111,7 +112,7 @@ class GenerateControllerDG(ControllerBase):
         context["data"] = output_list
         doc.render(context)
         try:
-            doc.save(Path.cwd() / "media/output_dir" / "测试项及方法.docx")
+            doc.save(Path.cwd() / "media" / project_path(id) / "output_dir" / "测试项及方法.docx")
             return ChenResponse(status=200, code=200, message="文档生成成功！")
         except PermissionError as e:
             return ChenResponse(status=400, code=400, message="模版文件已打开，请关闭后再试，{0}".format(e))
@@ -126,7 +127,7 @@ class GenerateControllerDG(ControllerBase):
         context = {
             'std_documents': yiju_list
         }
-        return create_dg_docx('标准依据文件.docx', context)
+        return create_dg_docx('标准依据文件.docx', context, id)
 
     @route.get("/create/techyiju", url_name='create-techyiju')
     @transaction.atomic
@@ -146,7 +147,7 @@ class GenerateControllerDG(ControllerBase):
         context = {
             'std_documents': std_documents
         }
-        return create_dg_docx('技术依据文件.docx', context)
+        return create_dg_docx('技术依据文件.docx', context, id)
 
     @route.get("/create/contact", url_name='create-contact')
     @transaction.atomic
@@ -167,7 +168,7 @@ class GenerateControllerDG(ControllerBase):
         context = {
             'datas': contact_dict
         }
-        return create_dg_docx('联系人和方式.docx', context)
+        return create_dg_docx('联系人和方式.docx', context, id)
 
     # 生成测评时间和地点
     @route.get('/create/timeaddress', url_name='create-timeaddress')
@@ -195,7 +196,7 @@ class GenerateControllerDG(ControllerBase):
             'designStart': designStart,
             'designEnd': designEnd,
         }
-        return create_dg_docx('测评时间和地点.docx', context)
+        return create_dg_docx('测评时间和地点.docx', context, id)
 
     # 生成被测软件功能-根据需求表生成
     @route.get('/create/funcList', url_name='create-funcList')
@@ -220,7 +221,7 @@ class GenerateControllerDG(ControllerBase):
             'project_name': project_qs.name,
             'funcList': funcList
         }
-        return create_dg_docx('被测软件功能.docx', context)
+        return create_dg_docx('被测软件功能.docx', context, id)
 
     # 生成被测软件接口-根据需求类型为接口的生成
     @route.get('/create/interfaceList', url_name='create-interfaceList')
@@ -237,7 +238,7 @@ class GenerateControllerDG(ControllerBase):
         context = {
             'project_name': project_name
         }
-        return create_dg_docx('测评对象.docx', context)
+        return create_dg_docx('测评对象.docx', context, id)
 
     # 生成被测软件接口章节
     @route.get('/create/interface', url_name='create-interface')
@@ -261,7 +262,7 @@ class GenerateControllerDG(ControllerBase):
             'iter_list': iters,
         }
         ### TODO:生成接口列表
-        return create_dg_docx('被测软件接口.docx', context)
+        return create_dg_docx('被测软件接口.docx', context, id)
 
     # 生成被测软件性能章节
     @route.get('/create/performance', url_name='create-performance')
@@ -281,14 +282,14 @@ class GenerateControllerDG(ControllerBase):
         context = {
             'performance_list': performance_list
         }
-        return create_dg_docx('被测软件性能.docx', context)
+        return create_dg_docx('被测软件性能.docx', context, id)
 
     # 生成软硬件环境
     @route.get('/create/environment', url_name='create-environment')
     def create_environment(self, id: int):
         project_qs = get_object_or_404(Project, id=id)
         context = {}
-        return create_dg_docx("软硬件环境.docx", context)
+        return create_dg_docx("软硬件环境.docx", context, id)
 
     # 生成被测软件-基本信息
     @route.get('/create/baseInformation', url_name='create-baseInformation')
@@ -320,7 +321,7 @@ class GenerateControllerDG(ControllerBase):
             'runtime': runtime,
             'devplant': devplant
         }
-        return create_dg_docx('被测软件基本信息.docx', context)
+        return create_dg_docx('被测软件基本信息.docx', context, id)
 
     # 生成测试总体要求
     @route.get('/create/requirement', url_name='create-requirement')
@@ -340,7 +341,7 @@ class GenerateControllerDG(ControllerBase):
             'dut_str': '、'.join(dut_str_list),
             'security_boolean': security_boolean,
         }
-        return create_dg_docx('测试总体要求.docx', context)
+        return create_dg_docx('测试总体要求.docx', context, id)
 
     # 生成-测试内容充分性及测试方法有效性
     @route.get('/create/adequacy_effectiveness', url_name='create-adequacy_effectiveness')
@@ -372,7 +373,7 @@ class GenerateControllerDG(ControllerBase):
             'length': length,
             'type_str': "、".join(type_str_list),
         }
-        return create_dg_docx('测试内容充分性及测试方法有效性分析.docx', context)
+        return create_dg_docx('测试内容充分性及测试方法有效性分析.docx', context, id)
 
     # 生成-测评项目组组成和分工
     @route.get('/create/group', url_name='create_group')
@@ -386,7 +387,7 @@ class GenerateControllerDG(ControllerBase):
             'config_person': project_qs.config_person,
             'dev_unit': project_qs.dev_unit,
         }
-        return create_dg_docx('测评组织及任务分工.docx', context)
+        return create_dg_docx('测评组织及任务分工.docx', context, id)
 
     # 生成-测评条件保障
     @route.get('/create/guarantee', url_name='create-guarantee')
@@ -395,7 +396,7 @@ class GenerateControllerDG(ControllerBase):
         context = {
             'project': project_qs
         }
-        return create_dg_docx('测评条件保障.docx', context)
+        return create_dg_docx('测评条件保障.docx', context, id)
 
     # 生成-缩略语
     @route.get('/create/abbreviation', url_name='create-abbreviation')
@@ -410,7 +411,7 @@ class GenerateControllerDG(ControllerBase):
             'abbreviations': abbreviations
         }
 
-        return create_dg_docx('缩略语.docx', context)
+        return create_dg_docx('缩略语.docx', context, id)
 
     # 生成研制总要求-测试项追踪关系表
     @route.get('/create/yzComparison', url_name='create-yzComparison')
@@ -451,7 +452,7 @@ class GenerateControllerDG(ControllerBase):
                 context = {
                     'design_list': design_list
                 }
-                return create_dg_docx('研制总要求追踪表.docx', context)
+                return create_dg_docx('研制总要求追踪表.docx', context, id)
 
     # 生成需求规格说明-测试项追踪关系表
     @route.get('/create/xqComparison', url_name='create-xqComparison')
@@ -515,7 +516,7 @@ class GenerateControllerDG(ControllerBase):
                 context = {
                     'design_list': design_list
                 }
-                return create_dg_docx('需求规格说明追踪表.docx', context)
+                return create_dg_docx('需求规格说明追踪表.docx', context, id)
 
     # 生成测试项-需求规格说明关系表【反向】
     @route.get('/create/fanXqComparison', url_name='create-fanXqComparison')
@@ -557,7 +558,7 @@ class GenerateControllerDG(ControllerBase):
         context = {
             'items_list': items_list,
         }
-        return create_dg_docx('反向需求规格追踪表.docx', context)
+        return create_dg_docx('反向需求规格追踪表.docx', context, id)
 
     # 生成代码质量度量分析表
     @route.get('/create/codeQuality', url_name='create-codeQuality')
@@ -576,7 +577,7 @@ class GenerateControllerDG(ControllerBase):
                 context.update({'black_line': source_dut.black_line})
             else:
                 return ChenResponse(message='未找到源代码被测件', code=400)
-        return create_dg_docx('代码质量度量分析表.docx', context)
+        return create_dg_docx('代码质量度量分析表.docx', context, id)
 
     # 生成-主要战技术指标
     @route.get('/create/mainTech', url_name='create-mainTech')
@@ -610,4 +611,4 @@ class GenerateControllerDG(ControllerBase):
                             design_dict['testDemand'].append(xq_design_dict)
                     data_list.append(design_dict)
                 context = {'data_list': data_list}
-                return create_dg_docx('主要战技指标.docx', context)
+                return create_dg_docx('主要战技指标.docx', context, id)

@@ -58,6 +58,9 @@ class Project(CoreModel):
     devplant = models.CharField(max_length=8, blank=True, null=True, verbose_name="开发环境",
                                 help_text="开发环境")
 
+    def __str__(self):
+        return f'项目{self.ident}-{self.name}'
+
     class Meta:
         db_table = 'project_project'
         verbose_name = "项目信息"
@@ -92,6 +95,9 @@ class Round(CoreModel):
     level = models.CharField(max_length=15, verbose_name='树状级别第一级', help_text="树状级别第一级", default='0')
     key = models.CharField(max_length=15, verbose_name='给前端的树状级别', help_text="给前端的树状级别")
     title = models.CharField(max_length=15, verbose_name='给前端的name', help_text="给前端的name")
+
+    def __str__(self):
+        return f'第{str(int(self.key) + 1)}轮次'
 
     class Meta:
         db_table = 'project_round'
@@ -133,6 +139,9 @@ class Dut(CoreModel):
     round = models.ForeignKey(to="Round", db_constraint=False, related_name="rdField", on_delete=models.CASCADE,
                               verbose_name='归属轮次', help_text='归属轮次', related_query_name='rdQuery')
 
+    def __str__(self):
+        return f'被测件:{self.name}'
+
     class Meta:
         db_table = 'project_dut'
         verbose_name = "被测件信息"
@@ -160,6 +169,9 @@ class Design(CoreModel):
                               verbose_name='归属轮次', help_text='归属轮次', related_query_name='rsQuery')
     dut = models.ForeignKey(to="Dut", db_constraint=False, related_name="rsField", on_delete=models.CASCADE,
                             verbose_name='归属轮次', help_text='归属轮次', related_query_name='rsQuery')
+
+    def __str__(self):
+        return f'设计需求:{self.name}'
 
     class Meta:
         db_table = 'project_design'
@@ -195,6 +207,9 @@ class TestDemand(CoreModel):
     otherDesign = models.ManyToManyField(to="Design", db_constraint=False, related_name="odField",
                                          related_query_name='odQuery', null=True, blank=True)
 
+    def __str__(self):
+        return f'测试项:{self.name}'
+
 class TestDemandContent(CoreModel):
     testXuQiu = models.CharField(max_length=1024, blank=True, null=True, verbose_name="测试需求条目",
                                  help_text="测试需求条目")
@@ -203,6 +218,9 @@ class TestDemandContent(CoreModel):
     testDemand = models.ForeignKey(to="TestDemand", db_constraint=False, related_name="testQField",
                                    on_delete=models.CASCADE, verbose_name='归属的测试项', help_text='归属的测试项',
                                    related_query_name='testQField')
+
+    def __str__(self):
+        return f'测试项步骤'
 
 class Case(CoreModel):
     ident = models.CharField(max_length=64, blank=True, null=True, verbose_name="用例标识", help_text="用例标识")
@@ -232,6 +250,9 @@ class Case(CoreModel):
     level = models.CharField(max_length=64, blank=True, null=True, verbose_name="树-level", help_text="树-level",
                              default=4)  # 默认为4
 
+    def __str__(self):
+        return f'测试用例:{self.name}'
+
     class Meta:
         db_table = 'project_case'
         verbose_name = "测试用例"
@@ -249,6 +270,9 @@ class CaseStep(CoreModel):
     case = models.ForeignKey(to="Case", db_constraint=False, related_name="step",
                              on_delete=models.CASCADE, verbose_name='归属的测试用例', help_text='归属的测试用例',
                              related_query_name='stepQ')
+
+    def __str__(self):
+        return f'测试用例步骤'
 
 class Problem(CoreModel):
     ident = models.CharField(max_length=64, blank=True, null=True, verbose_name="问题单标识", help_text="问题单标识")
@@ -285,6 +309,9 @@ class Problem(CoreModel):
     solve = models.TextField(verbose_name='问题处理方式', help_text='问题处理方式，该字段需要关联“status=1”', blank=True,
                              null=True)
 
+    def __str__(self):
+        return f'问题单:{self.ident}-{self.name}'
+
     class Meta:
         db_table = 'project_problem'
         verbose_name = "问题单"
@@ -298,6 +325,9 @@ class Contact(CoreModel):
     # 新增地址
     addr = models.CharField(max_length=64, blank=True, verbose_name="公司地址", help_text="公司地址")
 
+    def __str__(self):
+        return f'联系方式:{self.name}'
+
     class Meta:
         db_table = 'contact_gongsi'
         verbose_name = '委托方、研制方、测试方信息'
@@ -310,7 +340,7 @@ class Abbreviation(models.Model):
     des = models.CharField(max_length=256, verbose_name="描述", help_text="描述")
 
     def __str__(self):
-        return self.title
+        return f'缩略语:{self.title}'
 
     class Meta:
         db_table = 'project_abbreviation'

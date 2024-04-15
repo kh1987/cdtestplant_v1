@@ -2,4 +2,5 @@
 /venv
 /.idea
 /build
+/static
 *.zip

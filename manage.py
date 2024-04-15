@@ -3,11 +3,9 @@
 import os
 import sys
 
-
 def main():
     """Run administrative tasks."""
-    # 这里可设置开发环境配置 TODO:有了开发环境配置文件再设置
-    # os.environ.setdefault('DJANGO_SETTINGS_MODULE','cdtestplant_v1.config.dev')
+    # 设置为conf文件夹下dev.py
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'cdtestplant_v1.settings')
     try:
         from django.core.management import execute_from_command_line
@@ -18,7 +16,6 @@ def main():
             "forget to activate a virtual environment?"
         ) from exc
     execute_from_command_line(sys.argv)
-
 
 if __name__ == '__main__':
     main()

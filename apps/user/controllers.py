@@ -13,7 +13,9 @@ from ninja_jwt import schema
 from typing import List
 from utils.chen_response import ChenResponse
 from apps.user.schema import UserInfoOutSchema, CreateUserSchema, CreateUserOutSchema, UserRetrieveInputSchema, \
-    UserRetrieveOutSchema, UpdateDeleteUserSchema, UpdateDeleteUserOutSchema, DeleteUserSchema
+    UserRetrieveOutSchema, UpdateDeleteUserSchema, UpdateDeleteUserOutSchema, DeleteUserSchema, LogOutSchema, \
+    LogInputSchema
+from apps.user.models import OperationLog
 from utils.chen_crud import update, multi_delete
 
 Users = get_user_model()
@@ -54,7 +56,7 @@ class UserManageController(ControllerBase):
         return user
 
     # 给前端传所有用户当做字典
-    @route.get('/list',response=List[UserRetrieveOutSchema],url_name="user_list",auth=None)
+    @route.get('/list', response=List[UserRetrieveOutSchema], url_name="user_list", auth=None)
     @transaction.atomic
     def list_user(self):
         qs = Users.objects.all()
@@ -97,3 +99,16 @@ class UserManageController(ControllerBase):
                 ids.pop(item)
         # multi_delete(ids,Users)
         return ChenResponse(code=200, status=200, message="删除成功")
+
+# 操作日志接口
+@api_controller("/system/log", tags=['日志记录'], auth=JWTAuth())
+class LogController(ControllerBase):
+    @route.get("/operation_list", url_name="log_list", response=List[LogOutSchema], auth=None)
+    @paginate(MyPagination)
+    def log_list(self, data: LogInputSchema = Query(...)):
+        logs = OperationLog.objects.values('id', 'user__username', 'operate_obj', 'create_datetime',
+                                           'operate_des').order_by(
+            '-create_datetime')
+        # 根据条件搜索
+        logs = logs.filter(user__username__icontains=data.user, create_datetime__range=data.create_datetime)
+        return logs

@@ -23,6 +23,7 @@ from utils.util import MyHTMLParser
 from utils.chapter_tools.csx_chapter import create_csx_chapter_dict
 from utils.util import get_ident, get_case_ident, get_testType
 from utils.chen_response import ChenResponse
+from utils.path_utils import project_path
 
 # @api_controller("/generateJL", tags=['生成测试记录系列'], auth=JWTAuth(), permissions=[IsAuthenticated])
 @api_controller("/generateJL", tags=['生成测试记录系列'])
@@ -31,9 +32,10 @@ class GenerateControllerJL(ControllerBase):
     @transaction.atomic
     def create_caserecord(self, id: int):
         """生成测试记录表格"""
+        project_path_str = project_path(id)
         project_obj = get_object_or_404(Project, id=id)
         # 测试用例记录模版位置
-        record_template_path = Path.cwd() / 'media/form_template/jl' / '测试用例记录.docx'
+        record_template_path = Path.cwd() / 'media' / project_path_str / 'form_template/jl' / '测试用例记录.docx'
         # 打开模版文档
         doc = DocxTemplate(record_template_path)
         # 准备返回的测试类型数组的嵌套
@@ -120,7 +122,7 @@ class GenerateControllerJL(ControllerBase):
                 problem_prefix = "PT"
                 proj_ident = project_obj.ident
                 for problem in case.caseField.all():
-                    problem_list.append("_".join([problem_prefix,proj_ident,problem.ident]))
+                    problem_list.append("_".join([problem_prefix, proj_ident, problem.ident]))
                 # 组装用例的dict
                 case_dict = {
                     'name': case.name,
@@ -134,7 +136,7 @@ class GenerateControllerJL(ControllerBase):
                     'step': step_list,
                     'execution': execution_str,
                     'time': str(case.update_datetime),
-                    'problems':"、".join(problem_list)
+                    'problems': "、".join(problem_list)
                 }
                 demand_dict['item'].append(case_dict)
 
@@ -158,7 +160,7 @@ class GenerateControllerJL(ControllerBase):
 
         doc.render(context)
         try:
-            doc.save(Path.cwd() / "media/output_dir/jl" / "测试用例记录.docx")
+            doc.save(Path.cwd() / "media" / project_path_str / "output_dir/jl" / "测试用例记录.docx")
             return ChenResponse(status=200, code=200, message="文档生成成功！")
         except PermissionError as e:
             return ChenResponse(status=400, code=400, message="模版文件已打开，请关闭后再试，{0}".format(e))

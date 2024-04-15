@@ -25,6 +25,7 @@ from utils.chapter_tools.csx_chapter import create_csx_chapter_dict
 from utils.util import MyHTMLParser
 from apps.createDocument.extensions import util
 from apps.createDocument.extensions.util import create_sm_docx
+from utils.path_utils import project_path
 
 # @api_controller("/generateSM", tags=['生成说明文档系列'], auth=JWTAuth(), permissions=[IsAuthenticated])
 @api_controller("/generateSM", tags=['生成说明文档系列'])
@@ -52,14 +53,15 @@ class GenerateControllerSM(ControllerBase):
         context = {
             'std_documents': std_documents
         }
-        return create_sm_docx("技术依据文件.docx", context)
+        return create_sm_docx("技术依据文件.docx", context, id)
 
     @route.get('/create/caseList', url_name='create-caseList')
     @transaction.atomic
     def create_caseList(self, id: int):
         """创建第一轮文档"""
+        project_path_str = project_path(id)
         # 生成测试用例需要doc对象
-        case_template_doc_path = Path.cwd() / 'media/form_template/sm' / '测试用例.docx'
+        case_template_doc_path = Path.cwd() / 'media' / project_path_str / 'form_template/sm' / '测试用例.docx'
         doc = DocxTemplate(case_template_doc_path)
         project_obj = get_object_or_404(Project, id=id)
         # 先查询dict字典，查出总共有多少个testType
@@ -143,7 +145,7 @@ class GenerateControllerSM(ControllerBase):
         context["data"] = output_list
         doc.render(context)
         try:
-            doc.save(Path.cwd() / "media/output_dir/sm" / "测试用例.docx")
+            doc.save(Path.cwd() / "media" / project_path_str / "output_dir/sm" / "测试用例.docx")
             return ChenResponse(status=200, code=200, message="文档生成成功！")
         except PermissionError as e:
             return ChenResponse(status=400, code=400, message="模版文件已打开，请关闭后再试，{0}".format(e))
@@ -191,11 +193,12 @@ class GenerateControllerSM(ControllerBase):
             output_list.append(table)
         output_list = sorted(output_list, key=(lambda x: x["sort"]))
         context["data"] = output_list
-        return create_sm_docx("用例说明.docx", context)
+        return create_sm_docx("用例说明.docx", context, id)
 
     @route.get('/create/smtrack', url_name='create-smtrack')
     @transaction.atomic
     def create_smtrack(self, id: int):
+        project_path_str = project_path(id)
         project_obj = get_object_or_404(Project, id=id)
         demand_prefix = '6.2'
         design_list = []
@@ -268,9 +271,9 @@ class GenerateControllerSM(ControllerBase):
                 }
 
                 # 手动渲染tpl生成文档
-                input_file = Path.cwd() / 'media' / 'form_template' / 'sm' / '说明追踪.docx'
-                temporary_file = Path.cwd() / 'media' / 'form_template' / 'sm' / 'temporary' / '说明追踪_temp.docx'
-                out_put_file = Path.cwd() / 'media' / 'output_dir' / 'sm' / '说明追踪.docx'
+                input_file = Path.cwd() / 'media' / project_path_str / 'form_template' / 'sm' / '说明追踪.docx'
+                temporary_file = Path.cwd() / 'media' / project_path_str / 'form_template' / 'sm' / 'temporary' / '说明追踪_temp.docx'
+                out_put_file = Path.cwd() / 'media' / project_path_str / 'output_dir' / 'sm' / '说明追踪.docx'
                 doc = DocxTemplate(input_file)
                 doc.render(context)
                 doc.save(temporary_file)

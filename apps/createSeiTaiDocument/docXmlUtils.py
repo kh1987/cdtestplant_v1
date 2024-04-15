@@ -12,6 +12,8 @@ from docx.parts.image import ImagePart
 from docx.text.run import Run
 from docx.shared import Cm
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
+# 路径工具
+from utils.path_utils import project_path
 
 def getParentRunNode(node):
     """传入oxml节点对象，获取其祖先节点的CT_R"""
@@ -19,13 +21,16 @@ def getParentRunNode(node):
         return node
     return getParentRunNode(node.getparent())
 
-def generate_temp_doc(doc_type: str, round_num=None):
+def generate_temp_doc(doc_type: str, project_id: int, round_num=None):
     """ 该函数参数：
+    :param round_num: 只有回归说明和回归记录有
+    :param project_id: 项目id
     :param doc_type:大纲 sm:说明 jl:记录 bg:报告 hsm:回归测试说明 hjl:回归测试记录,默认路径为dg -> 所以如果传错就生成生成大纲了
     :return (to_tpl_file路径, seitai_final_file路径)
     """
+    project_path_str = project_path(project_id)
     # 根据传入需要处理的文档类型，自动获路径
-    prefix = Path.cwd() / 'media'
+    prefix = Path.cwd() / 'media' / project_path_str
     template_file: Path = prefix / 'form_template' / 'products' / '测评大纲.docx'
     to_tpl_file: Path = prefix / 'temp' / '测评大纲.docx'
     seitai_final_file: Path = prefix / 'final_seitai' / '测评大纲.docx'

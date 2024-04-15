@@ -1,4 +1,4 @@
-from apps.user.models import Users
+from apps.user.models import Users, OperationLog
 from django.contrib.auth.models import Group
 from ninja_schema import ModelSchema, model_validator, Schema
 from ninja_extra.exceptions import APIException
@@ -7,6 +7,7 @@ from pydantic import validator
 from datetime import datetime
 from typing import List, Optional
 from utils.chen_response import ChenResponse
+from ninja import Field
 
 UserModel = Users
 
@@ -77,3 +78,16 @@ class UpdateDeleteUserOutSchema(Schema):
 
 class DeleteUserSchema(Schema):
     ids: List[int]
+
+# 操作日志的schema
+class LogOutSchema(Schema):
+    id: int
+    user: str = Field(..., alias='user__username')
+    operate_obj: str
+    create_datetime: datetime
+    operate_des: str
+
+# 操作日志的查询
+class LogInputSchema(Schema):
+    user: str = Field("", alias='user')
+    create_datetime: List = ['2000-01-01', '9999-01-01']

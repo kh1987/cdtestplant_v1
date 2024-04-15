@@ -16,6 +16,7 @@ from typing import Union
 from apps.project.models import Dut, Project, Round
 from utils.util import get_list_dict, get_str_dict, get_ident, MyHTMLParser, get_case_ident
 from utils.chapter_tools.csx_chapter import create_csx_chapter_dict
+from utils.path_utils import project_path
 
 chinese_round_name: list = ['一', '二', '三', '四', '五', '六', '七', '八', '九', '十']
 
@@ -26,7 +27,8 @@ class GenerateControllerHJL(ControllerBase):
     @transaction.atomic
     def create_basicInformation(self, id: int):
         """生成回归测试记录的被测软件基本信息"""
-        tpl_path = Path.cwd() / 'media/form_template/hjl' / '被测软件基本信息.docx'
+        project_path_str = project_path(id)
+        tpl_path = Path.cwd() / 'media' / project_path_str / 'form_template/hjl' / '被测软件基本信息.docx'
         doc = DocxTemplate(tpl_path)
         project_obj = get_object_or_404(Project, id=id)
         # 第一轮次对象
@@ -65,7 +67,7 @@ class GenerateControllerHJL(ControllerBase):
             version_info.append({'version': so_dut.version, 'line_count': so_dut.total_code_line})
             context_round['version_info'] = version_info
             # 开始渲染每个轮次的二级文档
-            save_path = Path.cwd() / 'media/output_dir/hjl' / f"第{cname}轮被测软件基本信息.docx"
+            save_path = Path.cwd() / 'media' / project_path_str / 'output_dir/hjl' / f"第{cname}轮被测软件基本信息.docx"
             doc.render(context=context_round)
             try:
                 doc.save(save_path)
@@ -77,7 +79,8 @@ class GenerateControllerHJL(ControllerBase):
     @transaction.atomic
     def create_caseinfo(self, id: int):
         """生成回归测试记录的-{测试用例记录}"""
-        tpl_path = Path.cwd() / 'media/form_template/hjl' / '测试用例记录.docx'
+        project_path_str = project_path(id)
+        tpl_path = Path.cwd() / 'media' / project_path_str / 'form_template/hjl' / '测试用例记录.docx'
         doc = DocxTemplate(tpl_path)
         project_obj = get_object_or_404(Project, id=id)
         hround_list: QuerySet = project_obj.pField.exclude(key='0')
@@ -200,7 +203,7 @@ class GenerateControllerHJL(ControllerBase):
             output_list = sorted(output_list, key=(lambda x: x["sort"]))
             context["data"] = output_list
             # 最后渲染
-            save_path = Path.cwd() / 'media/output_dir/hjl' / f"第{cname}轮测试用例记录.docx"
+            save_path = Path.cwd() / 'media' / project_path_str / 'output_dir/hjl' / f"第{cname}轮测试用例记录.docx"
             doc.render(context)
             try:
                 doc.save(save_path)

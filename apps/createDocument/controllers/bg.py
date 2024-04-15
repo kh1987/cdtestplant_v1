@@ -21,6 +21,7 @@ from utils.util import get_str_dict, get_list_dict, create_problem_grade_str, cr
 from apps.createDocument.extensions.content_result_tool import create_round_context
 from apps.createDocument.extensions.zhui import create_bg_round1_zhui
 from apps.createDocument.extensions.solve_problem import create_one_problem_dit
+from utils.path_utils import project_path
 
 # @api_controller("/generateBG", tags=['生成报告文档系列'], auth=JWTAuth(), permissions=[IsAuthenticated])
 @api_controller("/generateBG", tags=['生成报告文档系列'])
@@ -61,7 +62,7 @@ class GenerateControllerBG(ControllerBase):
         context = {
             'std_documents': std_documents
         }
-        return create_bg_docx("技术依据文件.docx", context)
+        return create_bg_docx("技术依据文件.docx", context, id)
 
     @route.get('/create/timeaddress')
     @transaction.atomic
@@ -87,7 +88,7 @@ class GenerateControllerBG(ControllerBase):
             'exe_weave_end_date': (begin_time + timedelta(days=31)).strftime('%Y%m%d'),
             'summary_start_date': (begin_time + timedelta(days=32)).strftime('%Y%m%d'),
         }
-        return create_bg_docx('测评时间和地点.docx', context)
+        return create_bg_docx('测评时间和地点.docx', context, id)
 
     # 在报告生成多个版本被测软件基本信息
     @route.get('/create/baseInformation', url_name='create-baseInformation')
@@ -121,7 +122,7 @@ class GenerateControllerBG(ControllerBase):
             'dev_unit': project_obj.dev_unit,
             'version_info': round_list
         }
-        return create_bg_docx('被测软件基本信息.docx', context)
+        return create_bg_docx('被测软件基本信息.docx', context, id)
 
     # 生成测评完成情况
     @route.get('/create/completionstatus', url_name='create-completionstatus')
@@ -179,7 +180,7 @@ class GenerateControllerBG(ControllerBase):
             'end_time_month': date.today().month,
             'round_list': round_list
         }
-        return create_bg_docx('测评完成情况.docx', context)
+        return create_bg_docx('测评完成情况.docx', context, id)
 
     # 生成综述
     @route.get('/create/summary', url_name='create-summary')
@@ -233,7 +234,7 @@ class GenerateControllerBG(ControllerBase):
             'problem_type_str': '、'.join(problem_type_list),
             'all_str': all_str,
         }
-        return create_bg_docx('综述.docx', context)
+        return create_bg_docx('综述.docx', context, id)
 
     # 生成测试内容和结果[报告非常关键的一环-大模块] TODO:以后考虑解耦
     @route.get('/create/contentandresults_1', url_name='create-contentandresults_1')
@@ -310,7 +311,7 @@ class GenerateControllerBG(ControllerBase):
             'r1_problem_noclosed_count': problems_r1.count() - problems_r1.filter(status='1').count(),
             'r1_problem_table': create_problem_table(problems_r1),
         }
-        return create_bg_docx("测试内容和结果_第一轮次.docx", context)
+        return create_bg_docx("测试内容和结果_第一轮次.docx", context, id)
 
     # 查询除第一轮以外，生成其他轮次测试内容和结果
     @route.get('/create/contentandresults_2', url_name='create-contentandresults_2')
@@ -321,13 +322,15 @@ class GenerateControllerBG(ControllerBase):
         round_qs = project_obj.pField.filter(~Q(key='0'))
         round_str_list = [item.key for item in round_qs]
         # 每个轮次都需要生成一个测试内容和标题
+        project_path_str = project_path(id)
         for round_str in round_str_list:
             context = create_round_context(project_obj, round_str)
-            template_path = Path.cwd() / 'media' / 'form_template' / 'bg' / '测试内容和结果_第二轮次.docx'
+            template_path = Path.cwd() / 'media' / project_path_str / 'form_template' / 'bg' / '测试内容和结果_第二轮次.docx'
             doc = DocxTemplate(template_path)
             doc.render(context)
             try:
-                doc.save(Path.cwd() / "media/output_dir/bg" / f"测试内容和结果_第{context['round_id']}轮次.docx")
+                doc.save(
+                    Path.cwd() / "media" / project_path_str / "output_dir/bg" / f"测试内容和结果_第{context['round_id']}轮次.docx")
             except PermissionError as e:
                 ChenResponse(code=400, status=400, message='您已打开生成文件，请关闭后再试...')
 
@@ -358,7 +361,7 @@ class GenerateControllerBG(ControllerBase):
             'problem_count': problem_qs.count(),
             'is_JD': is_JD,
         }
-        return create_bg_docx('测试有效性充分性说明.docx', context)
+        return create_bg_docx('测试有效性充分性说明.docx', context, id)
 
     # 需求指标符合性情况
     @route.get('/create/demand_effective', url_name='create-demand_effective')
@@ -438,7 +441,7 @@ class GenerateControllerBG(ControllerBase):
             'data_yz_list': data_yz_list,
             'has_YZ': has_YZ,
         }
-        return create_bg_docx('需求指标符合性情况.docx', context)
+        return create_bg_docx('需求指标符合性情况.docx', context, id)
 
     # 软件质量评价
     @route.get('/create/quality_evaluate', url_name='create-quality_evaluate')
@@ -462,7 +465,7 @@ class GenerateControllerBG(ControllerBase):
             'comment_percent': last_dut_so.comment_line,  # 最后轮次代码注释率
             'qian_comment_rate': format(problem_count / int(last_dut_so.total_code_line) * 1000, '.4f'),
         }
-        return create_bg_docx('软件质量评价.docx', context)
+        return create_bg_docx('软件质量评价.docx', context, id)
 
     # 软件总体结论
     @route.get('/create/entire', url_name='create-entire')
@@ -488,7 +491,7 @@ class GenerateControllerBG(ControllerBase):
             'last_version': last_dut_so.version,
             'is_JD': is_JD,
         }
-        return create_bg_docx('总体结论.docx', context)
+        return create_bg_docx('总体结论.docx', context, id)
 
     # 研总需求追踪 - 注意生成每个轮次的追踪 # TODO：优先完成回归测试说明文档
     @route.get('/create/yzxq_track', url_name='create-yzxq_track')
@@ -538,9 +541,10 @@ class GenerateControllerBG(ControllerBase):
         }
 
         # 手动渲染tpl文档
-        input_file = Path.cwd() / 'media' / 'form_template' / 'bg' / '研总需归追踪.docx'
-        temporary_file = Path.cwd() / 'media' / 'form_template' / 'bg' / 'temporary' / '研总需归追踪_temp.docx'
-        out_put_file = Path.cwd() / 'media' / 'output_dir' / 'bg' / '研总需归追踪.docx'
+        project_path_str = project_path(id)
+        input_file = Path.cwd() / 'media' / project_path_str / 'form_template' / 'bg' / '研总需归追踪.docx'
+        temporary_file = Path.cwd() / 'media' / project_path_str / 'form_template' / 'bg' / 'temporary' / '研总需归追踪_temp.docx'
+        out_put_file = Path.cwd() / 'media' / project_path_str / 'output_dir' / 'bg' / '研总需归追踪.docx'
         doc = DocxTemplate(input_file)
         doc.render(context)
         doc.save(temporary_file)
@@ -563,7 +567,7 @@ class GenerateControllerBG(ControllerBase):
     @route.get('/create/problems_summary', url_name='create-problem_summary')
     @transaction.atomic
     def create_problem_summary(self, id: int):
-        tpl_doc = Path.cwd() / "media" / "form_template" / "bg" / "问题汇总表.docx"
+        tpl_doc = Path.cwd() / "media" / project_path(id) / "form_template" / "bg" / "问题汇总表.docx"
         doc = DocxTemplate(tpl_doc)
         project_obj = get_object_or_404(Project, id=id)
         problem_prefix = "_".join(['PT', project_obj.ident])
@@ -601,7 +605,7 @@ class GenerateControllerBG(ControllerBase):
 
         doc.render(context)
         try:
-            doc.save(Path.cwd() / "media/output_dir/bg" / "问题汇总表.docx")
+            doc.save(Path.cwd() / "media" / project_path(id) / "output_dir/bg" / "问题汇总表.docx")
             return ChenResponse(status=200, code=200, message="文档生成成功！")
         except PermissionError as e:
             return ChenResponse(status=400, code=400, message="模版文件已打开，请关闭后再试，{0}".format(e))

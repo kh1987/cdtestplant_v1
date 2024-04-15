@@ -20,6 +20,7 @@ from utils.util import get_list_dict, get_str_dict, MyHTMLParser, get_ident, get
 from utils.chapter_tools.csx_chapter import create_csx_chapter_dict
 from utils.chen_response import ChenResponse
 from apps.createDocument.extensions import util
+from utils.path_utils import project_path
 
 chinese_round_name: list = ['一', '二', '三', '四', '五', '六', '七', '八', '九', '十']
 
@@ -30,7 +31,8 @@ class GenerateControllerHSM(ControllerBase):
     @transaction.atomic
     def create_basicInformation(self, id: int):
         """生成回归测试说明的被测软件基本信息"""
-        tpl_path = Path.cwd() / 'media/form_template/hsm' / '被测软件基本信息.docx'
+        project_path_str = project_path(id)
+        tpl_path = Path.cwd() / 'media' / project_path_str / 'form_template/hsm' / '被测软件基本信息.docx'
         doc = DocxTemplate(tpl_path)
         project_obj: Project = get_object_or_404(Project, id=id)
         # 第一轮次对象
@@ -69,7 +71,7 @@ class GenerateControllerHSM(ControllerBase):
             version_info.append({'version': so_dut.version, 'line_count': so_dut.total_code_line})
             context_round['version_info'] = version_info
             # 开始渲染每个轮次的二级文档
-            save_path = Path.cwd() / 'media/output_dir/hsm' / f"第{cname}轮被测软件基本信息.docx"
+            save_path = Path.cwd() / 'media' / project_path_str / 'output_dir/hsm' / f"第{cname}轮被测软件基本信息.docx"
             doc.render(context=context_round)
             try:
                 doc.save(save_path)
@@ -81,7 +83,8 @@ class GenerateControllerHSM(ControllerBase):
     @transaction.atomic
     def create_docsummary(self, id: int):
         """生成回归测试说明的文档概述"""
-        tpl_path = Path.cwd() / 'media/form_template/hsm' / '文档概述.docx'
+        project_path_str = project_path(id)
+        tpl_path = Path.cwd() / 'media' / project_path_str / 'form_template/hsm' / '文档概述.docx'
         doc = DocxTemplate(tpl_path)
         project_obj = get_object_or_404(Project, id=id)
         # 非第一轮轮次对象
@@ -106,7 +109,7 @@ class GenerateControllerHSM(ControllerBase):
             round_context['current_version'] = so_dut.version
             round_context['last_version'] = so_dut_last.version
             round_context['round_chinese'] = cname
-            save_path = Path.cwd() / 'media/output_dir/hsm' / f"第{cname}轮文档概述.docx"
+            save_path = Path.cwd() / 'media' / project_path_str / 'output_dir/hsm' / f"第{cname}轮文档概述.docx"
             doc.render(context=round_context)
             try:
                 doc.save(save_path)
@@ -118,7 +121,8 @@ class GenerateControllerHSM(ControllerBase):
     @transaction.atomic
     def create_jstech(self, id: int):
         """生成回归测试说明的技术依据文件"""
-        tpl_path = Path.cwd() / 'media/form_template/hsm' / '技术依据文件.docx'
+        project_path_str = project_path(id)
+        tpl_path = Path.cwd() / 'media' / project_path_str / 'form_template/hsm' / '技术依据文件.docx'
         doc = DocxTemplate(tpl_path)
         project_obj = get_object_or_404(Project, id=id)
         duties_qs = project_obj.pdField.filter(Q(type='XQ') | Q(type='SJ') | Q(type='XY'))
@@ -159,7 +163,7 @@ class GenerateControllerHSM(ControllerBase):
             context = {
                 'std_documents': std_documents_round
             }
-            save_path = Path.cwd() / 'media/output_dir/hsm' / f"第{cname}轮技术依据文件.docx"
+            save_path = Path.cwd() / 'media' / project_path_str / 'output_dir/hsm' / f"第{cname}轮技术依据文件.docx"
             doc.render(context=context)
             try:
                 doc.save(save_path)
@@ -174,7 +178,8 @@ class GenerateControllerHSM(ControllerBase):
             生成回归测试说明的软件更改部分
             暂时没想到如何处理和报告里面软件更改部分关系
         """
-        tpl_path = Path.cwd() / 'media/form_template/hsm' / '软件更改部分.docx'
+        project_path_str = project_path(id)
+        tpl_path = Path.cwd() / 'media' / project_path_str / 'form_template/hsm' / '软件更改部分.docx'
         doc = DocxTemplate(tpl_path)
         project_obj = get_object_or_404(Project, id=id)
         context = {
@@ -211,7 +216,7 @@ class GenerateControllerHSM(ControllerBase):
             now_xq_version = xq_dut.version
             context_round['so_str'] = f"被测软件代码{now_dm_version}版本和{last_dm_version}版本"
             context_round['xq_str'] = f"，以及软件需求规格说明{now_xq_version}版本和{last_xq_version}版本"
-            save_path = Path.cwd() / 'media/output_dir/hsm' / f"第{cname}轮软件更改部分.docx"
+            save_path = Path.cwd() / 'media' / project_path_str / 'output_dir/hsm' / f"第{cname}轮软件更改部分.docx"
             doc.render(context_round)
             try:
                 doc.save(save_path)
@@ -225,7 +230,8 @@ class GenerateControllerHSM(ControllerBase):
         """
             生成非第一轮的多个测试需求
         """
-        tpl_path = Path.cwd() / 'media/form_template/hsm' / '回归测试需求.docx'
+        project_path_str = project_path(id)
+        tpl_path = Path.cwd() / 'media' / project_path_str / 'form_template/hsm' / '回归测试需求.docx'
         doc = DocxTemplate(tpl_path)
         project_obj = get_object_or_404(Project, id=id)
         # 非第一轮轮次对象
@@ -305,7 +311,7 @@ class GenerateControllerHSM(ControllerBase):
                 # 排序
             output_list = sorted(output_list, key=(lambda x: x["sort"]))
             context["data"] = output_list
-            save_path = Path.cwd() / 'media/output_dir/hsm' / f"第{cname}轮回归测试需求.docx"
+            save_path = Path.cwd() / 'media' / project_path_str / 'output_dir/hsm' / f"第{cname}轮回归测试需求.docx"
             doc.render(context)
             try:
                 doc.save(save_path)
@@ -319,7 +325,8 @@ class GenerateControllerHSM(ControllerBase):
         """
             生成非第一轮的用例说明
         """
-        tpl_path = Path.cwd() / 'media/form_template/hsm' / '回归测试用例概述.docx'
+        project_path_str = project_path(id)
+        tpl_path = Path.cwd() / 'media' / project_path_str / 'form_template/hsm' / '回归测试用例概述.docx'
         doc = DocxTemplate(tpl_path)
         project_obj = get_object_or_404(Project, id=id)
         # 非第一轮轮次对象
@@ -361,7 +368,7 @@ class GenerateControllerHSM(ControllerBase):
                 output_list.append(table)
             output_list = sorted(output_list, key=(lambda x: x["sort"]))
             context["data"] = output_list
-            save_path = Path.cwd() / 'media/output_dir/hsm' / f"第{cname}轮回归测试用例概述.docx"
+            save_path = Path.cwd() / 'media' / project_path_str / 'output_dir/hsm' / f"第{cname}轮回归测试用例概述.docx"
             doc.render(context=context)
             try:
                 doc.save(save_path)
@@ -375,7 +382,8 @@ class GenerateControllerHSM(ControllerBase):
         """
             生成非第一轮的测试用例
         """
-        tpl_path = Path.cwd() / 'media/form_template/hsm' / '测试用例.docx'
+        project_path_str = project_path(id)
+        tpl_path = Path.cwd() / 'media' / project_path_str / 'form_template/hsm' / '测试用例.docx'
         doc = DocxTemplate(tpl_path)
         project_obj = get_object_or_404(Project, id=id)
         # 非第一轮轮次对象
@@ -458,7 +466,7 @@ class GenerateControllerHSM(ControllerBase):
             output_list = sorted(output_list, key=(lambda x: x["sort"]))
             context["data"] = output_list
             context["round_han"] = cname
-            save_path = Path.cwd() / 'media/output_dir/hsm' / f"第{cname}轮测试用例.docx"
+            save_path = Path.cwd() / 'media' / project_path_str / 'output_dir/hsm' / f"第{cname}轮测试用例.docx"
             doc.render(context=context)
             try:
                 doc.save(save_path)
@@ -472,6 +480,7 @@ class GenerateControllerHSM(ControllerBase):
         """
             生成非第一轮的用例追踪
         """
+        project_path_str = project_path(id)
         project_obj = get_object_or_404(Project, id=id)
         # 非第一轮轮次对象
         hround_list: QuerySet = project_obj.pField.exclude(key='0')
@@ -548,9 +557,9 @@ class GenerateControllerHSM(ControllerBase):
             }
 
             # 手动渲染tpl生成文档
-            input_file = Path.cwd() / 'media' / 'form_template' / 'hsm' / '用例追踪.docx'
-            temporary_file = Path.cwd() / 'media' / 'form_template' / 'hsm' / 'temporary' / f'第{cname}轮用例追踪_temp.docx'
-            out_put_file = Path.cwd() / 'media' / 'output_dir' / 'hsm' / f'第{cname}轮用例追踪.docx'
+            input_file = Path.cwd() / 'media' / project_path_str / 'form_template' / 'hsm' / '用例追踪.docx'
+            temporary_file = Path.cwd() / 'media' / project_path_str / 'form_template' / 'hsm' / 'temporary' / f'第{cname}轮用例追踪_temp.docx'
+            out_put_file = Path.cwd() / 'media' / project_path_str / 'output_dir' / 'hsm' / f'第{cname}轮用例追踪.docx'
             doc = DocxTemplate(input_file)
             doc.render(context)
             doc.save(temporary_file)

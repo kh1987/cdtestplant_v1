@@ -1,9 +1,11 @@
+import shutil
+from pathlib import Path
+from shutil import copytree, rmtree
 from django.db.models import Q
 from ninja_extra import api_controller, ControllerBase, route
 from ninja_extra.permissions import IsAuthenticated
 from ninja_jwt.authentication import JWTAuth
 from typing import List
-
 from utils.chen_pagination import MyPagination
 from ninja.pagination import paginate
 from ninja import Query
@@ -11,6 +13,10 @@ from utils.chen_response import ChenResponse
 from utils.chen_crud import create, multi_delete_project
 from apps.project.models import Project, Round
 from apps.project.schemas.project import ProjectRetrieveSchema, ProjectFilterSchema, ProjectCreateInput, DeleteSchema
+from django.conf import settings
+
+media_path = Path(settings.MEDIA_ROOT)
+base_document_path = settings.BASE_DIR / 'conf/base_document'
 
 @api_controller("/testmanage/project", auth=JWTAuth(), permissions=[IsAuthenticated], tags=['项目表相关'])
 class ProjectController(ControllerBase):
@@ -56,19 +62,31 @@ class ProjectController(ControllerBase):
         if qs:
             Round.objects.create(project_id=qs.id, key='0', level='0', title='第1轮测试', name='第1轮测试',
                                  remark='第一轮测试', ident=''.join([qs.ident, '-R1']))
+            # 在新增项目时，将/conf/base_document 移动到 /media/{项目ident}/下面
+            src_dir = base_document_path
+            dist_dir = media_path / qs.ident
+            copytree(src_dir, dist_dir)  # shutil模块直接是复制并命名，如果命名文件存在则抛出FileExists异常
             return ChenResponse(code=200, status=200, message="添加项目成功，并添加第一轮测试")
 
     @route.put("/update/{project_id}")
     def update_project(self, project_id: int, payload: ProjectCreateInput):
         project = self.get_object_or_exception(Project, id=project_id)
+        ident = project.ident
         # 更新操作
         for attr, value in payload.dict().items():
             # setattr针对的是class
             setattr(project, attr, value)
         project.save()
+        # 更新项目时判断ident是否修改，如果修改则需要改动media里面文件夹名字
+        if project.ident != ident:
+            Path(media_path / ident).rename(media_path / project.ident)
         return ChenResponse(code=200, status=200, message="项目更新成功")
 
     @route.delete("/delete")
     def delete(self, data: DeleteSchema):
-        multi_delete_project(data.ids, Project)
+        idents = multi_delete_project(data.ids, Project)
+        # 查询media所属项目文件夹，并删除
+        for ident in idents:
+            project_media_path = media_path / ident
+            rmtree(project_media_path)
         return ChenResponse(message="删除成功！")

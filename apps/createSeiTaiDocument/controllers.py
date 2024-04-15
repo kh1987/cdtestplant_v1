@@ -39,7 +39,7 @@ class GenerateSeitaiController(ControllerBase):
             context['member'] = context['duty_person']
         context['entrust_unit'] = project_obj.entrust_unit
 
-        result = generate_temp_doc('dg')
+        result = generate_temp_doc('dg', id)
         if isinstance(result, dict):
             return ChenResponse(status=400, code=400, message=result.get('msg', 'dg未报出错误原因，反正在生成文档出错'))
         dg_replace_path, dg_seitai_final_path = result
@@ -74,7 +74,7 @@ class GenerateSeitaiController(ControllerBase):
             return ChenResponse(code=400, status=400, message="未找到第一轮测试中源代码被测件请添加")
         context['user_ident'] = duty_so.ref
 
-        result = generate_temp_doc('sm')
+        result = generate_temp_doc('sm', id)
         if isinstance(result, dict):
             return ChenResponse(code=400, status=400, message=result.get('msg', '无错误原因'))
         sm_to_tpl_file, sm_seitai_final_file = result
@@ -112,7 +112,7 @@ class GenerateSeitaiController(ControllerBase):
             context['isC'] = True if '1' in project_obj.language else False
             context['isCplus'] = True if '2' in project_obj.language else False
 
-        result = generate_temp_doc('jl')
+        result = generate_temp_doc('jl', id)
         if isinstance(result, dict):
             return ChenResponse(code=400, status=400, message=result.get('msg', '无错误原因'))
         jl_to_tpl_file, jl_seitai_final_file = result
@@ -142,7 +142,7 @@ class GenerateSeitaiController(ControllerBase):
             context['is_JD'] = True
         context['entrust_unit'] = project_obj.entrust_unit
 
-        result = generate_temp_doc('bg')
+        result = generate_temp_doc('bg', id)
         if isinstance(result, dict):
             return ChenResponse(status=400, code=400, message=result.get('msg', 'bg未报出错误原因，反正在生成文档出错'))
         bg_replace_path, bg_seitai_final_path = result
@@ -168,7 +168,7 @@ class GenerateSeitaiController(ControllerBase):
         context = {'name': project_obj.name, 'ident': project_obj.ident, 'sec_title': "公开",
                    'duty_person': project_obj.duty_person, 'member': member}
 
-        result = generate_temp_doc('wtd')
+        result = generate_temp_doc('wtd', id)
         if isinstance(result, dict):
             return ChenResponse(status=400, code=400, message=result.get('msg', 'wtd未报出错误原因，反正在生成文档出错'))
         wtd_replace_path, wtd_seitai_final_path = result
@@ -208,7 +208,7 @@ class GenerateSeitaiController(ControllerBase):
             if not so_dut:
                 return ChenResponse(status=400, code=400, message=f'您缺少第{cname}轮的源代码被测件')
             context['user_ref'] = so_dut.ref
-            result = generate_temp_doc('hsm', round_num=cname)
+            result = generate_temp_doc('hsm', id, round_num=cname)
             if isinstance(result, dict):
                 return ChenResponse(status=400, code=400,
                                     message=result.get('msg', 'hsm未报出错误原因，反正在生成文档出错'))
@@ -240,7 +240,7 @@ class GenerateSeitaiController(ControllerBase):
                        'round_num': int(hround.key) + 1}
             if project_obj.report_type == '9':
                 context['is_JD'] = True
-            result = generate_temp_doc('hjl', round_num=cname)
+            result = generate_temp_doc('hjl', id, round_num=cname)
             if isinstance(result, dict):
                 return ChenResponse(status=400, code=400,
                                     message=result.get('msg', 'hjl未报出错误原因，反正在生成文档出错'))
