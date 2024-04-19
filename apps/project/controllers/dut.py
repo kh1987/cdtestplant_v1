@@ -38,7 +38,7 @@ class DutController(ControllerBase):
         return qs
 
     # 添加被测件
-    @route.post("/dut/save", response=DutCreateOutSchema, url_name="dut-create")
+    @route.post("/dut/save", url_name="dut-create", response=DutCreateOutSchema)
     @transaction.atomic
     def create_dut(self, payload: DutCreateInputSchema):
         asert_dict = payload.dict(exclude_none=True)
@@ -86,7 +86,7 @@ class DutController(ControllerBase):
             for attr, value in payload.dict().items():
                 if attr == 'project_id' or attr == 'round_key':
                     continue
-                if attr == 'black_line' or attr == 'comment_line' or attr == 'pure_code_line' or attr == 'total_code_line' or attr == 'total_comment_line' or attr == 'total_line' or attr == 'mix_line':
+                if attr == 'black_line' or attr == 'code_line' or attr == 'mix_line' or attr == 'comment_line':
                     setattr(dut_qs, attr, "")
                     continue
                 if attr == 'name':

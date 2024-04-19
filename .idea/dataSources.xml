@@ -1,18 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
-    <data-source source="LOCAL" name="腾讯云服务器mysql数据库" uuid="dd9fdb27-3223-4716-b63c-315428333fd5">
-      <driver-ref>mysql.8</driver-ref>
+    <data-source source="LOCAL" name="cdtestplant_v1" uuid="2b73fc88-303c-4aa1-a8da-50bba5915b7d">
+      <driver-ref>mysql_aurora_aws</driver-ref>
       <synchronize>true</synchronize>
-      <jdbc-driver>com.mysql.cj.jdbc.Driver</jdbc-driver>
-      <jdbc-url>jdbc:mysql://111.230.103.212:3306/chengdu_test_plant_v1</jdbc-url>
-      <working-dir>$ProjectFileDir$</working-dir>
-    </data-source>
-    <data-source source="LOCAL" name="本地Mysql" uuid="67f671e3-ec51-4cef-9975-a29897d02932">
-      <driver-ref>mysql.8</driver-ref>
-      <synchronize>true</synchronize>
-      <jdbc-driver>com.mysql.cj.jdbc.Driver</jdbc-driver>
-      <jdbc-url>jdbc:mysql://localhost:3306/chengdu_test_plant_v1</jdbc-url>
+      <jdbc-driver>software.aws.rds.jdbc.mysql.Driver</jdbc-driver>
+      <jdbc-url>jdbc:mysql:aws://localhost:3306/chengdu_test_plant_v1</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
   </component>

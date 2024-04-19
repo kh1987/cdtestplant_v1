@@ -1,6 +1,6 @@
 from apps.project.models import Project
-from ninja import Field, Schema, ModelSchema
-from typing import List, Literal, Optional
+from ninja import Schema, ModelSchema
+from typing import List, Optional
 
 class ProjectRetrieveSchema(ModelSchema):
     class Config:
@@ -15,7 +15,7 @@ class ProjectFilterSchema(Schema):
     report_type: Optional[str] = None
     step: Optional[str] = None
     # 新增软件类型：新研/改造
-    soft_type: Literal[1, 2] = None
+    soft_type: str = None
 
 class ProjectCreateInput(ModelSchema):
     class Config:

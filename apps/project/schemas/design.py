@@ -1,6 +1,6 @@
 from apps.project.models import Design
 from ninja import Field, Schema, ModelSchema
-from typing import List
+from typing import List, Union
 
 # 删除schema
 class DeleteSchema(Schema):
@@ -15,7 +15,7 @@ class DesignFilterSchema(Schema):
     demandType: str = Field(None, alias='demandType')
     name: str = Field(None, alias='name')
     # 新增字段 - chapter
-    chapter:str = Field(None, alias='chapter')
+    chapter: str = Field(None, alias='chapter')
 
 class DesignModelOutSchema(ModelSchema):
     class Config:
@@ -36,19 +36,19 @@ class DesignTreeInputSchema(Schema):
 
 # 增加设计需求
 class DesignCreateOutSchema(ModelSchema):
-    class Config:
+    level: Union[str, int]
+
+    class Meta:
         model = Design
-        model_exclude = ['remark', 'sort', 'project', 'round', 'dut']
+        exclude = ['remark', 'sort', 'project', 'round', 'dut']
 
 # 新增接口schema
 class DesignCreateInputSchema(Schema):
     project_id: int = Field(..., alias="projectId")
     round_key: str = Field(..., alias="round")
-    dut_key: str = Field(...,alias="dut")
+    dut_key: str = Field(..., alias="dut")
     ident: str = Field(None, alias="ident")
     name: str = Field(None, alias="name")
-    demandType:str = Field(None, alias="demandType")
-    description : str = Field(None,alias="description")
+    demandType: str = Field(None, alias="demandType")
+    description: str = Field(None, alias="description")
     chapter: str = Field(None, alias='chapter')
-
-

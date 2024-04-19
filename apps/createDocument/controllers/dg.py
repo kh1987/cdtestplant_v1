@@ -306,7 +306,8 @@ class GenerateControllerDG(ControllerBase):
         project_round = project_qs.pField.filter(key=0).first()
         first_round_SO = project_round.rdField.filter(type='SO').first()
         version = first_round_SO.version
-        line_count = first_round_SO.total_code_line
+        line_count = int(first_round_SO.code_line) + int(first_round_SO.comment_line) + int(
+            first_round_SO.mix_line) + int(first_round_SO.black_line)
         dev_unit = project_qs.dev_unit
         # 渲染上下文
         context = {
@@ -571,9 +572,10 @@ class GenerateControllerDG(ControllerBase):
             source_dut = project_round_one.rdField.filter(type='SO').first()
             if source_dut:
                 context.update({'version': source_dut.version})
-                context.update({'size': source_dut.total_line})
-                context.update({'total_code_line': source_dut.total_code_line})
-                context.update({'comment_line': source_dut.total_comment_line})
+                context.update({'size': int(source_dut.code_line) + int(source_dut.black_line) + int(
+                    source_dut.mix_line) + int(source_dut.comment_line)})
+                context.update({'total_code_line': int(source_dut.code_line) + int(source_dut.mix_line)})
+                context.update({'comment_line': int(source_dut.comment_line) + int(source_dut.mix_line)})
                 context.update({'black_line': source_dut.black_line})
             else:
                 return ChenResponse(message='未找到源代码被测件', code=400)

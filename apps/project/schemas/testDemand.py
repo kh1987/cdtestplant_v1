@@ -1,6 +1,6 @@
 from apps.project.models import TestDemand, TestDemandContent
 from ninja import Field, Schema, ModelSchema
-from typing import List
+from typing import List, Union
 
 # 删除schema
 class DeleteSchema(Schema):
@@ -45,6 +45,8 @@ class TestDemandTreeInputSchema(Schema):
 
 # 增加测试项
 class TestDemandCreateOutSchema(ModelSchema):
+    level: Union[str, int]
+
     class Config:
         model = TestDemand
         model_exclude = ['remark', 'sort', 'project', 'round', 'dut', 'design']

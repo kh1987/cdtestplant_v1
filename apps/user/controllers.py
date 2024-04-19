@@ -105,7 +105,10 @@ class UserManageController(ControllerBase):
 class LogController(ControllerBase):
     @route.get("/operation_list", url_name="log_list", response=List[LogOutSchema], auth=None)
     @paginate(MyPagination)
-    def log_list(self, data: LogInputSchema = Query(...)):
+    def log_list(self, data: Query[LogInputSchema]):
+        for attr, value in data.model_dump().items():
+            if getattr(data, attr) is None:
+                setattr(data, attr, '')
         logs = OperationLog.objects.values('id', 'user__username', 'operate_obj', 'create_datetime',
                                            'operate_des').order_by(
             '-create_datetime')

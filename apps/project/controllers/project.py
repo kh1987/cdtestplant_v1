@@ -1,7 +1,7 @@
-import shutil
 from pathlib import Path
 from shutil import copytree, rmtree
 from django.db.models import Q
+from django.db import transaction
 from ninja_extra import api_controller, ControllerBase, route
 from ninja_extra.permissions import IsAuthenticated
 from ninja_jwt.authentication import JWTAuth
@@ -13,10 +13,9 @@ from utils.chen_response import ChenResponse
 from utils.chen_crud import create, multi_delete_project
 from apps.project.models import Project, Round
 from apps.project.schemas.project import ProjectRetrieveSchema, ProjectFilterSchema, ProjectCreateInput, DeleteSchema
-from django.conf import settings
 
-media_path = Path(settings.MEDIA_ROOT)
-base_document_path = settings.BASE_DIR / 'conf/base_document'
+media_path = Path.cwd() / 'media'
+base_document_path = Path.cwd() / 'conf/base_document'
 
 @api_controller("/testmanage/project", auth=JWTAuth(), permissions=[IsAuthenticated], tags=['项目表相关'])
 class ProjectController(ControllerBase):
@@ -32,7 +31,7 @@ class ProjectController(ControllerBase):
             start_time = "2000-01-01"
         end_time = self.context.request.GET.get('searchOnlyTimeRange[1]')
         if end_time is None:
-            end_time = '5000-01-01'
+            end_time = '9999-01-01'
         date_list = [start_time, end_time]
         # 前端返回的member
         member_list = []
@@ -52,6 +51,7 @@ class ProjectController(ControllerBase):
         return qs
 
     @route.post("/save")
+    @transaction.atomic
     def create_project(self, data: ProjectCreateInput):
         data_dict = data.dict()
         ident_qucover = Project.objects.filter(ident=data.dict()['ident'])
@@ -60,6 +60,7 @@ class ProjectController(ControllerBase):
         qs = create(self.context.request, data_dict, Project)
         # 创建项目时候添加第一轮测试
         if qs:
+            print('进入此处')
             Round.objects.create(project_id=qs.id, key='0', level='0', title='第1轮测试', name='第1轮测试',
                                  remark='第一轮测试', ident=''.join([qs.ident, '-R1']))
             # 在新增项目时，将/conf/base_document 移动到 /media/{项目ident}/下面
@@ -69,6 +70,7 @@ class ProjectController(ControllerBase):
             return ChenResponse(code=200, status=200, message="添加项目成功，并添加第一轮测试")
 
     @route.put("/update/{project_id}")
+    @transaction.atomic
     def update_project(self, project_id: int, payload: ProjectCreateInput):
         project = self.get_object_or_exception(Project, id=project_id)
         ident = project.ident
@@ -83,6 +85,7 @@ class ProjectController(ControllerBase):
         return ChenResponse(code=200, status=200, message="项目更新成功")
 
     @route.delete("/delete")
+    @transaction.atomic
     def delete(self, data: DeleteSchema):
         idents = multi_delete_project(data.ids, Project)
         # 查询media所属项目文件夹，并删除

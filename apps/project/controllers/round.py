@@ -75,4 +75,4 @@ class RoundController(ControllerBase):
                 if exist_r.ident == asert_dict['ident']:
                     return ChenResponse(code=400, status=400, message='标识和其他重复')
         qs = Round.objects.create(**asert_dict)
-        return qs
+        return ChenResponse(message="新增轮次成功")

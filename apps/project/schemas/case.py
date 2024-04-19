@@ -1,6 +1,6 @@
 from apps.project.models import Case, CaseStep
 from ninja import Field, Schema, ModelSchema
-from typing import List
+from typing import List, Union
 
 # 删除schema
 class DeleteSchema(Schema):
@@ -50,6 +50,8 @@ class CaseTreeInputSchema(Schema):
 
 # 增加测试用例
 class CaseCreateOutSchema(ModelSchema):
+    level: Union[str, int]
+
     class Config:
         model = Case
         model_exclude = ['remark', 'sort', 'project', 'round', 'dut', 'design']
@@ -59,8 +61,8 @@ class CaseInputSchema(Schema):
     operation: str = Field(None, alias="operation")
     expect: str = Field(None, alias="expect")
     result: str = Field(None, alias="result")
-    passed: str = Field(None, alias="passed")
-    status: str = Field(None, alias="status")
+    passed: str = Field('3', alias="passed")
+    status: str = Field('3', alias="status")
 
 class CaseCreateInputSchema(Schema):
     project_id: int = Field(..., alias="projectId")

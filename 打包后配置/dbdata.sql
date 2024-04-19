@@ -82,7 +82,7 @@ CREATE TABLE `auth_permission` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `auth_permission_content_type_id_codename_01ab375a_uniq` (`content_type_id`,`codename`),
   CONSTRAINT `auth_permission_content_type_id_2f476e4b_fk_django_co` FOREIGN KEY (`content_type_id`) REFERENCES `django_content_type` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=77 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=81 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -91,7 +91,7 @@ CREATE TABLE `auth_permission` (
 
 LOCK TABLES `auth_permission` WRITE;
 /*!40000 ALTER TABLE `auth_permission` DISABLE KEYS */;
-INSERT INTO `auth_permission` VALUES (1,'Can add log entry',1,'add_logentry'),(2,'Can change log entry',1,'change_logentry'),(3,'Can delete log entry',1,'delete_logentry'),(4,'Can view log entry',1,'view_logentry'),(5,'Can add permission',2,'add_permission'),(6,'Can change permission',2,'change_permission'),(7,'Can delete permission',2,'delete_permission'),(8,'Can view permission',2,'view_permission'),(9,'Can add group',3,'add_group'),(10,'Can change group',3,'change_group'),(11,'Can delete group',3,'delete_group'),(12,'Can view group',3,'view_group'),(13,'Can add content type',4,'add_contenttype'),(14,'Can change content type',4,'change_contenttype'),(15,'Can delete content type',4,'delete_contenttype'),(16,'Can view content type',4,'view_contenttype'),(17,'Can add session',5,'add_session'),(18,'Can change session',5,'change_session'),(19,'Can delete session',5,'delete_session'),(20,'Can view session',5,'view_session'),(21,'Can add 用户表',6,'add_users'),(22,'Can change 用户表',6,'change_users'),(23,'Can delete 用户表',6,'delete_users'),(24,'Can view 用户表',6,'view_users'),(25,'Can add 字典表',7,'add_dict'),(26,'Can change 字典表',7,'change_dict'),(27,'Can delete 字典表',7,'delete_dict'),(28,'Can view 字典表',7,'view_dict'),(29,'Can add 字典表item表',8,'add_dictitem'),(30,'Can change 字典表item表',8,'change_dictitem'),(31,'Can delete 字典表item表',8,'delete_dictitem'),(32,'Can view 字典表item表',8,'view_dictitem'),(33,'Can add 项目信息',9,'add_project'),(34,'Can change 项目信息',9,'change_project'),(35,'Can delete 项目信息',9,'delete_project'),(36,'Can view 项目信息',9,'view_project'),(37,'Can add 轮次信息',10,'add_round'),(38,'Can change 轮次信息',10,'change_round'),(39,'Can delete 轮次信息',10,'delete_round'),(40,'Can view 轮次信息',10,'view_round'),(41,'Can add 被测件信息',11,'add_dut'),(42,'Can change 被测件信息',11,'change_dut'),(43,'Can delete 被测件信息',11,'delete_dut'),(44,'Can view 被测件信息',11,'view_dut'),(45,'Can add 测试需求',12,'add_design'),(46,'Can change 测试需求',12,'change_design'),(47,'Can delete 测试需求',12,'delete_design'),(48,'Can view 测试需求',12,'view_design'),(49,'Can add 核心模型',13,'add_testdemand'),(50,'Can change 核心模型',13,'change_testdemand'),(51,'Can delete 核心模型',13,'delete_testdemand'),(52,'Can view 核心模型',13,'view_testdemand'),(53,'Can add 核心模型',14,'add_testdemandcontent'),(54,'Can change 核心模型',14,'change_testdemandcontent'),(55,'Can delete 核心模型',14,'delete_testdemandcontent'),(56,'Can view 核心模型',14,'view_testdemandcontent'),(57,'Can add 核心模型',15,'add_casestep'),(58,'Can change 核心模型',15,'change_casestep'),(59,'Can delete 核心模型',15,'delete_casestep'),(60,'Can view 核心模型',15,'view_casestep'),(61,'Can add 测试用例',16,'add_case'),(62,'Can change 测试用例',16,'change_case'),(63,'Can delete 测试用例',16,'delete_case'),(64,'Can view 测试用例',16,'view_case'),(65,'Can add 问题单',17,'add_problem'),(66,'Can change 问题单',17,'change_problem'),(67,'Can delete 问题单',17,'delete_problem'),(68,'Can view 问题单',17,'view_problem'),(69,'Can add 委托方、研制方、测试方信息',18,'add_contact'),(70,'Can change 委托方、研制方、测试方信息',18,'change_contact'),(71,'Can delete 委托方、研制方、测试方信息',18,'delete_contact'),(72,'Can view 委托方、研制方、测试方信息',18,'view_contact'),(73,'Can add 缩略语和行业词汇',19,'add_abbreviation'),(74,'Can change 缩略语和行业词汇',19,'change_abbreviation'),(75,'Can delete 缩略语和行业词汇',19,'delete_abbreviation'),(76,'Can view 缩略语和行业词汇',19,'view_abbreviation');
+INSERT INTO `auth_permission` VALUES (1,'Can add log entry',1,'add_logentry'),(2,'Can change log entry',1,'change_logentry'),(3,'Can delete log entry',1,'delete_logentry'),(4,'Can view log entry',1,'view_logentry'),(5,'Can add permission',2,'add_permission'),(6,'Can change permission',2,'change_permission'),(7,'Can delete permission',2,'delete_permission'),(8,'Can view permission',2,'view_permission'),(9,'Can add group',3,'add_group'),(10,'Can change group',3,'change_group'),(11,'Can delete group',3,'delete_group'),(12,'Can view group',3,'view_group'),(13,'Can add content type',4,'add_contenttype'),(14,'Can change content type',4,'change_contenttype'),(15,'Can delete content type',4,'delete_contenttype'),(16,'Can view content type',4,'view_contenttype'),(17,'Can add session',5,'add_session'),(18,'Can change session',5,'change_session'),(19,'Can delete session',5,'delete_session'),(20,'Can view session',5,'view_session'),(21,'Can add 用户表',6,'add_users'),(22,'Can change 用户表',6,'change_users'),(23,'Can delete 用户表',6,'delete_users'),(24,'Can view 用户表',6,'view_users'),(25,'Can add 字典表',7,'add_dict'),(26,'Can change 字典表',7,'change_dict'),(27,'Can delete 字典表',7,'delete_dict'),(28,'Can view 字典表',7,'view_dict'),(29,'Can add 字典表item表',8,'add_dictitem'),(30,'Can change 字典表item表',8,'change_dictitem'),(31,'Can delete 字典表item表',8,'delete_dictitem'),(32,'Can view 字典表item表',8,'view_dictitem'),(33,'Can add 项目信息',9,'add_project'),(34,'Can change 项目信息',9,'change_project'),(35,'Can delete 项目信息',9,'delete_project'),(36,'Can view 项目信息',9,'view_project'),(37,'Can add 轮次信息',10,'add_round'),(38,'Can change 轮次信息',10,'change_round'),(39,'Can delete 轮次信息',10,'delete_round'),(40,'Can view 轮次信息',10,'view_round'),(41,'Can add 被测件信息',11,'add_dut'),(42,'Can change 被测件信息',11,'change_dut'),(43,'Can delete 被测件信息',11,'delete_dut'),(44,'Can view 被测件信息',11,'view_dut'),(45,'Can add 测试需求',12,'add_design'),(46,'Can change 测试需求',12,'change_design'),(47,'Can delete 测试需求',12,'delete_design'),(48,'Can view 测试需求',12,'view_design'),(49,'Can add 核心模型',13,'add_testdemand'),(50,'Can change 核心模型',13,'change_testdemand'),(51,'Can delete 核心模型',13,'delete_testdemand'),(52,'Can view 核心模型',13,'view_testdemand'),(53,'Can add 核心模型',14,'add_testdemandcontent'),(54,'Can change 核心模型',14,'change_testdemandcontent'),(55,'Can delete 核心模型',14,'delete_testdemandcontent'),(56,'Can view 核心模型',14,'view_testdemandcontent'),(57,'Can add 核心模型',15,'add_casestep'),(58,'Can change 核心模型',15,'change_casestep'),(59,'Can delete 核心模型',15,'delete_casestep'),(60,'Can view 核心模型',15,'view_casestep'),(61,'Can add 测试用例',16,'add_case'),(62,'Can change 测试用例',16,'change_case'),(63,'Can delete 测试用例',16,'delete_case'),(64,'Can view 测试用例',16,'view_case'),(65,'Can add 问题单',17,'add_problem'),(66,'Can change 问题单',17,'change_problem'),(67,'Can delete 问题单',17,'delete_problem'),(68,'Can view 问题单',17,'view_problem'),(69,'Can add 委托方、研制方、测试方信息',18,'add_contact'),(70,'Can change 委托方、研制方、测试方信息',18,'change_contact'),(71,'Can delete 委托方、研制方、测试方信息',18,'delete_contact'),(72,'Can view 委托方、研制方、测试方信息',18,'view_contact'),(73,'Can add 缩略语和行业词汇',19,'add_abbreviation'),(74,'Can change 缩略语和行业词汇',19,'change_abbreviation'),(75,'Can delete 缩略语和行业词汇',19,'delete_abbreviation'),(76,'Can view 缩略语和行业词汇',19,'view_abbreviation'),(77,'Can add 用户操作日志表',20,'add_operationlog'),(78,'Can change 用户操作日志表',20,'change_operationlog'),(79,'Can delete 用户操作日志表',20,'delete_operationlog'),(80,'Can view 用户操作日志表',20,'view_operationlog');
 /*!40000 ALTER TABLE `auth_permission` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -173,7 +173,7 @@ CREATE TABLE `django_content_type` (
   `model` varchar(100) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `django_content_type_app_label_model_76bd3d3b_uniq` (`app_label`,`model`)
-) ENGINE=InnoDB AUTO_INCREMENT=20 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -182,7 +182,7 @@ CREATE TABLE `django_content_type` (
 
 LOCK TABLES `django_content_type` WRITE;
 /*!40000 ALTER TABLE `django_content_type` DISABLE KEYS */;
-INSERT INTO `django_content_type` VALUES (1,'admin','logentry'),(3,'auth','group'),(2,'auth','permission'),(4,'contenttypes','contenttype'),(7,'dict','dict'),(8,'dict','dictitem'),(19,'project','abbreviation'),(16,'project','case'),(15,'project','casestep'),(18,'project','contact'),(12,'project','design'),(11,'project','dut'),(17,'project','problem'),(9,'project','project'),(10,'project','round'),(13,'project','testdemand'),(14,'project','testdemandcontent'),(5,'sessions','session'),(6,'user','users');
+INSERT INTO `django_content_type` VALUES (1,'admin','logentry'),(3,'auth','group'),(2,'auth','permission'),(4,'contenttypes','contenttype'),(7,'dict','dict'),(8,'dict','dictitem'),(19,'project','abbreviation'),(16,'project','case'),(15,'project','casestep'),(18,'project','contact'),(12,'project','design'),(11,'project','dut'),(17,'project','problem'),(9,'project','project'),(10,'project','round'),(13,'project','testdemand'),(14,'project','testdemandcontent'),(5,'sessions','session'),(20,'user','operationlog'),(6,'user','users');
 /*!40000 ALTER TABLE `django_content_type` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -199,7 +199,7 @@ CREATE TABLE `django_migrations` (
   `name` varchar(255) NOT NULL,
   `applied` datetime(6) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=61 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=68 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -208,7 +208,7 @@ CREATE TABLE `django_migrations` (
 
 LOCK TABLES `django_migrations` WRITE;
 /*!40000 ALTER TABLE `django_migrations` DISABLE KEYS */;
-INSERT INTO `django_migrations` VALUES (1,'contenttypes','0001_initial','2023-07-21 11:48:05.013484'),(2,'contenttypes','0002_remove_content_type_name','2023-07-21 11:48:05.071328'),(3,'auth','0001_initial','2023-07-21 11:48:05.270795'),(4,'auth','0002_alter_permission_name_max_length','2023-07-21 11:48:05.315675'),(5,'auth','0003_alter_user_email_max_length','2023-07-21 11:48:05.321659'),(6,'auth','0004_alter_user_username_opts','2023-07-21 11:48:05.329639'),(7,'auth','0005_alter_user_last_login_null','2023-07-21 11:48:05.334624'),(8,'auth','0006_require_contenttypes_0002','2023-07-21 11:48:05.337616'),(9,'auth','0007_alter_validators_add_error_messages','2023-07-21 11:48:05.344599'),(10,'auth','0008_alter_user_username_max_length','2023-07-21 11:48:05.350581'),(11,'auth','0009_alter_user_last_name_max_length','2023-07-21 11:48:05.357563'),(12,'auth','0010_alter_group_name_max_length','2023-07-21 11:48:05.371525'),(13,'auth','0011_update_proxy_permissions','2023-07-21 11:48:05.378507'),(14,'auth','0012_alter_user_first_name_max_length','2023-07-21 11:48:05.385488'),(15,'user','0001_initial','2023-07-21 11:48:05.614950'),(16,'admin','0001_initial','2023-07-21 11:48:05.756570'),(17,'admin','0002_logentry_remove_auto_add','2023-07-21 11:48:05.764549'),(18,'admin','0003_logentry_add_action_flag_choices','2023-07-21 11:48:05.772528'),(19,'sessions','0001_initial','2023-07-21 11:48:05.799456'),(20,'dict','0001_initial','2023-07-24 09:05:57.208781'),(21,'dict','0002_alter_dict_options_alter_dictitem_options','2023-07-25 02:59:56.263591'),(22,'project','0001_initial','2023-07-25 02:59:56.301490'),(23,'project','0002_round','2023-07-25 06:58:38.927891'),(24,'project','0003_alter_round_options_dut','2023-07-25 11:14:06.859830'),(25,'project','0004_design','2023-07-31 11:23:25.528561'),(26,'project','0005_testdemand_alter_design_demandtype_and_more','2023-08-01 11:48:56.871001'),(27,'project','0006_alter_testdemand_testtype','2023-08-02 06:48:35.295572'),(28,'project','0007_alter_testdemand_termination','2023-08-02 11:47:57.363631'),(29,'project','0008_case_casestep','2023-08-02 12:47:30.549759'),(30,'project','0009_problem','2023-08-03 08:16:30.843358'),(31,'project','0010_alter_project_plant_type','2023-08-16 00:45:12.299353'),(32,'dict','0003_alter_dict_status','2023-08-16 12:02:40.431541'),(33,'dict','0004_alter_dictitem_status','2023-08-17 05:19:44.425584'),(34,'dict','0005_alter_dictitem_status','2023-08-17 05:25:01.340956'),(35,'project','0011_remove_project_dev_ident_remove_project_dev_legal_and_more','2023-08-17 08:05:48.764221'),(36,'project','0012_contact','2023-08-17 08:52:30.858415'),(37,'project','0013_project_dev_unit_project_entrust_unit_and_more','2023-08-17 10:26:25.681058'),(38,'project','0014_dut_release_date_dut_release_union_dut_version','2023-08-21 09:18:24.014443'),(39,'project','0015_design_chapter','2023-08-21 10:30:52.790804'),(40,'dict','0006_dictitem_show_title','2023-08-23 10:27:40.862859'),(41,'dict','0007_alter_dictitem_show_title','2023-08-23 10:30:38.810490'),(42,'project','0016_alter_testdemand_testmethod','2023-08-24 06:01:13.027541'),(43,'project','0017_project_config_person_project_quality_person_and_more','2023-08-24 07:46:04.927197'),(44,'dict','0008_dictitem_doc_name_dictitem_ident_and_version_and_more','2023-10-07 02:13:12.463675'),(45,'dict','0009_remove_dictitem_ident_and_version','2023-10-07 02:44:58.077899'),(46,'project','0018_contact_addr','2023-10-08 10:04:01.415498'),(47,'project','0019_dut_ref','2024-02-20 08:48:48.017083'),(48,'project','0020_alter_dut_release_date','2024-02-20 09:19:58.564603'),(49,'project','0021_abbreviation','2024-02-27 02:55:02.115740'),(50,'project','0022_project_abbreviation','2024-02-27 05:34:50.549924'),(51,'project','0023_testdemand_otherdesign_alter_testdemand_design_and_more','2024-03-01 02:35:33.457576'),(52,'project','0024_remove_testdemand_otherdesign_testdemand_otherdesign','2024-03-01 02:40:02.610344'),(53,'project','0025_remove_problem_case_problem_case','2024-03-13 13:41:24.397927'),(54,'project','0026_case_isleaf','2024-03-13 14:25:05.046570'),(55,'project','0027_alter_problem_options_remove_problem_design_and_more','2024-03-13 14:43:40.394018'),(56,'project','0028_problem_project','2024-03-13 15:02:39.918544'),(57,'project','0029_project_soft_type','2024-03-21 09:57:53.980784'),(58,'project','0030_project_devplant_project_runtime','2024-03-21 11:14:40.072223'),(59,'project','0031_alter_project_devplant_alter_project_runtime','2024-03-21 11:15:14.219503'),(60,'project','0032_problem_solve','2024-03-27 14:37:20.566158');
+INSERT INTO `django_migrations` VALUES (1,'contenttypes','0001_initial','2023-07-21 11:48:05.013484'),(2,'contenttypes','0002_remove_content_type_name','2023-07-21 11:48:05.071328'),(3,'auth','0001_initial','2023-07-21 11:48:05.270795'),(4,'auth','0002_alter_permission_name_max_length','2023-07-21 11:48:05.315675'),(5,'auth','0003_alter_user_email_max_length','2023-07-21 11:48:05.321659'),(6,'auth','0004_alter_user_username_opts','2023-07-21 11:48:05.329639'),(7,'auth','0005_alter_user_last_login_null','2023-07-21 11:48:05.334624'),(8,'auth','0006_require_contenttypes_0002','2023-07-21 11:48:05.337616'),(9,'auth','0007_alter_validators_add_error_messages','2023-07-21 11:48:05.344599'),(10,'auth','0008_alter_user_username_max_length','2023-07-21 11:48:05.350581'),(11,'auth','0009_alter_user_last_name_max_length','2023-07-21 11:48:05.357563'),(12,'auth','0010_alter_group_name_max_length','2023-07-21 11:48:05.371525'),(13,'auth','0011_update_proxy_permissions','2023-07-21 11:48:05.378507'),(14,'auth','0012_alter_user_first_name_max_length','2023-07-21 11:48:05.385488'),(15,'user','0001_initial','2023-07-21 11:48:05.614950'),(16,'admin','0001_initial','2023-07-21 11:48:05.756570'),(17,'admin','0002_logentry_remove_auto_add','2023-07-21 11:48:05.764549'),(18,'admin','0003_logentry_add_action_flag_choices','2023-07-21 11:48:05.772528'),(19,'sessions','0001_initial','2023-07-21 11:48:05.799456'),(20,'dict','0001_initial','2023-07-24 09:05:57.208781'),(21,'dict','0002_alter_dict_options_alter_dictitem_options','2023-07-25 02:59:56.263591'),(22,'project','0001_initial','2023-07-25 02:59:56.301490'),(23,'project','0002_round','2023-07-25 06:58:38.927891'),(24,'project','0003_alter_round_options_dut','2023-07-25 11:14:06.859830'),(25,'project','0004_design','2023-07-31 11:23:25.528561'),(26,'project','0005_testdemand_alter_design_demandtype_and_more','2023-08-01 11:48:56.871001'),(27,'project','0006_alter_testdemand_testtype','2023-08-02 06:48:35.295572'),(28,'project','0007_alter_testdemand_termination','2023-08-02 11:47:57.363631'),(29,'project','0008_case_casestep','2023-08-02 12:47:30.549759'),(30,'project','0009_problem','2023-08-03 08:16:30.843358'),(31,'project','0010_alter_project_plant_type','2023-08-16 00:45:12.299353'),(32,'dict','0003_alter_dict_status','2023-08-16 12:02:40.431541'),(33,'dict','0004_alter_dictitem_status','2023-08-17 05:19:44.425584'),(34,'dict','0005_alter_dictitem_status','2023-08-17 05:25:01.340956'),(35,'project','0011_remove_project_dev_ident_remove_project_dev_legal_and_more','2023-08-17 08:05:48.764221'),(36,'project','0012_contact','2023-08-17 08:52:30.858415'),(37,'project','0013_project_dev_unit_project_entrust_unit_and_more','2023-08-17 10:26:25.681058'),(38,'project','0014_dut_release_date_dut_release_union_dut_version','2023-08-21 09:18:24.014443'),(39,'project','0015_design_chapter','2023-08-21 10:30:52.790804'),(40,'dict','0006_dictitem_show_title','2023-08-23 10:27:40.862859'),(41,'dict','0007_alter_dictitem_show_title','2023-08-23 10:30:38.810490'),(42,'project','0016_alter_testdemand_testmethod','2023-08-24 06:01:13.027541'),(43,'project','0017_project_config_person_project_quality_person_and_more','2023-08-24 07:46:04.927197'),(44,'dict','0008_dictitem_doc_name_dictitem_ident_and_version_and_more','2023-10-07 02:13:12.463675'),(45,'dict','0009_remove_dictitem_ident_and_version','2023-10-07 02:44:58.077899'),(46,'project','0018_contact_addr','2023-10-08 10:04:01.415498'),(47,'project','0019_dut_ref','2024-02-20 08:48:48.017083'),(48,'project','0020_alter_dut_release_date','2024-02-20 09:19:58.564603'),(49,'project','0021_abbreviation','2024-02-27 02:55:02.115740'),(50,'project','0022_project_abbreviation','2024-02-27 05:34:50.549924'),(51,'project','0023_testdemand_otherdesign_alter_testdemand_design_and_more','2024-03-01 02:35:33.457576'),(52,'project','0024_remove_testdemand_otherdesign_testdemand_otherdesign','2024-03-01 02:40:02.610344'),(53,'project','0025_remove_problem_case_problem_case','2024-03-13 13:41:24.397927'),(54,'project','0026_case_isleaf','2024-03-13 14:25:05.046570'),(55,'project','0027_alter_problem_options_remove_problem_design_and_more','2024-03-13 14:43:40.394018'),(56,'project','0028_problem_project','2024-03-13 15:02:39.918544'),(57,'project','0029_project_soft_type','2024-03-21 09:57:53.980784'),(58,'project','0030_project_devplant_project_runtime','2024-03-21 11:14:40.072223'),(59,'project','0031_alter_project_devplant_alter_project_runtime','2024-03-21 11:15:14.219503'),(60,'project','0032_problem_solve','2024-03-27 14:37:20.566158'),(61,'user','0002_operationlog','2024-04-15 10:07:03.618210'),(62,'user','0003_remove_operationlog_update_datetime','2024-04-15 10:09:00.988266'),(63,'user','0004_remove_operationlog_table_name','2024-04-15 10:34:36.027955'),(64,'user','0005_alter_operationlog_user','2024-04-15 10:35:24.533202'),(65,'user','0006_alter_operationlog_operate_obj','2024-04-15 10:35:45.796603'),(66,'project','0033_remove_dut_comment_line_remove_dut_total_code_line_and_more','2024-04-16 13:59:59.444544'),(67,'project','0034_rename_pure_code_line_dut_code_line_and_more','2024-04-16 14:00:41.272046');
 /*!40000 ALTER TABLE `django_migrations` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -239,6 +239,34 @@ INSERT INTO `django_session` VALUES ('731p2bqujgdqncstooz97yn7c9jwi5vz','.eJytUk
 UNLOCK TABLES;
 
 --
+-- Table structure for table `operation_log`
+--
+
+DROP TABLE IF EXISTS `operation_log`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `operation_log` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `create_datetime` datetime(6) DEFAULT NULL,
+  `operate_obj` varchar(256) NOT NULL,
+  `operate_des` varchar(1024) NOT NULL,
+  `user_id` bigint DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `operation_log_user_id_dab8694c` (`user_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=203 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `operation_log`
+--
+
+LOCK TABLES `operation_log` WRITE;
+/*!40000 ALTER TABLE `operation_log` DISABLE KEYS */;
+INSERT INTO `operation_log` VALUES (158,'2024-04-15 10:37:44.072779','缩略语:阿萨德','新增',1),(159,'2024-04-15 10:38:22.546193','缩略语:阿萨德','删除',1),(160,'2024-04-15 13:13:22.636528','缩略语:asdasd','删除',1),(161,'2024-04-15 13:13:24.248076','缩略语:asdas','删除',1),(162,'2024-04-15 14:40:00.631582','项目R2233-一个正式的项目','修改',1),(163,'2024-04-15 14:40:46.317278','项目R2233-一个正式的项目','修改',1),(164,'2024-04-15 14:41:34.808968','项目R2233-一个正式的项目','修改',1),(165,'2024-04-15 14:41:53.118056','项目R2233-一个正式的项目','修改',1),(166,'2024-04-15 14:42:12.483971','项目R2233-一个正式的项目','修改',1),(167,'2024-04-15 14:43:23.374831','项目R2233-一个正式的项目','修改',1),(168,'2024-04-15 14:47:15.047989','项目R2233-一个正式的项目','修改',1),(169,'2024-04-15 14:47:20.422173','项目R2234-一个正式的项目','修改',1),(170,'2024-04-15 15:00:13.003858','项目R2231-测试文件移动','新增',1),(171,'2024-04-15 15:00:13.006850','第1轮次','新增',1),(172,'2024-04-15 15:00:36.143721','被测件:软件源代码','新增',1),(173,'2024-04-15 15:06:53.400621','被测件:软件源代码','删除',1),(174,'2024-04-15 15:06:53.402595','第1轮次','删除',1),(175,'2024-04-15 15:06:53.403628','项目R2231-测试文件移动','删除',1),(176,'2024-04-16 13:59:59.451564','Migration 0033_remove_dut_comment_line_remove_dut_total_code_line_and_more for project','新增',NULL),(177,'2024-04-16 14:00:41.273152','Migration 0034_rename_pure_code_line_dut_code_line_and_more for project','新增',NULL),(178,'2024-04-16 14:04:53.627673','被测件:软件源代码','修改',1),(179,'2024-04-16 14:09:30.412724','被测件:软件源代码','修改',1),(180,'2024-04-16 14:30:26.000919','被测件:软件源代码','修改',1),(181,'2024-04-16 14:30:47.409032','被测件:软件源代码','修改',1),(182,'2024-04-16 14:51:45.011758','被测件:软件源代码','修改',1),(183,'2024-04-16 14:52:18.336456','被测件:软件源代码','修改',1),(184,'2024-04-16 14:54:34.509187','被测件:软件源代码','修改',1),(185,'2024-04-16 14:55:34.557430','被测件:软件源代码','修改',1),(186,'2024-04-16 14:57:21.039446','被测件:软件源代码','修改',1),(187,'2024-04-16 14:57:28.514541','被测件:软件源代码','修改',1),(188,'2024-04-16 14:57:31.481169','被测件:软件源代码','修改',1),(189,'2024-04-16 15:00:08.094295','被测件:软件源代码','修改',1),(190,'2024-04-16 15:02:47.988119','被测件:软件源代码','修改',1),(191,'2024-04-16 15:05:05.958631','被测件:软件源代码','修改',1),(192,'2024-04-16 15:08:32.189308','被测件:软件源代码','修改',1),(193,'2024-04-16 15:13:16.346254','被测件:软件源代码','修改',1),(194,'2024-04-16 15:13:21.659529','被测件:软件源代码','修改',1),(195,'2024-04-16 15:13:25.453017','被测件:软件源代码','修改',1),(196,'2024-04-16 15:13:28.592352','被测件:软件源代码','修改',1),(197,'2024-04-16 15:13:42.246458','被测件:软件源代码','修改',1),(198,'2024-04-16 15:13:46.019134','被测件:软件源代码','修改',1),(199,'2024-04-16 15:21:03.483389','被测件:软件源代码','修改',1),(200,'2024-04-16 15:52:59.668307','项目R2211-123','新增',1),(201,'2024-04-16 15:52:59.670343','第1轮次','新增',1),(202,'2024-04-16 15:55:46.326404','被测件:软件源代码','新增',1);
+/*!40000 ALTER TABLE `operation_log` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `project_abbreviation`
 --
 
@@ -250,7 +278,7 @@ CREATE TABLE `project_abbreviation` (
   `title` varchar(64) NOT NULL,
   `des` varchar(256) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=37 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=74 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -259,7 +287,7 @@ CREATE TABLE `project_abbreviation` (
 
 LOCK TABLES `project_abbreviation` WRITE;
 /*!40000 ALTER TABLE `project_abbreviation` DISABLE KEYS */;
-INSERT INTO `project_abbreviation` VALUES (1,'UDP','User Datagram Protocol用户数据包协议'),(2,'TCP','Transmission Control Protocol传输控制协议'),(4,'HTML','Hyper Text Markup Language超文本标记语言'),(5,'HTTP','Hypertext Transfer Protocol超文本传输协议'),(31,'test-mlkmkk','gwfofo'),(32,'krhsra','tshbwn'),(33,'fionbj','ubtzdw'),(34,'test--puzvmt','trxnlf'),(35,'test--hjgpcv','qjufzm'),(36,'test--vomper','ififvn');
+INSERT INTO `project_abbreviation` VALUES (1,'UDP','User Datagram Protocol用户数据包协议'),(2,'TCP','Transmission Control Protocol传输控制协议'),(4,'HTML','Hyper Text Markup Language超文本标记语言'),(5,'HTTP','Hypertext Transfer Protocol超文本传输协议'),(41,'123','321'),(42,'321','321'),(43,'3412','3123');
 /*!40000 ALTER TABLE `project_abbreviation` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -404,11 +432,8 @@ CREATE TABLE `project_dut` (
   `type` varchar(16) DEFAULT NULL,
   `name` varchar(64) DEFAULT NULL,
   `black_line` varchar(64) DEFAULT NULL,
-  `pure_code_line` varchar(64) DEFAULT NULL,
+  `code_line` varchar(64) DEFAULT NULL,
   `mix_line` varchar(64) DEFAULT NULL,
-  `total_comment_line` varchar(64) DEFAULT NULL,
-  `total_code_line` varchar(64) DEFAULT NULL,
-  `total_line` varchar(64) DEFAULT NULL,
   `comment_line` varchar(64) DEFAULT NULL,
   `title` varchar(64) DEFAULT NULL,
   `key` varchar(64) DEFAULT NULL,
@@ -422,7 +447,7 @@ CREATE TABLE `project_dut` (
   PRIMARY KEY (`id`),
   KEY `project_dut_project_id_eace5041` (`project_id`),
   KEY `project_dut_round_id_6d1c076b` (`round_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=147 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=149 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -431,7 +456,7 @@ CREATE TABLE `project_dut` (
 
 LOCK TABLES `project_dut` WRITE;
 /*!40000 ALTER TABLE `project_dut` DISABLE KEYS */;
-INSERT INTO `project_dut` VALUES (39,NULL,'2024-03-29','2023-08-18',1,'R2233-R1-UT1','YZ','研制总要求A','','','','','','','','研制总要求A','0-0','1',6,13,'2023-08-21','上海微小卫星工程中心','1.01','biaoshi1'),(40,NULL,'2024-03-29','2023-08-21',1,'R2233-R1-UT2','XQ','一个需求说明','','','','','','','','一个需求说明','0-1','1',6,13,'2024-02-20','上海微小卫星工程中心','1.02','biaoshi2'),(52,NULL,'2024-03-29','2024-03-29',1,'R2233-R1-UT3','SO','软件源代码','123','123','123','123','12','3123',NULL,'软件源代码','0-2','1',6,13,'2024-03-29','上海微小卫星工程中心','1.21','SSS'),(142,NULL,'2024-04-02','2024-04-02',1,'R2233-R2-UT1','XQ','一个需求说明','','','','','','','','一个需求说明','1-0','1',6,94,'2024-04-02','上海微小卫星工程中心','1.07','biaoshi2'),(143,NULL,'2024-04-02','2024-04-02',1,'R2233-R2-UT2','SO','软件源代码','123','123','123','123','123','3123','1.00','软件源代码','1-1','1',6,94,'2024-04-02','上海微小卫星工程中心','1.24','HSM2LUN'),(145,NULL,'2024-04-02','2024-04-02',1,'R2233-R3-UT1','SO','软件源代码','123','123','123','123','123','3123','1.00','软件源代码','2-0','1',6,96,'2024-04-02','上海微小卫星工程中心','1.29','HSM9LUN'),(146,NULL,'2024-04-02','2024-04-02',1,'R2233-R3-UT2','XQ','一个需求说明','','','','','','','','一个需求说明','2-1','1',6,96,'2024-04-02','上海微小卫星工程中心','1.09','biaoshi2');
+INSERT INTO `project_dut` VALUES (39,NULL,'2024-03-29','2023-08-18',1,'R2233-R1-UT1','YZ','研制总要求A','123','123','123','123','研制总要求A','0-0','1',6,13,'2023-08-21','上海微小卫星工程中心','1.01','biaoshi1'),(40,NULL,'2024-03-29','2023-08-21',1,'R2233-R1-UT2','XQ','一个需求说明','123','123','123','123','一个需求说明','0-1','1',6,13,'2024-02-20','上海微小卫星工程中心','1.02','biaoshi2'),(52,NULL,'2024-04-16','2024-03-29',1,'R2233-R1-UT3','SO','软件源代码','1231','1232','12','232','软件源代码','0-2','1',6,13,'2024-03-29','上海微小卫星工程中心','1.21','SSS'),(142,NULL,'2024-04-02','2024-04-02',1,'R2233-R2-UT1','XQ','一个需求说明','123','123','123','123','一个需求说明','1-0','1',6,94,'2024-04-02','上海微小卫星工程中心','1.07','biaoshi2'),(143,NULL,'2024-04-02','2024-04-02',1,'R2233-R2-UT2','SO','软件源代码','123','123','123','123','软件源代码','1-1','1',6,94,'2024-04-02','上海微小卫星工程中心','1.24','HSM2LUN'),(145,NULL,'2024-04-02','2024-04-02',1,'R2233-R3-UT1','SO','软件源代码','123','123','123','123','软件源代码','2-0','1',6,96,'2024-04-02','上海微小卫星工程中心','1.29','HSM9LUN'),(146,NULL,'2024-04-02','2024-04-02',1,'R2233-R3-UT2','XQ','一个需求说明','123','123','123','123','一个需求说明','2-1','1',6,96,'2024-04-02','上海微小卫星工程中心','1.09','biaoshi2'),(148,NULL,'2024-04-16','2024-04-16',1,'R2211-R1-UT1','SO','软件源代码','123','123','123','123','软件源代码','0-0','1',8,98,'2024-04-16','上海微小卫星工程中心','V1.02','123');
 /*!40000 ALTER TABLE `project_dut` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -562,7 +587,7 @@ CREATE TABLE `project_project` (
   `devplant` varchar(8) DEFAULT NULL,
   `runtime` varchar(8) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -571,7 +596,7 @@ CREATE TABLE `project_project` (
 
 LOCK TABLES `project_project` WRITE;
 /*!40000 ALTER TABLE `project_project` DISABLE KEYS */;
-INSERT INTO `project_project` VALUES (6,NULL,'2024-04-02','2023-08-17',1,'R2233','一个正式的项目','是一个工程型号','一个分系统','一个子系统','设备信息','2023-08-02','2023-08-17','王小雷','[\"尧颖婷\", \"翁上力\", \"李鑫\", \"张敏\", \"宋敏\"]','3','[\"6\"]','[\"3\"]','9','[\"1\"]','[\"1\", \"3\"]','张广智','18888888888','314298729@qq.com','张广智','18888888888','314298729@qq.com','施敏华','18888888888','314298729@qq.com','1','上海翰讯通讯股份有限公司12','上海微小卫星工程中心','中国科学院卫星软件测评中心','王小雷','王小雷','王小雷','[\"UDP\"]',1,'1','1');
+INSERT INTO `project_project` VALUES (6,NULL,'2024-04-15','2023-08-17',1,'R2234','一个正式的项目','是一个工程型号','一个分系统','一个子系统','设备信息','2023-08-02','2023-08-17','王小雷','[\"尧颖婷\", \"翁上力\", \"李鑫\", \"张敏\", \"宋敏\"]','3','[\"6\"]','[\"3\"]','9','[\"1\"]','[\"1\", \"3\"]','张广智','18888888888','314298729@qq.com','张广智','18888888888','314298729@qq.com','施敏华','18888888888','314298729@qq.com','1','上海翰讯通讯股份有限公司12','上海微小卫星工程中心','中国科学院卫星软件测评中心','王小雷','王小雷','王小雷','[\"UDP\"]',1,'1','1'),(8,NULL,'2024-04-16','2024-04-16',1,'R2211','123','321','312','1321','123','2024-04-16','2024-04-16','王小雷','[\"王小雷\", \"翁上力\"]','3','[\"6\"]','[\"3\"]','1','[\"1\", \"5\"]','[\"1\"]',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'1','上海微小卫星工程中心','上海微小卫星工程中心','上海微小卫星工程中心','翁上力','王小雷','尧颖婷','[\"UDP\", \"TCP\"]',1,'1','1');
 /*!40000 ALTER TABLE `project_project` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -607,7 +632,7 @@ CREATE TABLE `project_round` (
   `project_id` bigint NOT NULL,
   PRIMARY KEY (`id`),
   KEY `project_round_project_id_371f4800` (`project_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=97 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=99 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -616,7 +641,7 @@ CREATE TABLE `project_round` (
 
 LOCK TABLES `project_round` WRITE;
 /*!40000 ALTER TABLE `project_round` DISABLE KEYS */;
-INSERT INTO `project_round` VALUES (13,'第一轮测试','2024-04-02','2023-08-17',1,'R2233-R1','第1轮测试','2023-08-17','2023-08-17','123','123','1','','','','','','','0','0','第1轮测试',6),(94,'第2轮测试','2024-04-02','2024-04-02',1,'R2233-R2','第2轮测试','2024-04-02','2024-04-02','123','123','1','','','','','','','0','1','第2轮测试',6),(96,'第3轮测试','2024-04-02','2024-04-02',1,'R3333-R3','第3轮测试','2024-04-02','2024-04-02','123','123','1','','','','','','','0','2','第3轮测试',6);
+INSERT INTO `project_round` VALUES (13,'第一轮测试','2024-04-02','2023-08-17',1,'R2233-R1','第1轮测试','2023-08-17','2023-08-17','123','123','1','','','','','','','0','0','第1轮测试',6),(94,'第2轮测试','2024-04-02','2024-04-02',1,'R2233-R2','第2轮测试','2024-04-02','2024-04-02','123','123','1','','','','','','','0','1','第2轮测试',6),(96,'第3轮测试','2024-04-02','2024-04-02',1,'R3333-R3','第3轮测试','2024-04-02','2024-04-02','123','123','1','','','','','','','0','2','第3轮测试',6),(98,'第一轮测试','2024-04-16','2024-04-16',1,'R2211-R1','第1轮测试','2024-04-16','2024-04-16',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'0','0','第1轮测试',8);
 /*!40000 ALTER TABLE `project_round` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -907,4 +932,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-04-10 18:44:22
+-- Dump completed on 2024-04-16 17:03:26

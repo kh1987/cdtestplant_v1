@@ -5,26 +5,25 @@
       <configuration>
         <option name="rootFolder" value="$MODULE_DIR$" />
         <option name="settingsModule" value="cdtestplant_v1/settings.py" />
-        <option name="manageScript" value="$MODULE_DIR$/manage.py" />
+        <option name="manageScript" value="manage.py" />
         <option name="environment" value="&lt;map/&gt;" />
         <option name="doNotUseTestRunner" value="false" />
-        <option name="trackFilePattern" value="migrations" />
+        <option name="trackFilePattern" value="" />
       </configuration>
     </facet>
   </component>
   <component name="NewModuleRootManager">
     <content url="file://$MODULE_DIR$">
-      <excludeFolder url="file://$MODULE_DIR$/.idea/dataSources" />
       <excludeFolder url="file://$MODULE_DIR$/venv" />
     </content>
-    <orderEntry type="jdk" jdkName="Python 3.8 (cdtestplant_v1)" jdkType="Python SDK" />
+    <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
   <component name="TemplatesService">
     <option name="TEMPLATE_CONFIGURATION" value="Django" />
     <option name="TEMPLATE_FOLDERS">
       <list>
-        <option value="$MODULE_DIR$/../cdtestplant_v1\templates" />
+        <option value="$MODULE_DIR$/dist/run/templates" />
       </list>
     </option>
   </component>

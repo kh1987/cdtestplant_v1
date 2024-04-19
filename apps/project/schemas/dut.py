@@ -1,6 +1,6 @@
 from apps.project.models import Dut
 from ninja import Field, Schema, ModelSchema
-from typing import List
+from typing import List, Union, Optional
 from datetime import date
 
 class DutModelOutSchema(ModelSchema):
@@ -37,13 +37,10 @@ class DutCreateInputSchema(Schema):
     ident: str = Field(None, alias="ident")
     name: str = Field(None, alias="name")
     type: str = Field(None, alias="type")
-    black_line: str = Field(None, alias="black_line")
-    comment_line: str = Field(None, alias="comment_line")
-    mix_line: str = Field(None, alias="mix_line")
-    pure_code_line: str = Field(None, alias="pure_code_line")
-    total_code_line: str = Field(None, alias="total_code_line")
-    total_comment_line: str = Field(None, alias="total_comment_line")
-    total_line: str = Field(None, alias="total_line")
+    black_line: Union[str, int] = Field(None, alias="black_line")
+    code_line: Union[str, int] = Field(None, alias="code_line")
+    mix_line: Union[str, int] = Field(None, alias="mix_line")
+    comment_line: Union[str, int] = Field(None, alias="comment_line")
     # 新增版本、单位、发布日期
     version: str = Field(None, alias="version")
     release_union: str = Field(None, alias="release_union")
@@ -51,7 +48,14 @@ class DutCreateInputSchema(Schema):
     # 新增用户标识
     ref: str = Field(None, alias='ref')
 
+# 不能去掉，这个决定前端动态刷新树状目录
 class DutCreateOutSchema(ModelSchema):
+    level: Union[str, int]
+    black_line: Optional[Union[str, int]] = None
+    code_line: Optional[Union[str, int]] = None
+    mix_line: Optional[Union[str, int]] = None
+    comment_line: Optional[Union[str, int]] = None
+
     class Config:
         model = Dut
         model_exclude = ['remark', 'sort', 'project', 'round']
@@ -65,11 +69,9 @@ class DutCreateR1SoDutSchema(Schema):
     project_id: int
     version: str
     ref: str = Field(..., alias='userRef')
-    release_union: str = Field(...,alias='unit')
-    release_date: date = Field(...,alias='date')
-    black_line: int = None
-    pure_code_line: int = None
-    mix_line: int = None
-    total_comment_line: int = None
-    total_code_line: int = None
-    total_line: int = None
+    release_union: str = Field(..., alias='unit')
+    release_date: date = Field(..., alias='date')
+    black_line: Union[str, int] = None
+    code_line: Union[str, int] = None
+    mix_line: Union[str, int] = None
+    comment_line: Union[str, int] = None

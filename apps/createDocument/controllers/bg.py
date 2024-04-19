@@ -108,7 +108,8 @@ class GenerateControllerBG(ControllerBase):
             so_dut: Dut = r.rdField.filter(type='SO').first()
             if so_dut:
                 round_dict['version'] = so_dut.version
-                round_dict['line_count'] = so_dut.total_code_line
+                round_dict['line_count'] = int(so_dut.mix_line) + int(so_dut.black_line) + int(
+                    so_dut.comment_line) + int(so_dut.code_line)
                 round_list.append(round_dict)
 
         context = {
@@ -463,7 +464,8 @@ class GenerateControllerBG(ControllerBase):
         context = {
             'last_version': last_dut_so.version,  # 最后轮次代码版本
             'comment_percent': last_dut_so.comment_line,  # 最后轮次代码注释率
-            'qian_comment_rate': format(problem_count / int(last_dut_so.total_code_line) * 1000, '.4f'),
+            'qian_comment_rate': format(problem_count / (int(last_dut_so.mix_line) + int(last_dut_so.black_line) + int(
+                last_dut_so.comment_line) + int(last_dut_so.code_line)) * 1000, '.4f'),
         }
         return create_bg_docx('软件质量评价.docx', context, id)
 

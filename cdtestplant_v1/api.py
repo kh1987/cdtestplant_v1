@@ -1,12 +1,20 @@
 from utils.chen_ninja import ChenNinjaAPI
 from utils.chen_response import ChenResponse
 from ninja.errors import ValidationError
+from jwt.exceptions import ExpiredSignatureError
+from ninja import Redoc
 
 api = ChenNinjaAPI(
     title="成都测试平台API",
     description="成都测试平台的接口一系列接口函数",
     urls_namespace="cdtestplant_v1",
+    docs=Redoc()
 )
+
+# 统一处理JWT过期异常
+@api.exception_handler(ExpiredSignatureError)
+def handle_expired_signature(request, exc):
+    return api.create_response(request, data=[], message="请重新登录，签名已过期", code=exc.errno)
 
 # 统一处理server异常
 # @api.exception_handler(Exception)

@@ -112,15 +112,15 @@ class Dut(CoreModel):
     name = models.CharField(max_length=64, blank=True, null=True, verbose_name="被测件名称", help_text="被测件名称")
     black_line = models.CharField(max_length=64, blank=True, null=True, verbose_name="空行代码数",
                                   help_text="空行代码数")
-    pure_code_line = models.CharField(max_length=64, blank=True, null=True, verbose_name="代码行数",
-                                      help_text="代码行数")
+    code_line = models.CharField(max_length=64, blank=True, null=True, verbose_name="纯代码行数",
+                                 help_text="纯代码行数")
     mix_line = models.CharField(max_length=64, blank=True, null=True, verbose_name="混合行数", help_text="混合行数")
-    total_comment_line = models.CharField(max_length=64, blank=True, null=True, verbose_name="总注释行",
-                                          help_text="总注释行")
-    total_code_line = models.CharField(max_length=64, blank=True, null=True, verbose_name="总代码行",
-                                       help_text="总代码行")
-    total_line = models.CharField(max_length=64, blank=True, null=True, verbose_name="总行数", help_text="总行数")
-    comment_line = models.CharField(max_length=64, blank=True, null=True, verbose_name="注释率", help_text="注释率")
+    comment_line = models.CharField(max_length=64, blank=True, null=True, verbose_name="纯注释行",
+                                    help_text="纯注释行")
+    # total_code_line = models.CharField(max_length=64, blank=True, null=True, verbose_name="总代码行",
+    #                                    help_text="总代码行")
+    # total_line = models.CharField(max_length=64, blank=True, null=True, verbose_name="总行数", help_text="总行数")
+    # comment_line = models.CharField(max_length=64, blank=True, null=True, verbose_name="注释率", help_text="注释率")
     title = models.CharField(max_length=64, blank=True, null=True, verbose_name="树-名称", help_text="树-名称")
     key = models.CharField(max_length=64, blank=True, null=True, verbose_name="树-key", help_text="树-key")
     # 被测件添加版本、发布单位、发布时间

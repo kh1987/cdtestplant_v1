@@ -53,7 +53,9 @@ class GenerateControllerHJL(ControllerBase):
             'dev_unit': project_obj.dev_unit,
         }
 
-        version_info = [{'version': round1_so_dut.version, 'line_count': round1_so_dut.total_code_line}]
+        version_info = [{'version': round1_so_dut.version,
+                         'line_count': (int(round1_so_dut.mix_line) + int(round1_so_dut.black_line) + int(
+                             round1_so_dut.comment_line) + int(round1_so_dut.code_line))}]
         # 循环回归的轮次
         for hround in hround_list:
             # 每个轮次独立渲染context
@@ -64,7 +66,9 @@ class GenerateControllerHJL(ControllerBase):
             so_dut: Dut = hround.rdField.filter(type='SO').first()
             if not so_dut:
                 return ChenResponse(code=400, status=400, message=f'您第{cname}轮次中缺少源代码被测件，请添加')
-            version_info.append({'version': so_dut.version, 'line_count': so_dut.total_code_line})
+            version_info.append(
+                {'version': so_dut.version, 'line_count': (int(so_dut.mix_line) + int(so_dut.black_line) + int(
+                    so_dut.comment_line) + int(so_dut.code_line))})
             context_round['version_info'] = version_info
             # 开始渲染每个轮次的二级文档
             save_path = Path.cwd() / 'media' / project_path_str / 'output_dir/hjl' / f"第{cname}轮被测软件基本信息.docx"
