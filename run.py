@@ -2,6 +2,8 @@ import os
 from waitress import serve
 from cdtestplant_v1.wsgi import application
 # ~~~打包添加~~~
+import orjson
+
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'cdtestplant_v1.settings')
 # ~~~打包结束~~~
 
@@ -12,4 +14,3 @@ serve(
     host='127.0.0.1',
     port=8000,
 )
-

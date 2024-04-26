@@ -1,3 +1,6 @@
+import ldap
+from django_auth_ldap.config import LDAPSearch
+
 # ================================================= #
 # *************** mysql数据库 配置  *************** #
 # ================================================= #
@@ -38,4 +41,48 @@ LOGIN_NO_CAPTCHA_AUTH = True  # 登录接口 /api/token/ 是否需要验证码�
 ENABLE_LOGIN_ANALYSIS_LOG = True  # 启动登录详细概略获取(通过调用api获取ip详细地址)
 # ================================================= #
 # ***************  接口throttle配置  *************** #
+# ================================================= #
+
+# ================================================= #
+# ***************  LDAP认证配置  *************** #
+# ================================================= #
+AUTHENTICATION_BACKENDS = [
+    'django_auth_ldap.backend.LDAPBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]
+# ldap的连接基础配置
+# AUTH_LDAP_SERVER_URI = "ldap://127.0.0.1:389"
+AUTH_LDAP_SERVER_URI = "ldap://dns.paisat.cn:389"  # ldap连接配置
+# AUTH_LDAP_BIND_DN = "cn=Manager,dc=micmiu,dc=com"
+AUTH_LDAP_BIND_DN = "CN=Administrator,CN=Users,DC=sstc,DC=ctu"  # 绑定的DN,注意大小写敏感Administrator，Users
+# AUTH_LDAP_BIND_PASSWORD = "secret"  # 管理员密码
+AUTH_LDAP_BIND_PASSWORD = "WXWX2019!!!!!!"  # 管理员密码-生产环境
+# AUTH_LDAP_USER_SEARCH = LDAPSearch("dc=micmiu,dc=com",
+#                                    ldap.SCOPE_SUBTREE, "(uid=%(user)s)")
+AUTH_LDAP_USER_SEARCH = LDAPSearch("OU=all,DC=sstc,DC=ctu",
+                                   ldap.SCOPE_SUBTREE, "(sAMAccountName=%(user)s)")
+# 如果ldap服务器是Windows的AD，需要配置上如下选项
+AUTH_LDAP_CONNECTION_OPTIONS = {
+    ldap.OPT_DEBUG_LEVEL: 1,
+    ldap.OPT_REFERRALS: 0,
+}
+# 每次LDAP认证后进行数据库更新，不包含密码
+AUTH_LDAP_ALWAYS_UPDATE_USER = True
+# 当ldap用户登录时，从ldap的用户属性对应写到django的user数据库，键为django的属性，值为ldap用户的属性
+# AUTH_LDAP_USER_ATTR_MAP = {
+#     "username": "uid",
+#     "name": "cn",
+#     "first_name": "sn",
+#     "personalWebsite": "labeledURI",
+#     "email": "mail",
+#     "password": "userPassword"
+# }
+# 看看下面是否需要password字段
+AUTH_LDAP_USER_ATTR_MAP = {
+    "username": "sAMAccountName",
+    "name": "name",
+    "email": "mail",
+}
+# ================================================= #
+# ***************  ...........配置  *************** #
 # ================================================= #

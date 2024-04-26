@@ -1,18 +1,21 @@
 from ninja_extra import api_controller, ControllerBase, route
 from ninja import Query
 from apps.dict.models import Dict, DictItem
-from apps.project.models import Contact, Abbreviation
+from apps.project.models import Contact, Abbreviation, Project
 from ninja_jwt.authentication import JWTAuth
 from ninja_extra.permissions import IsAuthenticated
 from ninja.pagination import paginate
 from utils.chen_pagination import MyPagination
 from django.db import transaction
+from django.contrib.auth import get_user_model
 from typing import List
 from utils.chen_crud import multi_delete
 from utils.chen_response import ChenResponse
 from apps.dict.schema import DictItemOut, DictOut, DictIndexInput, ChangeStautsSchemaInput, DictItemInput, DictItemOut, \
     DictItemChangeSrotInput, DictItemCreateInputSchema, DictItemUpdateInputSchema, DeleteSchema, ContactListInputSchema, \
     ContactOut, AbbreviationOut, AbbreviationListInputSchema
+
+Users = get_user_model()
 
 @api_controller("/system", tags=['字典相关'], auth=JWTAuth(), permissions=[IsAuthenticated])
 class DictController(ControllerBase):
@@ -205,6 +208,18 @@ class CommonController(ControllerBase):
         item2 = {"title": "后台公告2:关于加强前端样式能力", "created_at": "2023-09-23", "content": "由此可见这个是内容"}
         item_list.append(item2)
         return item_list
+
+    @route.get('/workplace/statistics')
+    @transaction.atomic
+    def get_statistics(self):
+        # 查询用户数量，进行的项目，项目总数，已完成项目数
+        user_count = Users.objects.count()
+        project_qs = Project.objects.all()
+        project_count = project_qs.count()
+        project_done_count = project_qs.filter(step='3').count()
+        project_processing_count = project_qs.filter(step='1').count()
+        return ChenResponse(data={'pcount': project_count, 'ucount': user_count,
+                                  'pdcount': project_done_count, 'ppcount': project_processing_count})
 
 @api_controller("/system", tags=['缩略语接口'], auth=JWTAuth(), permissions=[IsAuthenticated])
 class AbbreviationController(ControllerBase):

@@ -3,7 +3,6 @@ from django.contrib.auth.models import Group
 from ninja_schema import ModelSchema, model_validator, Schema
 from ninja_extra.exceptions import APIException
 from ninja_extra import status
-from pydantic import validator
 from datetime import datetime
 from typing import List, Optional
 from utils.chen_response import ChenResponse
@@ -34,7 +33,7 @@ class CreateUserSchema(ModelSchema):
     @model_validator("username")
     def unique_username(cls, value):
         if UserModel.objects.filter(username__icontains=value).exists():
-            return ChenResponse(code=400, status=400, message="账号重复，请重新设置")
+            raise UsernameException()
         return value
 
     def create(self):

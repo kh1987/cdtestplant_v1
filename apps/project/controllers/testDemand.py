@@ -90,7 +90,7 @@ class TestDemandController(ControllerBase):
         testDemand_qs = TestDemand.objects.get(id=id)
         for attr, value in payload.dict().items():
             if attr == 'project_id' or attr == 'round_key' or attr == 'dut_key' or attr == 'design_key':
-                continue
+                continue # 如果发现是key则不处理
             if attr == 'name':
                 setattr(testDemand_qs, "title", value)
             # 找到attr为testContent的

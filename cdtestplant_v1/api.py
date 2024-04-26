@@ -1,32 +1,35 @@
 from utils.chen_ninja import ChenNinjaAPI
 from utils.chen_response import ChenResponse
 from ninja.errors import ValidationError
-from jwt.exceptions import ExpiredSignatureError
 from ninja import Redoc
+from ninja_extra import exceptions
+# 导入解析器，渲染器
+from cdtestplant_v1.parser import MyParser
+from cdtestplant_v1.renderer import MyRenderer
 
 api = ChenNinjaAPI(
     title="成都测试平台API",
     description="成都测试平台的接口一系列接口函数",
     urls_namespace="cdtestplant_v1",
-    docs=Redoc()
+    parser=MyParser(),
+    renderer=MyRenderer()
 )
 
-# 统一处理JWT过期异常
-@api.exception_handler(ExpiredSignatureError)
-def handle_expired_signature(request, exc):
-    return api.create_response(request, data=[], message="请重新登录，签名已过期", code=exc.errno)
+""" 暂未用到该代码
+# 处理jwt错误的APIException问题
+@api.exception_handler(exceptions.APIException)
+def api_exception_handler(request, exc):
+    headers = {}
+    if isinstance(exc.detail, (list, dict)):
+        data = exc.detail
+    else:
+        data = {"detail": exc.detail}
 
-# 统一处理server异常
-# @api.exception_handler(Exception)
-# def a(request, exc):
-#     if hasattr(exc, 'errno'):
-#         return api.create_response(request, data=[], message=str(exc), code=exc.errno)
-#     else:
-#         return api.create_response(request, data=[], message=str(exc), code=500)
+    response = api.create_response(request, data, status=exc.status_code)
+    for k, v in headers.items():
+        response.setdefault(k, v)
+    return response
+"""
 
-# 字段重复-注意一旦这样，那所有ValidationError全变成这个了，注意
-# @api.exception_handler(ValidationError)
-# def validation_errors(request, exc):
-#     return ChenResponse(message="唯一标识或名字重复错误", status=400,code=400)
-
+# ninja_extra特性:自动寻找apps里面的Controller
 api.auto_discover_controllers()

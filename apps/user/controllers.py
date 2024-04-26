@@ -16,7 +16,9 @@ from apps.user.schema import UserInfoOutSchema, CreateUserSchema, CreateUserOutS
     UserRetrieveOutSchema, UpdateDeleteUserSchema, UpdateDeleteUserOutSchema, DeleteUserSchema, LogOutSchema, \
     LogInputSchema
 from apps.user.models import OperationLog
+# 工具函数
 from utils.chen_crud import update, multi_delete
+from apps.user.tools.ldap_tools import load_ldap_users
 
 Users = get_user_model()
 
@@ -35,7 +37,6 @@ class UserTokenController(TokenObtainPairController):
         return ChenResponse(code=200,
                             data={'token': str(token), 'refresh': str(refresh),
                                   'token_exp_data': datetime.utcfromtimestamp(token["exp"])})
-        # 这里自带一个/refresh接口，为默认的
 
     @route.get("/getInfo", response=UserInfoOutSchema, url_name="get_info", auth=JWTAuth())
     def get_user_info(self):
@@ -66,7 +67,7 @@ class UserManageController(ControllerBase):
     @route.get("/index", response=List[UserRetrieveOutSchema])
     @paginate(MyPagination)
     def index_user(self, filters: UserRetrieveInputSchema = Query(...)):
-        # 重要，因为前端会传空字符
+        # 重要，处理前端不传值为None的情况
         for attr, value in filters.__dict__.items():
             if getattr(filters, attr) is None:
                 setattr(filters, attr, '')
@@ -99,6 +100,14 @@ class UserManageController(ControllerBase):
                 ids.pop(item)
         # multi_delete(ids,Users)
         return ChenResponse(code=200, status=200, message="删除成功")
+
+    @route.get("/ldap", url_name='user-ldap')
+    def load_ldap(self):
+        try:
+            load_ldap_users()
+            return ChenResponse(status=200, code=200, message='加载LDAP用户成功，并同步数据库')
+        except Exception:
+            return ChenResponse(status=500, code=500, message='加载LDAP用户错误')
 
 # 操作日志接口
 @api_controller("/system/log", tags=['日志记录'], auth=JWTAuth())

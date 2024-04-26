@@ -2,6 +2,7 @@ from pathlib import Path
 import os
 from conf.env import *
 import datetime
+from django_auth_ldap.config import LDAPSearch
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -118,8 +119,8 @@ USERNAME_FIELD = 'username'
 NINJA_JWT = {
     # token类型，其他方案：SlidingToken
     "AUTH_TOKEN_CLASSES": ("ninja_jwt.tokens.AccessToken",),
-    # token失效时间，12小时失效
-    "ACCESS_TOKEN_LIFETIME": datetime.timedelta(hours=12),
+    # token失效时间，14小时失效
+    "ACCESS_TOKEN_LIFETIME": datetime.timedelta(hours=14),
     "REFRESH_TOKEN_LIFETIME": datetime.timedelta(days=1),
 }
 ALLOWED_HOSTS = ["*"]  # 线上环境设置

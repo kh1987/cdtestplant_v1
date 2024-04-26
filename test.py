@@ -1,6 +1,2 @@
-from pydantic import BaseModel
-
-class Model(BaseModel):
-    x: str
-
-print(Model(x=123))
+x = b'chenjunyi'
+print(x + b'@sstc.ctu')

@@ -13,7 +13,7 @@ class Users(AbstractUser, CoreModel):
     name = models.CharField(max_length=40, verbose_name="姓名", help_text="姓名")
     avatar = models.TextField(verbose_name="头像", null=True, blank=True, help_text="头像")
     email = models.EmailField(max_length=255, verbose_name="邮箱", null=True, blank=True, help_text="邮箱")
-    status = models.CharField(max_length=15, verbose_name='启用状态', help_text="status")
+    status = models.CharField(max_length=15, verbose_name='启用状态', help_text="status", default='1')
     job = models.CharField(max_length=255, verbose_name='工作', null=True, blank=True, help_text='工作')
     jobName = models.CharField(max_length=255, verbose_name='工作名称', null=True, blank=True, help_text='工作名称')
     organization = models.CharField(max_length=255, verbose_name='工作组织', null=True, blank=True,
@@ -25,9 +25,9 @@ class Users(AbstractUser, CoreModel):
                                     help_text='自我介绍')
     personalWebsite = models.CharField(max_length=255, verbose_name='个人网站', null=True, blank=True,
                                        help_text='个人网站')
-    phone = models.CharField(max_length=255, verbose_name="电话", null=True, blank=True, help_text="电话")
-    accountId = models.CharField(max_length=255, verbose_name="电话", null=True, blank=True, help_text="电话")
-    role = models.CharField(max_length=64, verbose_name="角色", null=True, blank=True, help_text="角色")
+    phone = models.CharField(max_length=255, verbose_name="电话", null=True, blank=True, help_text="电话", default='18888888888')
+    accountId = models.CharField(max_length=255, verbose_name="用户标识", null=True, blank=True, help_text="用户标识",default='1')
+    role = models.CharField(max_length=64, verbose_name="角色", null=True, blank=True, help_text="角色",default='user')
 
     def __str__(self):
         return f'用户账号:{self.username}-用户名:{self.name}'

@@ -8,6 +8,9 @@ from django.utils.functional import SimpleLazyObject
 from django.contrib.auth import get_user_model
 # 导入日志的模型
 from apps.user.models import OperationLog
+# 导入异常处理
+from jwt.exceptions import ExpiredSignatureError
+from utils.chen_response import ChenResponse
 
 log_manager = OperationLog.objects
 
@@ -41,7 +44,11 @@ def set_request_locals(sender, **kwargs):
     # 如果为None，则使用settings中的秘钥和['HS256']算法
     secret_key = jwt_secret or settings.SECRET_KEY
     algorithms_str = jwt_algo or 'HS256'
-    jwt_dict = jwt.decode(bearer_token, secret_key, algorithms=[algorithms_str])
+    # 解决bug:因为过期前面不跳转首页处理方式
+    try:
+        jwt_dict = jwt.decode(bearer_token, secret_key, algorithms=[algorithms_str])
+    except ExpiredSignatureError as exc:
+        return ChenResponse(status=403, code=500, message='您的token已过期，请重新登录')
     user_id = jwt_dict.get('user_id', None)
     if user_id:
         _thread_local.user = SimpleLazyObject(lambda: get_user_model().objects.get(id=user_id))
