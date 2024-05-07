@@ -30,11 +30,19 @@ def load_ldap_users(url='ldap://dns.paisat.cn:389',
         exsits = db_user.exists()
         if exsits:
             # 如果存在则更新
+            update_flag = False
             c_user = db_user.first()
-            c_user.username = user_dict['username']
-            c_user.name = user_dict['name']
-            c_user.email = user_dict['email']
-            c_user.save()
+            if c_user != user_dict['username']:
+                c_user.username = user_dict['username']
+                update_flag = True
+            if c_user.name != user_dict['name']:
+                c_user.name = user_dict['name']
+                update_flag = True
+            if c_user.email != user_dict['email']:
+                c_user.email = user_dict['email']
+                update_flag = True
+            if update_flag:
+                c_user.save()
         else:
             user_dict['remark'] = '自动同步LDAP数据用户'
             user_dict['status'] = '1'
