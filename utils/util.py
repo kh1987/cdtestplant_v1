@@ -1,9 +1,7 @@
 from apps.dict.models import Dict, DictItem
 from apps.project.models import TestDemand
 from html.parser import HTMLParser
-from django.shortcuts import get_object_or_404
 from django.db.models import QuerySet
-from typing import List, Dict, Any
 
 # 传入一个字符串数字以及字典标志code，返回真实的title名字
 def get_str_dict(a, dict_code):
@@ -24,10 +22,10 @@ def get_testType(a, dict_code):
 
 # 标识处理：获取测试需求（测试项的）生成文档的ident（标识）
 def get_ident(test_item):
-    key_index = int(test_item.key.split("-")[-1]) + 1
-    test_index = str(key_index).rjust(3, '0')
+    # key_index = int(test_item.key.split("-")[-1]) + 1
+    # test_index = str(key_index).rjust(3, '0')
     reveal_ident = "_".join(
-        ["XQ", get_testType(test_item.testType, "testType"), test_item.ident, test_index])
+        ["XQ", get_testType(test_item.testType, "testType"), test_item.ident])
     return reveal_ident
 
 # 标识处理：传入demand的ident以及case，返回case的ident

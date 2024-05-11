@@ -8,16 +8,16 @@ class DeleteSchema(Schema):
 
 # 测试项-输出schema
 class TestContentSchema(ModelSchema):
-    class Config:
+    class Meta:
         model = TestDemandContent
-        model_fields = ["testXuQiu", "testYuQi"]
+        fields = ["subName", "subDesc", "condition", "operation", "observe", "expect"]
 
 class TestDemandModelOutSchema(ModelSchema):
     testContent: List[TestContentSchema]
 
-    class Config:
+    class Meta:
         model = TestDemand
-        model_exclude = ['project', 'round', 'dut', 'design', 'remark', 'sort']
+        exclude = ['project', 'round', 'dut', 'design', 'remark', 'sort']
 
 # 查询测试项
 class TestDemandFilterSchema(Schema):
@@ -51,11 +51,16 @@ class TestDemandCreateOutSchema(ModelSchema):
         model = TestDemand
         model_exclude = ['remark', 'sort', 'project', 'round', 'dut', 'design']
 
-# 新增接口schema
+# 新增测试子项，单个子项的Schema
 class TestContentInputSchema(Schema):
-    testXuQiu: str = Field(None, alias="testXuQiu")
-    testYuQi: str = Field(None, alias="testYuQi")
+    subName: str = None
+    subDesc: str = None
+    condition: str = None
+    operation: str = None
+    observe: str = None
+    expect: str = None
 
+# 新增/更新测试项Schema
 class TestDemandCreateInputSchema(Schema):
     project_id: int = Field(..., alias="projectId")
     round_key: str = Field(..., alias="round")
@@ -65,9 +70,7 @@ class TestDemandCreateInputSchema(Schema):
     ident: str = Field(None, alias="ident")
     name: str = Field(None, alias="name")
     adequacy: str = Field(None, alias="adequacy")
-    premise: str = Field(None, alias="premise")
     priority: str = Field(None, alias="priority")
-    termination: str = Field(None, alias="termination")
     testContent: List[TestContentInputSchema] = []
     testMethod: List[str] = []
     testType: str = Field(None, alias="testType")
@@ -86,3 +89,10 @@ class TestDemandExistRelatedSchema(Schema):
     round_key: str = Field(None, alias="roundNumber")
     dut_key: str = Field(None, alias="dutNumber")
     design_key: str = Field(None, alias="designDemandNumber")
+
+# 根据design的id，testDemand数据，项目id，depth复制测试项到指定design
+class DemandCopyToDesignSchema(Schema):
+    project_id: int
+    design_id: int
+    demand_key: str
+    depth: bool = False

@@ -10,6 +10,7 @@ from django.db import transaction
 from typing import List
 from utils.chen_response import ChenResponse
 from utils.chen_crud import multi_delete_dut
+from utils.codes import HTTP_INDEX_ERROR
 from apps.project.models import Dut, Round, Project
 from django.shortcuts import get_object_or_404
 from apps.project.schemas.dut import DutModelOutSchema, DutFilterSchema, DutTreeReturnSchema, DutTreeInputSchema, \
@@ -100,7 +101,10 @@ class DutController(ControllerBase):
     @transaction.atomic
     def delete_dut(self, data: DeleteSchema):
         # 查询某一个dut对象
-        dut_single = Dut.objects.filter(id=data.ids[0])[0]
+        try:
+            dut_single = Dut.objects.filter(id=data.ids[0])[0]
+        except IndexError:
+            return ChenResponse(status=500, code=HTTP_INDEX_ERROR, message='您未选择需要删除的内容')
         # 查询出dut所属的轮次id、key
         round_id = dut_single.round.id
         round_key = dut_single.round.key

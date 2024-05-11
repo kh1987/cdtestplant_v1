@@ -1,3 +1,4 @@
+from copy import deepcopy
 from ninja_extra import api_controller, ControllerBase, route
 from ninja import Query
 from ninja_jwt.authentication import JWTAuth
@@ -9,12 +10,15 @@ from django.shortcuts import get_object_or_404
 from typing import List
 from utils.chen_response import ChenResponse
 from utils.chen_crud import multi_delete_testDemand
+from utils.codes import HTTP_INDEX_ERROR
 from apps.project.models import Design, Dut, Round, TestDemand, TestDemandContent
 from apps.project.schemas.testDemand import DeleteSchema, TestDemandModelOutSchema, TestDemandFilterSchema, \
     TestDemandTreeReturnSchema, TestDemandTreeInputSchema, TestDemandCreateOutSchema, TestDemandCreateInputSchema, \
-    TestDemandRelatedSchema, TestDemandExistRelatedSchema
+    TestDemandRelatedSchema, TestDemandExistRelatedSchema, DemandCopyToDesignSchema
 # 导入ORM
 from apps.project.models import Project
+# 导入工具
+from apps.project.tools.copyDemand import demand_copy_to_design
 
 @api_controller("/project", auth=JWTAuth(), permissions=[IsAuthenticated], tags=['测试项接口'])
 class TestDemandController(ControllerBase):
@@ -51,6 +55,12 @@ class TestDemandController(ControllerBase):
     @transaction.atomic
     def create_test_demand(self, payload: TestDemandCreateInputSchema):
         asert_dict = payload.dict(exclude_none=True)
+        # ident判重
+        project_qs = Project.objects.filter(id=payload.project_id).first()
+        if payload.ident and project_qs:
+            exists = project_qs.ptField.filter(ident=payload.ident).exists()
+            if exists:
+                return ChenResponse(code=500, status=500, message='测试项标识和其他测试项重复，请更换测试项标识!!!')
         # 构造design_key
         design_key = "".join([payload.round_key, "-", payload.dut_key, '-', payload.design_key])
         # 查询当前key应该为多少
@@ -68,8 +78,6 @@ class TestDemandController(ControllerBase):
         asert_dict.pop("dut_key")
         asert_dict.pop("design_key")
         asert_dict.pop("testContent")
-        # 对标识进行处理，获取设计需求的标识，然后存入例如RS422
-        asert_dict['ident'] = design_instance.ident
         # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         qs = TestDemand.objects.create(**asert_dict)
         # 对testContent单独处理
@@ -82,15 +90,24 @@ class TestDemandController(ControllerBase):
         TestDemandContent.objects.bulk_create(data_list)
         return qs
 
-    # 更新测试需求
+    # 更新测试项
     @route.put("/testDemand/update/{id}", response=TestDemandCreateOutSchema, url_name="testDemand-update")
     @transaction.atomic
     def update_testDemand(self, id: int, payload: TestDemandCreateInputSchema):
+        project_qs = get_object_or_404(Project, id=payload.project_id)
         # 查到当前
         testDemand_qs = TestDemand.objects.get(id=id)
+        old_ident = testDemand_qs.ident  # 用于判断是否要集体修改case的ident
         for attr, value in payload.dict().items():
+            # 判重复
+            if attr == 'ident':
+                if testDemand_qs.ident != value:  # 如果ident不和原来相等，则要判重复
+                    exists = project_qs.ptField.filter(ident=payload.ident).exists()
+                    if exists:
+                        return ChenResponse(code=500, status=500, message='更换的标识和其他测试项重复')
+
             if attr == 'project_id' or attr == 'round_key' or attr == 'dut_key' or attr == 'design_key':
-                continue # 如果发现是key则不处理
+                continue  # 如果发现是key则不处理
             if attr == 'name':
                 setattr(testDemand_qs, "title", value)
             # 找到attr为testContent的
@@ -101,20 +118,29 @@ class TestDemandController(ControllerBase):
                 # 添加测试项步骤
                 data_list = []
                 for item in value:
-                    if item['testXuQiu'] or item['testYuQi']:
+                    # 只要包含一个就可以添加一个测试子项
+                    if item['subName'] or item['subDesc'] or item['condition'] or item['operation'] or item['observe'] or item['expect']:
                         item["testDemand"] = testDemand_qs
                         data_list.append(TestDemandContent(**item))
                 TestDemandContent.objects.bulk_create(data_list)
             setattr(testDemand_qs, attr, value)
         testDemand_qs.save()
+        # ~~~5月9日：测试项更新标识后还要更新下面用例的标识~~~
+        if testDemand_qs.ident != old_ident:
+            for case in testDemand_qs.tcField.all():
+                case.ident = testDemand_qs.ident
+                case.save()
         return testDemand_qs
 
     # 删除测试需求
-    @route.delete("/testDemand/delete", url_name="design-delete")
+    @route.delete("/testDemand/delete", url_name="testDemand-delete")
     @transaction.atomic
     def delete_testDemand(self, data: DeleteSchema):
         # 根据其中一个id查询出dut_id
-        test_demand_single = TestDemand.objects.filter(id=data.ids[0])[0]
+        try:
+            test_demand_single = TestDemand.objects.filter(id=data.ids[0])[0]
+        except IndexError:
+            return ChenResponse(status=500, code=HTTP_INDEX_ERROR, message='您未选择需要删除的内容')
         design_id = test_demand_single.design.id
         design_key = test_demand_single.design.key
         multi_delete_testDemand(data.ids, TestDemand)
@@ -127,8 +153,8 @@ class TestDemandController(ControllerBase):
             single_qs.save()
         return ChenResponse(message="测试需求删除成功！")
 
-    # 查询一个项目的所以测试项
-    @route.get("/testDemand/getRelatedTestDemand", url_name="design-getRelatedTestDemand")
+    # 查询一个项目的所有测试项
+    @route.get("/testDemand/getRelatedTestDemand", url_name="testDemand-getRelatedTestDemand")
     @transaction.atomic
     def getRelatedTestDemand(self, id: int, round: str):
         project_qs = get_object_or_404(Project, id=id)
@@ -145,7 +171,7 @@ class TestDemandController(ControllerBase):
         return ChenResponse(message='获取成功', data=data_list)
 
     # 处理desgin关联testDemand接口
-    @route.post('/testDemand/solveRelatedTestDemand', url_name="design-solveRelatedTestDemand")
+    @route.post('/testDemand/solveRelatedTestDemand', url_name="testDemand-solveRelatedTestDemand")
     @transaction.atomic
     def solveRelatedTestDemand(self, data: TestDemandRelatedSchema):
         test_item_ids = data.data
@@ -177,7 +203,7 @@ class TestDemandController(ControllerBase):
         return ChenResponse(status=200, code=200, message='添加关联测试项成功...')
 
     # 找出已关联的测试项给前端的cascader
-    @route.post('/testDemand/getExistRelatedTestDemand', url_name="design-getExistRelatedTestDemand")
+    @route.post('/testDemand/getExistRelatedTestDemand', url_name="testDemand-getExistRelatedTestDemand")
     @transaction.atomic
     def getExistRelatedTestDemand(self, data: TestDemandExistRelatedSchema):
         project_qs = get_object_or_404(Project, id=data.project_id)
@@ -188,3 +214,9 @@ class TestDemandController(ControllerBase):
             for item in design_item.odField.all():
                 ids.append(item.id)
         return ids
+
+    @route.post('/testDemand/copy_to_design', url_name='testDemand-copy')
+    @transaction.atomic
+    def copy_to_design(self, data: DemandCopyToDesignSchema):
+        new_demand_key = demand_copy_to_design(data.project_id, data.demand_key, data.design_id, data.depth)
+        return ChenResponse(data={'key': new_demand_key})

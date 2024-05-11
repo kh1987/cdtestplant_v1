@@ -14,6 +14,7 @@ class CaseStepSchema(ModelSchema):
 
 class CaseModelOutSchema(ModelSchema):
     testStep: List[CaseStepSchema]
+    testType: str  # 用例额外字段，用于测试类型FT的标识给前端
 
     class Config:
         model = Case
@@ -40,7 +41,7 @@ class CaseTreeReturnSchema(Schema):
     key: str = Field(..., alias='key')
     level: str = Field(..., alias='level')
     # 3月13日新增字段，让case作为树状尾部节点
-    isLeaf: bool = Field(None, alias='isLeaf')
+    isLeaf: bool = Field(True, alias='isLeaf')
 
 class CaseTreeInputSchema(Schema):
     # 注意这里有alias
@@ -80,3 +81,11 @@ class CaseCreateInputSchema(Schema):
     initialization: str = Field('', alias='initialization')
     premise: str = Field('', alias='premise')
     testStep: List[CaseInputSchema]
+
+# 由demand创建case的输入Schema
+class DemandNodeSchema(Schema):
+    project_id: int
+    level: int = Field(3, gt=0)
+    isLeaf: bool = False
+    key: str = Field(None, alias='nodekey')
+    title: str = Field(None)

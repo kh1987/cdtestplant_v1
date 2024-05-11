@@ -8,6 +8,7 @@ from utils.chen_pagination import MyPagination
 from django.db import transaction
 from typing import List
 from utils.chen_response import ChenResponse
+from utils.codes import HTTP_INDEX_ERROR
 from apps.project.models import Design, Dut, Round, TestDemand, TestDemandContent, Case, CaseStep, Problem
 from apps.project.schemas.problem import DeleteSchema, ProblemModelOutSchema, ProblemFilterSchema, \
     ProblemTreeReturnSchema, ProblemTreeInputSchema, ProblemCreateOutSchema, ProblemCreateInputSchema, \
@@ -162,6 +163,8 @@ class ProblemController(ControllerBase):
     def delete_problem(self, data: DeleteSchema):
         # 1.查询出所有被删除id
         problems = Problem.objects.filter(id__in=data.ids)
+        if not problems.exists():
+            return ChenResponse(status=500,code=HTTP_INDEX_ERROR,message='您未选取删除内容')
         # 4.查询出当前项目id
         project_id = None
         # 2.循环该取出problem

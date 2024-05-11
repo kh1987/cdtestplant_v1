@@ -258,8 +258,13 @@ class GenerateControllerHSM(ControllerBase):
                 for (index, content) in enumerate(demand.testQField.all()):
                     content_dict = {
                         "index": index + 1,
-                        "testXuQiu": content.testXuQiu,
-                        "testYuQi": content.testYuQi
+                        "rindex": str(index + 1).rjust(2, '0'),
+                        "subName": content.subName,
+                        "subDesc": content.subDesc,
+                        "condition": content.condition,
+                        "operation": content.operation,
+                        "observe": content.observe,
+                        "expect": content.expect,
                     }
                     content_list.append(content_dict)
                 testmethod_str = ''
@@ -267,6 +272,7 @@ class GenerateControllerHSM(ControllerBase):
                     for tm_item in demand.testMethod:
                         if tm_item == dict_item_qs.key:
                             testmethod_str += dict_item_qs.title + " "
+                # 设计需求的描述，富文本
                 parser = MyHTMLParser()
                 parser.feed(demand.design.description)
                 desc_list = []
@@ -293,8 +299,6 @@ class GenerateControllerHSM(ControllerBase):
                     "test_demand_content": content_list,
                     "testMethod": testmethod_str,
                     "adequacy": demand.adequacy.replace("\n", "\a"),
-                    "termination": demand.termination.replace("\n", "\a"),
-                    "premise": demand.premise.replace("\n", "\a"),
                 }
                 list_list[type_index].append(testdemand_dict)
             # 定义渲染context字典

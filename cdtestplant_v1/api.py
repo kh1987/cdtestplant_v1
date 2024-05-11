@@ -1,9 +1,5 @@
 from utils.chen_ninja import ChenNinjaAPI
-from utils.chen_response import ChenResponse
-from ninja.errors import ValidationError
-from ninja import Redoc
-from ninja_extra import exceptions
-# 导入解析器，渲染器
+# 导入orjson解析器，渲染器，提升性能
 from cdtestplant_v1.parser import MyParser
 from cdtestplant_v1.renderer import MyRenderer
 
@@ -15,21 +11,5 @@ api = ChenNinjaAPI(
     renderer=MyRenderer()
 )
 
-""" 暂未用到该代码
-# 处理jwt错误的APIException问题
-@api.exception_handler(exceptions.APIException)
-def api_exception_handler(request, exc):
-    headers = {}
-    if isinstance(exc.detail, (list, dict)):
-        data = exc.detail
-    else:
-        data = {"detail": exc.detail}
-
-    response = api.create_response(request, data, status=exc.status_code)
-    for k, v in headers.items():
-        response.setdefault(k, v)
-    return response
-"""
-
-# ninja_extra特性:自动寻找apps里面的Controller
+# ninja_extra特性:自动寻找apps里面的controllers.py文件中被@api_controller修饰的类
 api.auto_discover_controllers()

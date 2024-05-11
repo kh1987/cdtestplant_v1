@@ -7,7 +7,7 @@ import orjson
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'cdtestplant_v1.settings')
 # ~~~打包结束~~~
 
-# waitress-wsgi服务器，知道的人很少
+# waitress-wsgi服务器
 print('接口服务器启动完毕...')
 serve(
     app=application,

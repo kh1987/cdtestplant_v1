@@ -90,3 +90,7 @@ class LogOutSchema(Schema):
 class LogInputSchema(Schema):
     user: str = Field("", alias='user')
     create_datetime: List = ['2000-01-01', '9999-01-01']
+
+# 操作日志的删除输入
+class LogDeleteInSchema(Schema):
+    day: int = Field(7, ge=0, description='删除多少天前的数据')

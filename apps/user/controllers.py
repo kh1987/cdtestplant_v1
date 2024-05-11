@@ -1,12 +1,12 @@
 from django.contrib.auth import get_user_model
-from datetime import datetime
+from datetime import datetime, timedelta
 from ninja_extra import api_controller, ControllerBase, status, route
 from ninja.pagination import paginate
 from utils.chen_pagination import MyPagination
 from ninja_extra.permissions import IsAuthenticated, IsAdminUser
 from ninja import Query
 from django.db import transaction
-from ninja_jwt.tokens import AccessToken, RefreshToken
+from ninja_jwt.tokens import RefreshToken
 from ninja_jwt.authentication import JWTAuth
 from ninja_jwt.controller import TokenObtainPairController
 from ninja_jwt import schema
@@ -14,7 +14,7 @@ from typing import List
 from utils.chen_response import ChenResponse
 from apps.user.schema import UserInfoOutSchema, CreateUserSchema, CreateUserOutSchema, UserRetrieveInputSchema, \
     UserRetrieveOutSchema, UpdateDeleteUserSchema, UpdateDeleteUserOutSchema, DeleteUserSchema, LogOutSchema, \
-    LogInputSchema
+    LogInputSchema, LogDeleteInSchema
 from apps.user.models import OperationLog
 # 工具函数
 from utils.chen_crud import update, multi_delete
@@ -29,11 +29,11 @@ class UserTokenController(TokenObtainPairController):
 
     @route.post("/login", url_name='login')
     def obtain_token(self, user_token: schema.TokenObtainPairSerializer):
-        # 注意这是TokenObtainPairSerializer的属性，但是这个schema必须在post请求里面
+        """新版本有特性，后期修改"""
+        # 注意TokenObtainPairSerializer是老版本，所以兼容，本质是TokenObtainPairInputSchema
         user = user_token._user
-        token = AccessToken.for_user(user)
         refresh = RefreshToken.for_user(user)
-        # 这里完成了用户认证了，找不到则jwt自动报错401
+        token = refresh.access_token  # type:ignore
         return ChenResponse(code=200,
                             data={'token': str(token), 'refresh': str(refresh),
                                   'token_exp_data': datetime.utcfromtimestamp(token["exp"])})
@@ -98,7 +98,7 @@ class UserManageController(ControllerBase):
         for item in ids:
             if item == 1:
                 ids.pop(item)
-        # multi_delete(ids,Users)
+        multi_delete(ids, Users)
         return ChenResponse(code=200, status=200, message="删除成功")
 
     @route.get("/ldap", url_name='user-ldap')
@@ -106,7 +106,8 @@ class UserManageController(ControllerBase):
         try:
             load_ldap_users()
             return ChenResponse(status=200, code=200, message='加载LDAP用户成功，并同步数据库')
-        except Exception:
+        except Exception as exc:
+            print(exc)
             return ChenResponse(status=500, code=500, message='加载LDAP用户错误')
 
 # 操作日志接口
@@ -124,3 +125,13 @@ class LogController(ControllerBase):
         # 根据条件搜索
         logs = logs.filter(user__username__icontains=data.user, create_datetime__range=data.create_datetime)
         return logs
+
+    @route.get('/operation_delete', url_name='log_delete', permissions=[IsAuthenticated, IsAdminUser], auth=JWTAuth())
+    def log_delete(self, data: LogDeleteInSchema = Query(...)):
+        time = datetime.now() - timedelta(days=data.day)
+        log_qs = OperationLog.objects.filter(create_datetime__lt=time)
+        log_qs.delete()
+        if data.day > 0:
+            return ChenResponse(message=f'删除{data.day}天前数据成功')
+        else:
+            return ChenResponse(message='全部日志删除成功')

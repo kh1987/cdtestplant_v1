@@ -40,6 +40,7 @@ class GenerateControllerDG(ControllerBase):
         # 查出第一轮所有testdemand
         project_round_one = project_qs.pField.filter(key=0).first()
         testDemand_qs = project_round_one.rtField.all()
+        # 遍历第一轮测试项
         for single_qs in testDemand_qs:
             type_index = type_number_list.index(int(single_qs.testType))
             # 先查询其testDemandContent信息
@@ -47,8 +48,13 @@ class GenerateControllerDG(ControllerBase):
             for (index, content) in enumerate(single_qs.testQField.all()):
                 content_dict = {
                     "index": index + 1,
-                    "testXuQiu": content.testXuQiu,
-                    "testYuQi": content.testYuQi
+                    "rindex": str(index + 1).rjust(2, '0'),
+                    "subName": content.subName,
+                    "subDesc": content.subDesc,
+                    "condition": content.condition,
+                    "operation": content.operation,
+                    "observe": content.observe,
+                    "expect": content.expect,
                 }
                 content_list.append(content_dict)
             # 查询测试项中testMethod
@@ -57,7 +63,7 @@ class GenerateControllerDG(ControllerBase):
                 for tm_item in single_qs.testMethod:
                     if tm_item == dict_item_qs.key:
                         testmethod_str += dict_item_qs.title + " "
-            # 解析富文本HTML
+            # 解析测试项上级设计需求的描述富文本HTML
             parser = MyHTMLParser()
             parser.feed(single_qs.design.description)
             desc_list = []
@@ -86,8 +92,6 @@ class GenerateControllerDG(ControllerBase):
                 "test_demand_content": content_list,
                 "testMethod": testmethod_str,
                 "adequacy": single_qs.adequacy.replace("\n", "\a"),
-                "termination": single_qs.termination.replace("\n", "\a"),
-                "premise": single_qs.premise.replace("\n", "\a"),
             }
             list_list[type_index].append(testdemand_dict)
 

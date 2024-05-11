@@ -180,13 +180,11 @@ class Design(CoreModel):
         ordering = ('key',)
 
 class TestDemand(CoreModel):
+    """测试项"""
     ident = models.CharField(max_length=64, blank=True, null=True, verbose_name="测试需求标识",
                              help_text="测试需求标识")
     name = models.CharField(max_length=64, blank=True, null=True, verbose_name="测试需求名称", help_text="测试需求名称")
     adequacy = models.CharField(max_length=256, blank=True, null=True, verbose_name="充分条件", help_text="充分条件")
-    termination = models.CharField(max_length=1024, blank=True, null=True, verbose_name="终止条件",
-                                   help_text="终止条件")
-    premise = models.CharField(max_length=256, blank=True, null=True, verbose_name="前提", help_text="前提")
     priority = models.CharField(max_length=8, blank=True, null=True, verbose_name="优先级", help_text="优先级")
     testType = models.CharField(max_length=8, null=True, blank=True, help_text="测试类型", verbose_name="测试类型",
                                 default="1")
@@ -211,22 +209,26 @@ class TestDemand(CoreModel):
         return f'测试项:{self.name}'
 
 class TestDemandContent(CoreModel):
-    testXuQiu = models.CharField(max_length=1024, blank=True, null=True, verbose_name="测试需求条目",
-                                 help_text="测试需求条目")
-    testYuQi = models.CharField(max_length=1024, blank=True, null=True, verbose_name="测试需求条目的预期",
-                                help_text="测试需求条目的预期")
+    """测试方法中的测试子项内容"""
     testDemand = models.ForeignKey(to="TestDemand", db_constraint=False, related_name="testQField",
                                    on_delete=models.CASCADE, verbose_name='归属的测试项', help_text='归属的测试项',
                                    related_query_name='testQField')
+    # 5月8日修改测试项内容/即测试项方法条目
+    subName = models.CharField(max_length=1024, blank=True, null=True, verbose_name='测试子项名称')
+    subDesc = models.CharField(max_length=1024, blank=True, null=True, verbose_name='测试子项描述-对应表格测试项描述')
+    condition = models.CharField(max_length=1024, blank=True, null=True, verbose_name='测试子项具体条件')
+    operation = models.CharField(max_length=3072, blank=True, null=True, verbose_name='测试子项操作')
+    observe = models.CharField(max_length=1024, blank=True, null=True, verbose_name='测试子项观察')
+    expect = models.CharField(max_length=1024, blank=True, null=True, verbose_name='期望')
 
     def __str__(self):
-        return f'测试项步骤'
+        return f'测试子项:{self.subName}'
 
 class Case(CoreModel):
     ident = models.CharField(max_length=64, blank=True, null=True, verbose_name="用例标识", help_text="用例标识")
     name = models.CharField(max_length=64, blank=True, null=True, verbose_name="用例名称", help_text="用例名称")
     initialization = models.CharField(max_length=128, blank=True, null=True, verbose_name="初始条件",
-                                      help_text="用例名称")
+                                      help_text="初始化条件")
     premise = models.CharField(max_length=128, blank=True, null=True, verbose_name="前提和约束", help_text="前提和约束")
     summarize = models.CharField(max_length=256, blank=True, null=True, verbose_name="用例综述", help_text="用例综述")
     designPerson = models.CharField(max_length=16, blank=True, null=True, verbose_name="设计人员", help_text="设计人员")

@@ -1,3 +1,4 @@
+from copy import deepcopy
 from ninja_extra import api_controller, ControllerBase, route
 from ninja import Query
 from ninja_jwt.authentication import JWTAuth
@@ -5,12 +6,16 @@ from ninja_extra.permissions import IsAuthenticated
 from ninja.pagination import paginate
 from utils.chen_pagination import MyPagination
 from django.db import transaction
+from django.shortcuts import get_object_or_404
 from typing import List
 from utils.chen_response import ChenResponse
-from utils.chen_crud import multi_delete, multi_delete_case
-from apps.project.models import Design, Dut, Round, TestDemand, TestDemandContent, Case, CaseStep
+from utils.chen_crud import multi_delete_case
+from apps.project.models import Design, Dut, Round, TestDemand, Case, CaseStep, Project
 from apps.project.schemas.case import DeleteSchema, CaseModelOutSchema, CaseFilterSchema, CaseTreeReturnSchema, \
-    CaseTreeInputSchema, CaseTreeInputSchema, CaseCreateOutSchema, CaseCreateInputSchema
+    CaseTreeInputSchema, CaseCreateOutSchema, CaseCreateInputSchema, DemandNodeSchema
+from utils.util import get_testType
+from utils.codes import HTTP_INDEX_ERROR, HTTP_EXISTS_CASES
+from apps.project.tools.copyCase import case_move_to_test, case_copy_to_test, case_to_case_copy_or_move
 
 @api_controller("/project", auth=JWTAuth(), permissions=[IsAuthenticated], tags=['测试用例接口'])
 class CaseController(ControllerBase):
@@ -35,6 +40,8 @@ class CaseController(ControllerBase):
         query_list = []
         for query_single in qs:
             setattr(query_single, "testStep", query_single.step.all().values())
+            # 增加一个字段，测试类型例如：FT
+            setattr(query_single, 'testType', get_testType(query_single.test.testType, dict_code='testType'))
             query_list.append(query_single)
         return query_list
 
@@ -119,8 +126,11 @@ class CaseController(ControllerBase):
     @route.delete("/case/delete", url_name="case-delete")
     @transaction.atomic
     def delete_case(self, data: DeleteSchema):
-        # 根据其中一个id查询出dut_id
-        case_single = Case.objects.filter(id=data.ids[0])[0]
+        # 根据其中一个id查询出dut_id，注意这里解决前端框架问题：删除后还报错选择的行id
+        try:
+            case_single = Case.objects.filter(id=data.ids[0])[0]
+        except IndexError:
+            return ChenResponse(status=500, code=HTTP_INDEX_ERROR, message='您未选择需要删除的内容')
         test_id = case_single.test.id
         test_key = case_single.test.key
         multi_delete_case(data.ids, Case)
@@ -132,3 +142,65 @@ class CaseController(ControllerBase):
             index = index + 1
             single_qs.save()
         return ChenResponse(message="测试用例删除成功！")
+
+    @route.post("/case/create_by_demand", url_name='case-create-by-demand')
+    def create_case_by_demand(self, demand_node: DemandNodeSchema):
+        project_qs = get_object_or_404(Project, id=demand_node.project_id)
+        if demand_node.key and demand_node.key != '':
+            demand = get_object_or_404(TestDemand, key=demand_node.key, project=project_qs)
+            # 先查询当前测试项下面有无case
+            case_exists = demand.tcField.exists()
+            if case_exists:
+                return ChenResponse(status=500, code=HTTP_EXISTS_CASES, message='测试项下面有用例，请删除后生成')
+            # 查询所有测试子项
+            sub_items = demand.testQField.all()
+            # 每一个子项都创建一个用例，先声明一个列表，后面可以bulk_create
+            index = 0
+            for sub in sub_items:
+                user_name = self.context.request.user.name
+                case_dict = {
+                    'ident': demand.ident,
+                    'name': sub.subName,
+                    'initialization': '软件正常启动，正常运行',
+                    'premise': '软件正常启动，外部接口运行正常',
+                    'summarize': sub.subDesc,
+                    'designPerson': user_name,
+                    'testPerson': user_name,
+                    'monitorPerson': user_name,
+                    'project': project_qs,
+                    'round': demand.round,
+                    'dut': demand.dut,
+                    'design': demand.design,
+                    'test': demand,
+                    'title': sub.subName,
+                    'key': ''.join([demand_node.key, '-', str(index)]),
+                    'level': '4',
+                }
+                case_model = Case.objects.create(**case_dict)
+                # 创建用例步骤
+                case_step_dict = {
+                    'operation': "".join([sub.condition, '，', sub.operation, '，', sub.observe]),
+                    'expect': sub.expect,
+                    'result': '',  # 暂时为空
+                    'case': case_model,
+                }
+                CaseStep.objects.create(**case_step_dict)
+                index += 1
+        # 这里返回一个demand的key用于前端刷新树状图
+        return ChenResponse(data={'key': demand_node.key}, status=200, code=200, message='测试项自动生成用例成功')
+
+    @route.get("/case/copy_or_move_to_demand", url_name='case-copy-move-demand')
+    @transaction.atomic
+    def copy_move_case_to_demand(self, project_id: int, case_key: str, demand_key: str, move: bool):
+        if move:  # 移动
+            old_key, new_key = case_move_to_test(project_id, case_key, demand_key)
+        else:  # 复制
+            old_key, new_key = case_copy_to_test(project_id, case_key, demand_key)
+        # 返回刷新树状信息-需要刷新2个，原来的case_key和现在的case_key
+        return ChenResponse(data={'oldCaseKey': {'key': old_key}, 'newCaseKey': {'key': new_key}})
+
+    @route.get("/case/copy_or_move_by_case", url_name='case-copy-move-case')
+    @transaction.atomic
+    def copy_move_case_by_case(self, project_id: int, drag_key: str, drop_key: str, move: bool, position: int):
+        case_to_case_copy_or_move(project_id, drag_key, drop_key, move, position)
+        return ChenResponse(data={'old': {'key': drag_key}, 'new': {'key': drop_key}})

@@ -5,10 +5,12 @@ from ninja_extra.permissions import IsAuthenticated
 from ninja.pagination import paginate
 from utils.chen_pagination import MyPagination
 from django.db import transaction
+from django.shortcuts import get_object_or_404
 from typing import List
 from utils.chen_response import ChenResponse
 from utils.chen_crud import multi_delete_design
-from apps.project.models import Design, Dut, Round
+from utils.codes import HTTP_INDEX_ERROR
+from apps.project.models import Design, Dut, Round, Project
 from apps.project.schemas.design import DeleteSchema, DesignFilterSchema, DesignModelOutSchema, DesignTreeReturnSchema, \
     DesignTreeInputSchema, DesignCreateOutSchema, DesignCreateInputSchema
 
@@ -35,7 +37,7 @@ class DesignController(ControllerBase):
         qs = Design.objects.filter(project__id=payload.project_id, dut__key=payload.key)
         return qs
 
-    # 添加测试需求
+    # 添加设计需求
     @route.post("/designDemand/save", response=DesignCreateOutSchema, url_name="design-create")
     @transaction.atomic
     def create_design(self, payload: DesignCreateInputSchema):
@@ -58,7 +60,7 @@ class DesignController(ControllerBase):
         qs = Design.objects.create(**asert_dict)
         return qs
 
-    # 更新测试需求
+    # 更新设计需求
     @route.put("/editDesignDemand/{id}", response=DesignCreateOutSchema, url_name="design-update")
     @transaction.atomic
     def update_design(self, id: int, payload: DesignCreateInputSchema):
@@ -77,12 +79,15 @@ class DesignController(ControllerBase):
         design_qs.save()
         return design_qs
 
-    # 删除被测件
+    # 删除设计需求
     @route.delete("/designDemand/delete", url_name="design-delete")
     @transaction.atomic
     def delete_design(self, data: DeleteSchema):
         # 根据其中一个id查询出dut_id
-        design_single = Design.objects.filter(id=data.ids[0])[0]
+        try:
+            design_single = Design.objects.filter(id=data.ids[0])[0]
+        except IndexError:
+            return ChenResponse(status=500, code=HTTP_INDEX_ERROR, message='您未选择需要删除的内容')
         dut_id = design_single.dut.id
         dut_key = design_single.dut.key
         multi_delete_design(data.ids, Design)
@@ -95,4 +100,20 @@ class DesignController(ControllerBase):
             single_qs.save()
         return ChenResponse(message="研制需求删除成功！")
 
-
+    # 给复制功能级联选择器查询所有的设计需求
+    @route.get("/designDemand/getRelatedDesign", url_name='dut-relatedDesign')
+    def getRelatedDesign(self, id: int):
+        project_qs = get_object_or_404(Project, id=id)
+        # 依次找出round -> dut -> design
+        round_qs = project_qs.pField.all()
+        data_list = []
+        for round in round_qs:
+            round_dict = {'label': round.name, 'value': round.id, 'children': []}
+            for dut in round.rdField.all():
+                dut_dict = {'label': dut.name, 'value': dut.id, 'children': []}
+                for design in dut.rsField.all():
+                    design_dict = {'label': design.name, 'value': design.id, 'key': design.key}
+                    dut_dict['children'].append(design_dict)
+                round_dict['children'].append(dut_dict)
+            data_list.append(round_dict)
+        return ChenResponse(message='获取成功', data=data_list)

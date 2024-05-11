@@ -8,6 +8,8 @@ from django.utils.functional import SimpleLazyObject
 from django.contrib.auth import get_user_model
 # 导入日志的模型
 from apps.user.models import OperationLog
+# 导入其他模型用于排除
+from apps.project.models import CaseStep, TestDemandContent
 # 导入异常处理
 from jwt.exceptions import ExpiredSignatureError
 from utils.chen_response import ChenResponse
@@ -59,7 +61,7 @@ def set_request_locals(sender, **kwargs):
 def post_save_handler(sender, instance, created, **kwargs):
     """模型新增-操作日志填写"""
     # 注意排除日志模块
-    if sender == OperationLog:
+    if sender == OperationLog or sender == CaseStep or sender == TestDemandContent:
         return
     user = get_current_user()
     ope_dict = {
@@ -75,7 +77,7 @@ def post_save_handler(sender, instance, created, **kwargs):
 def post_delete_handler(sender, instance, **kwargs):
     """模型删除-操作日志填写"""
     # 注意排除日志模块
-    if sender == OperationLog:
+    if sender == OperationLog or sender == CaseStep or sender == TestDemandContent:
         return
     user = get_current_user()
     ope_dict = {
