@@ -60,7 +60,7 @@ def set_request_locals(sender, **kwargs):
 @receiver(post_save)
 def post_save_handler(sender, instance, created, **kwargs):
     """模型新增-操作日志填写"""
-    # 注意排除日志模块
+    # 注意排除日志模块、用例步骤表、测试项步骤表
     if sender == OperationLog or sender == CaseStep or sender == TestDemandContent:
         return
     user = get_current_user()
@@ -76,7 +76,7 @@ def post_save_handler(sender, instance, created, **kwargs):
 @receiver(post_delete)
 def post_delete_handler(sender, instance, **kwargs):
     """模型删除-操作日志填写"""
-    # 注意排除日志模块
+    # 注意排除日志模块、用例步骤表、测试项步骤表
     if sender == OperationLog or sender == CaseStep or sender == TestDemandContent:
         return
     user = get_current_user()

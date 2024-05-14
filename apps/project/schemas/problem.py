@@ -9,8 +9,8 @@ class DeleteSchema(Schema):
 
 # 测试项-输出schema
 class ProblemModelOutSchema(ModelSchema):
-    related: bool = Field(False)  # 给前端反应是否为关联的问题单
-    hang:bool = Field(False) # 给前端反应是否是悬挂状态（即没有关联case）
+    related: Optional[bool] = Field(False)  # 给前端反应是否为关联的问题单
+    hang: bool = Field(False)  # 给前端反应是否是悬挂状态（即没有关联case）
 
     class Config:
         model = Problem
@@ -57,33 +57,32 @@ class ProblemCreateOutSchema(ModelSchema):
 # 更新，新增schema
 class ProblemCreateInputSchema(Schema):
     project_id: int = Field(..., alias="projectId")
-    round_key: str = Field(..., alias="round")
-    dut_key: str = Field(..., alias="dut")
-    design_key: str = Field(..., alias="designDemand")
-    test_key: str = Field(..., alias="testDemand")
-    case_key: str = Field(..., alias="case")
+    round_key: str = Field(None, alias="round")
+    dut_key: str = Field(None, alias="dut")
+    design_key: str = Field(None, alias="designDemand")
+    test_key: str = Field(None, alias="testDemand")
+    case_key: str = Field(None, alias="case")
     # 其他字段
     ident: str = Field(None, alias='ident')
     name: str = Field(None, alias='name')
-    rules: str = Field(None, alias='rules')
-    expect: str = Field(None, alias='expect')
     grade: str = Field(None, alias='grade')
     operation: str = Field(None, alias='operation')
     result: str = Field(None, alias='result')
     status: str = Field(None, alias='status')
-    suggest: str = Field(None, alias='suggest')
     type: str = Field(None, alias='type')
     postPerson: str = Field(None, alias='postPerson')
     postDate: str = Field(None, alias='postDate')
     designerPerson: str = Field(None, alias='designerPerson')
     designDate: str = Field(None, alias='designDate')
-    revokePerson: str = Field(None, alias='revokePerson')
-    revokeDate: str = Field(None, alias='revokeDate')
     verifyPerson: str = Field(None, alias='verifyPerson')
     verifyDate: str = Field(None, alias='verifyDate')
     closeMethod: List[str]
     # 2024年3月27日新增-处理方式字段
     solve: Optional[str] = None
+    # 2024年5月13日新增
+    analysis: str = Field(None, alias='analysis')
+    effect_scope: str = Field(None, alias='effect_scope')
+    verify_result: str = Field(None, alias='verify_result')
 
 # 不带round_key、dut_key、design_key、test_key、case_key的更新Schema
 class ProblemUpdateInputSchema(Schema):
@@ -91,23 +90,24 @@ class ProblemUpdateInputSchema(Schema):
     # 其他字段
     ident: str = Field(None, alias='ident')
     name: str = Field(None, alias='name')
-    rules: str = Field(None, alias='rules')
-    expect: str = Field(None, alias='expect')
     grade: str = Field(None, alias='grade')
     operation: str = Field(None, alias='operation')
     result: str = Field(None, alias='result')
     status: str = Field(None, alias='status')
-    suggest: str = Field(None, alias='suggest')
     type: str = Field(None, alias='type')
     postPerson: str = Field(None, alias='postPerson')
     postDate: str = Field(None, alias='postDate')
     designerPerson: str = Field(None, alias='designerPerson')
     designDate: str = Field(None, alias='designDate')
-    revokePerson: str = Field(None, alias='revokePerson')
-    revokeDate: str = Field(None, alias='revokeDate')
     verifyPerson: str = Field(None, alias='verifyPerson')
     verifyDate: str = Field(None, alias='verifyDate')
     closeMethod: List[str]
+    # 5月13日新增字段
+    analysis: str = Field(None, alias='analysis')
+    effect_scope: str = Field(None, alias='effect_scope')
+    verify_result: str = Field(None, alias='verify_result')
+    # 更新字段
+    solve: Optional[str] = None
 
 class ProblemSingleInputSchema(Schema):
     project_id: int = Field(..., alias="projectId")

@@ -281,35 +281,37 @@ class Problem(CoreModel):
     name = models.CharField(max_length=64, blank=True, null=True, verbose_name="问题单名称", help_text="问题单名称")
     # 问题状态1-已闭环 2-开放 3-推迟 4-撤销
     status = models.CharField(max_length=8, blank=True, null=True, verbose_name="缺陷状态", help_text="缺陷状态")
-    # 问题等级1-一般 2-严重 3-建议 4-致命
+    # 问题等级1-一般 2-严重 3-建议 4-重大
     grade = models.CharField(max_length=8, blank=True, null=True, verbose_name="缺陷等级", help_text="缺陷等级")
     # 问题类型1-其他问题 2-文档问题 3-程序问题 4-设计问题 5-需求问题 6-数据问题
     type = models.CharField(max_length=8, blank=True, null=True, verbose_name="缺陷类型", help_text="缺陷类型")
     closeMethod = models.JSONField(null=True, blank=True, help_text="闭环方式", verbose_name="闭环方式", default=['1'])
-    operation = HTMLField(blank=True, null=True, verbose_name="问题出现操作", help_text="问题出现操作")
-    expect = models.CharField(max_length=1024, blank=True, null=True, verbose_name="期望", help_text="期望")
-    result = HTMLField(blank=True, null=True, verbose_name="问题结果", help_text="问题结果")
-    rules = models.CharField(max_length=512, blank=True, null=True, verbose_name="违反规则", help_text="违反规则")
-    suggest = models.CharField(max_length=512, blank=True, null=True, verbose_name="修改建议", help_text="修改建议")
+    operation = HTMLField(blank=True, null=True, verbose_name="问题描述", help_text="问题描述")
+    # 2024年5月14日更新：删除字段expect
+    # 2024年5月14日更新：result字段表示问题影响，富文本字段
+    result = HTMLField(blank=True, null=True, verbose_name="问题结果/影响", help_text="问题结果/影响")
+    # 2024年5月14日更新：删除违反规则字段rules，改为从设计需求提取影响的需求
+    # 2024年5月14日更新：删除建议字段suggesst
     postPerson = models.CharField(max_length=16, blank=True, null=True, verbose_name="提出人员", help_text="提出人员")
     postDate = models.DateField(auto_now_add=True, null=True, blank=True, help_text="提单日期", verbose_name="提单日期")
-    designerPerson = models.CharField(max_length=16, blank=True, null=True, verbose_name="开发人员上级确认人",
-                                      help_text="开发人员上级确认人")
+    designerPerson = models.CharField(max_length=16, blank=True, null=True, verbose_name="开发人员",
+                                      help_text="开发人员")
     designDate = models.DateField(auto_now_add=True, null=True, blank=True, help_text="确认日期",
                                   verbose_name="确认日期")
     verifyPerson = models.CharField(max_length=16, blank=True, null=True, verbose_name="验证人员", help_text="验证人员")
     verifyDate = models.DateField(auto_now_add=True, null=True, blank=True, help_text="验证日期",
                                   verbose_name="验证日期")
-    revokePerson = models.CharField(max_length=16, blank=True, null=True, verbose_name="撤销人员", help_text="撤销人员")
-    revokeDate = models.DateField(auto_now_add=True, null=True, blank=True, help_text="撤销日期",
-                                  verbose_name="撤销日期")
+    # 2024年5月14日更新：删除revokePerson和revokeDate字段
     project = models.ForeignKey(to="Project", db_constraint=False, related_name="projField", on_delete=models.CASCADE,
                                 verbose_name='归属项目', help_text='归属项目', related_query_name='projQuery')
     case = models.ManyToManyField(to="Case", db_constraint=False, related_name="caseField", verbose_name='归属测试用例',
                                   help_text='归属测试用例-多对多', related_query_name='caseQuery')
-    # ~~~~~3月27日新增字段：问题处理方式~~~~~
-    solve = models.TextField(verbose_name='问题处理方式', help_text='问题处理方式，该字段需要关联“status=1”', blank=True,
-                             null=True)
+    # ~~~~~3月27日新增字段：问题处理方式，新增研制方填写的 -> 原因分析字段、影响域分析字段~~~~~
+    solve = models.TextField(verbose_name='开发人员填写-改正措施', help_text='开发人员填写-改正措施，该字段需要关联“status=1”', blank=True, null=True)
+    analysis = HTMLField(blank=True, null=True, verbose_name="开发人员填写-原因分析", help_text="开发人员填写-原因分析")
+    effect_scope = HTMLField(blank=True, null=True, verbose_name="开发人员填写-影响域分析", help_text="开发人员填写-影响域分析")
+    # 5月14日新增：回归验证结果
+    verify_result = HTMLField(blank=True, null=True, verbose_name="回归结果", help_text="回归结果")
 
     def __str__(self):
         return f'问题单:{self.ident}-{self.name}'

@@ -6,7 +6,7 @@ from ninja_extra.permissions import IsAuthenticated
 from ninja.pagination import paginate
 from utils.chen_pagination import MyPagination
 from django.db import transaction
-from typing import List
+from typing import List, Optional
 from utils.chen_response import ChenResponse
 from utils.codes import HTTP_INDEX_ERROR
 from apps.project.models import Design, Dut, Round, TestDemand, TestDemandContent, Case, CaseStep, Problem
@@ -55,12 +55,12 @@ class ProblemController(ControllerBase):
                 continue
         return query_final
 
-    # 搜索全部问题单
+    # 搜索全部问题单/或查询轮次下的问题单
     @route.get('/problem/searchAllProblem', response=List[ProblemModelOutSchema], exclude_none=True,
                url_name="problem-allList")
     @transaction.atomic
     @paginate(MyPagination)
-    def get_all_problems(self, data: ProblemFilterSchema = Query(...)):
+    def get_all_problems(self, round_key: Optional[str] = False, data: ProblemFilterSchema = Query(...)):
         for attr, value in data.__dict__.items():
             if getattr(data, attr) is None:
                 setattr(data, attr, '')
@@ -90,35 +90,43 @@ class ProblemController(ControllerBase):
                 continue
         # 遍历所有problem，查询是有否有关联case，如果有则设置hang为True，否则False
         hang = True
+        # 过滤不是该轮次的问题单对象列表
+        deleted_problem_list = []
         for pro_obj in query_final:
             case_exists = pro_obj.case.exists()
             if not case_exists:
+                setattr(pro_obj, "hang", hang)
+            # 如果有关联用例还要看是否是查询轮次的问题单，过滤出去
+            elif case_exists:
                 hang = False
-            setattr(pro_obj, "hang", hang)
+                setattr(pro_obj, "hang", hang)
+                hang = True
+                if round_key:
+                    if not pro_obj.case.filter(round__key=round_key).exists():
+                        deleted_problem_list.append(pro_obj)
+        for dq in deleted_problem_list:
+            query_final.remove(dq)
 
-        # 查询当前的case
-        case_obj = Case.objects.filter(key=data.key).first()
-        if case_obj:
-            for pro_obj in query_final:
-                # 查询关联的case
-                related = False
-                for re_case in pro_obj.case.all():
-                    if case_obj.id == re_case.id:
-                        related = True
-                setattr(pro_obj, "related", related)
+        # !!!如果是轮次查询则返回轮次，如果是关联查询则查询关联当前的case
+        if round_key:
+            pass
+        else:
+            case_obj = Case.objects.filter(key=data.key).first()
+            if case_obj:
+                for pro_obj in query_final:
+                    # 查询关联的case
+                    related = False
+                    for re_case in pro_obj.case.all():
+                        if case_obj.id == re_case.id:
+                            related = True
+                    setattr(pro_obj, "related", related)
         return query_final
 
     # 添加问题单
     @route.post("/problem/save", response=ProblemCreateOutSchema, url_name="problem-create")
     @transaction.atomic
     def create_case_demand(self, payload: ProblemCreateInputSchema):
-        asert_dict = payload.dict(exclude_none=True)
-        # 构造case_key
-        case_key = "".join(
-            [payload.round_key, "-", payload.dut_key, '-', payload.design_key, '-', payload.test_key, '-',
-             payload.case_key])
-        # 查询出所属的case
-        case_obj = Case.objects.filter(key=case_key).first()
+        asert_dict = payload.dict()
         # 查询problem的总数
         problem_count = Problem.objects.filter(project_id=payload.project_id).count()
         # 查询当前各个前面节点的instance
@@ -131,8 +139,16 @@ class ProblemController(ControllerBase):
         asert_dict["ident"] = str(problem_count + 1)
         # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         qs = Problem.objects.create(**asert_dict)
-        qs.case.add(case_obj)
-        qs.save()
+        # 由于有不关联用例直接创建问题单，所以如下处理
+        if payload.case_key:
+            # 构造case_key
+            case_key = "".join(
+                [payload.round_key, "-", payload.dut_key, '-', payload.design_key, '-', payload.test_key, '-',
+                 payload.case_key])
+            # 查询出所属的case
+            case_obj = Case.objects.filter(key=case_key).first()
+            qs.case.add(case_obj)
+            qs.save()
         return qs
 
     # 更新问题单
@@ -164,7 +180,7 @@ class ProblemController(ControllerBase):
         # 1.查询出所有被删除id
         problems = Problem.objects.filter(id__in=data.ids)
         if not problems.exists():
-            return ChenResponse(status=500,code=HTTP_INDEX_ERROR,message='您未选取删除内容')
+            return ChenResponse(status=500, code=HTTP_INDEX_ERROR, message='您未选取删除内容')
         # 4.查询出当前项目id
         project_id = None
         # 2.循环该取出problem
