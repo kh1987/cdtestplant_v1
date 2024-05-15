@@ -219,14 +219,12 @@ class ProblemController(ControllerBase):
         flag = False  # 是否操作成功的标志
         if val:
             # 这分支是进行关联操作
+            # 5月15日新需求：一个用例只能关联一个问题单
+            if case_obj.caseField.count() >= 1:
+                return ChenResponse(code=400, status=400, message='请注意：一个用例只允许关联一个问题单', data={'isOK': False})
             case_obj.caseField.add(problem_obj)
             flag = True
         else:
-            # 这分支是取消关联操作 - 先要判断是否该问题单关联的测试用例只有一个了，如果只有一个则给前端返回错误
-            if problem_obj:
-                if problem_obj.case.count() < 2:
-                    return ChenResponse(code=400, status=400, message='该问题必须关联至少一个用例',
-                                        data={'isOK': False})
             case_obj.caseField.remove(problem_obj)
             flag = True
         return ChenResponse(code=200, status=200, message='关联或取消关联成功...', data={'isOK': flag})

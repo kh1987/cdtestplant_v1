@@ -160,7 +160,7 @@ class TestDemandController(ControllerBase):
         project_qs = get_object_or_404(Project, id=id)
         # 找出属于该轮次的所有测试项
         round_qs = project_qs.pField.filter(key=round).first()
-        designs = round_qs.rsField.all()
+        designs = round_qs.dsField.all()
         data_list = []
         for design in designs:
             design_dict = {'label': design.name, 'value': design.id, 'children': []}

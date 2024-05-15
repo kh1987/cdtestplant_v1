@@ -87,3 +87,10 @@ def get_round1_problem(project: Project) -> Any:
         if flag:
             problem_set.add(problem)
     return list(problem_set)
+
+def delete_dir_files(path: Path) -> Any:
+    """传入一个Path对象，如果是文件夹则删除里面所有的文件（不删除文件夹）"""
+    if path.is_dir():
+        for file in path.iterdir():
+            if file.is_file():
+                file.unlink()

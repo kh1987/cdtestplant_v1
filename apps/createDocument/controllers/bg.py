@@ -22,10 +22,18 @@ from apps.createDocument.extensions.content_result_tool import create_round_cont
 from apps.createDocument.extensions.zhui import create_bg_round1_zhui
 from apps.createDocument.extensions.solve_problem import create_one_problem_dit
 from utils.path_utils import project_path
+from apps.createDocument.extensions.util import delete_dir_files
 
 # @api_controller("/generateBG", tags=['生成报告文档系列'], auth=JWTAuth(), permissions=[IsAuthenticated])
 @api_controller("/generateBG", tags=['生成报告文档系列'])
 class GenerateControllerBG(ControllerBase):
+    # important：删除之前的文件
+    @route.get('/create/deleteBGDocument', url_name='delete-bg-document')
+    def delete_bg_document(self, id: int):
+        project_path_str = project_path(id)
+        save_path = Path.cwd() / 'media' / project_path_str / 'output_dir/bg'
+        delete_dir_files(save_path)
+
     @route.get("/create/techyiju", url_name="create-techyiju")
     @transaction.atomic
     def create_techyiju(self, id: int):
@@ -424,7 +432,7 @@ class GenerateControllerBG(ControllerBase):
                         # 测试需求步骤的列表
                         step_list = []
                         for step in demand.testQField.all():
-                            step_list.append(step.testXuQiu)
+                            step_list.append(step.subName + step.subDesc)
                         demand_step_list.append('\a'.join(step_list))
 
                     design_dict['demands'] = '\a'.join(demand_list)
@@ -460,7 +468,9 @@ class GenerateControllerBG(ControllerBase):
                 break
         # 计算千行缺陷率
         problem_count = project_obj.projField.count()
-
+        # 如果没有轮次信息则返回错误
+        if not last_dut_so:
+            return ChenResponse(code=400,status=400,message='您还未创建轮次，请进入工作区创建')
         context = {
             'last_version': last_dut_so.version,  # 最后轮次代码版本
             'comment_percent': last_dut_so.comment_line,  # 最后轮次代码注释率

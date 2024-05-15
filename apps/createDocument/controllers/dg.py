@@ -219,7 +219,7 @@ class GenerateControllerDG(ControllerBase):
                 parser.feed(designDemand.description)
                 p_list = parser.allStrList
                 # 拼接具体内容，如果有多项则换行
-                func['func_description'] = '\n'.join(p_list)
+                func['func_description'] = '\a'.join(p_list)
                 funcList.append(func)
         context = {
             'project_name': project_qs.name,
@@ -309,6 +309,8 @@ class GenerateControllerDG(ControllerBase):
         # 版本先找第一轮
         project_round = project_qs.pField.filter(key=0).first()
         first_round_SO = project_round.rdField.filter(type='SO').first()
+        if not first_round_SO:
+            return ChenResponse(code=400,status=400,message='您还未创建轮次，请进入工作区创建')
         version = first_round_SO.version
         line_count = int(first_round_SO.code_line) + int(first_round_SO.comment_line) + int(
             first_round_SO.mix_line) + int(first_round_SO.black_line)

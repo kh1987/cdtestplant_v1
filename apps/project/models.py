@@ -165,7 +165,7 @@ class Design(CoreModel):
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     project = models.ForeignKey(to="Project", db_constraint=False, related_name="psField", on_delete=models.CASCADE,
                                 verbose_name='归属项目', help_text='归属项目', related_query_name='psQuery')
-    round = models.ForeignKey(to="Round", db_constraint=False, related_name="rsField", on_delete=models.CASCADE,
+    round = models.ForeignKey(to="Round", db_constraint=False, related_name="dsField", on_delete=models.CASCADE,
                               verbose_name='归属轮次', help_text='归属轮次', related_query_name='rsQuery')
     dut = models.ForeignKey(to="Dut", db_constraint=False, related_name="rsField", on_delete=models.CASCADE,
                             verbose_name='归属轮次', help_text='归属轮次', related_query_name='rsQuery')

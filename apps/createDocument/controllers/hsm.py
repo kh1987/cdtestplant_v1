@@ -21,12 +21,20 @@ from utils.chapter_tools.csx_chapter import create_csx_chapter_dict
 from utils.chen_response import ChenResponse
 from apps.createDocument.extensions import util
 from utils.path_utils import project_path
+from apps.createDocument.extensions.util import delete_dir_files
 
 chinese_round_name: list = ['一', '二', '三', '四', '五', '六', '七', '八', '九', '十']
 
 # @api_controller("/generateHSM", tags=['生成回归说明系列文档'], auth=JWTAuth(), permissions=[IsAuthenticated])
 @api_controller("/generateHSM", tags=['生成回归说明系列文档'])
 class GenerateControllerHSM(ControllerBase):
+    # important：删除之前的文件
+    @route.get('/create/deleteHSMDocument', url_name='delete-hsm-document')
+    def delete_hsm_document(self, id: int):
+        project_path_str = project_path(id)
+        save_path = Path.cwd() / 'media' / project_path_str / 'output_dir/hsm'
+        delete_dir_files(save_path)
+
     @route.get("/create/basicInformation", url_name="create-basicInformation")
     @transaction.atomic
     def create_basicInformation(self, id: int):
@@ -217,9 +225,14 @@ class GenerateControllerHSM(ControllerBase):
                     return ChenResponse(code=400, status=400,
                                         message=f'您第{chinese_round_name[int(hround.key)]}轮次中缺少需求文档信息')
                 last_xq_version = last_xq_dut.version
-            now_xq_version = xq_dut.version
+                # 如果当前轮次有需求文档的修改
+                now_xq_version = xq_dut.version
+                context_round['xq_str'] = f"，以及软件需求规格说明{now_xq_version}版本和{last_xq_version}版本"
+            else:
+                # 如果当前轮次没有需求文档则xq_str为空
+                context_round['xq_str'] = ""
+
             context_round['so_str'] = f"被测软件代码{now_dm_version}版本和{last_dm_version}版本"
-            context_round['xq_str'] = f"，以及软件需求规格说明{now_xq_version}版本和{last_xq_version}版本"
             save_path = Path.cwd() / 'media' / project_path_str / 'output_dir/hsm' / f"第{cname}轮软件更改部分.docx"
             doc.render(context_round)
             try:

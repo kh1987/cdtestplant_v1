@@ -17,12 +17,20 @@ from apps.project.models import Dut, Project, Round
 from utils.util import get_list_dict, get_str_dict, get_ident, MyHTMLParser, get_case_ident
 from utils.chapter_tools.csx_chapter import create_csx_chapter_dict
 from utils.path_utils import project_path
+from apps.createDocument.extensions.util import delete_dir_files
 
 chinese_round_name: list = ['一', '二', '三', '四', '五', '六', '七', '八', '九', '十']
 
 # @api_controller("/generateHSM", tags=['生成回归记录系列文档'], auth=JWTAuth(), permissions=[IsAuthenticated])
 @api_controller("/generateHJL", tags=['生成回归记录系列文档'])
 class GenerateControllerHJL(ControllerBase):
+    # important：删除之前的文件
+    @route.get('/create/deleteHJLDocument', url_name='delete-hjl-document')
+    def delete_hjl_document(self, id: int):
+        project_path_str = project_path(id)
+        save_path = Path.cwd() / 'media' / project_path_str / 'output_dir/hjl'
+        delete_dir_files(save_path)
+
     @route.get("/create/basicInformation", url_name="create-basicInformation")
     @transaction.atomic
     def create_basicInformation(self, id: int):

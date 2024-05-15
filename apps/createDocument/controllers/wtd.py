@@ -13,6 +13,7 @@ from docx.shared import Mm
 from apps.project.models import Project, Dut, Round
 # 导入工具
 from utils.util import get_str_abbr, get_str_dict, MyHTMLParser, MyHTMLParser_p
+from apps.createDocument.extensions.solve_problem import parse_html
 from utils.chen_response import ChenResponse
 from utils.path_utils import project_path
 
@@ -82,66 +83,32 @@ class GenerateControllerWtd(ControllerBase):
             # 依据要求-获取其设计需求
             problem_dict['yaoqiu'] = "\a".join(case_design_list)
             # 问题操作 - HTML解析
-            parser = MyHTMLParser()
-            parser.feed(problem.operation)
             desc_list = ['【问题操作】']
-            for strOrList in parser.allStrList:
-                if strOrList.startswith("data:image/png;base64"):
-                    base64_bytes = base64.b64decode(strOrList.replace("data:image/png;base64,", ""))
-                    desc_list.append(InlineImage(doc, io.BytesIO(base64_bytes), width=Mm(90)))
-                else:
-                    desc_list.append(strOrList)
+            desc_list = parse_html(problem.operation, desc_list, doc)
 
-            parser2 = MyHTMLParser()
-            parser2.feed(problem.result)
+            # 问题影响 - Html解析
             desc_list_result = ['\a【问题影响】']
-            for strOrList in parser2.allStrList:
-                if strOrList.startswith("data:image/png;base64"):
-                    base64_bytes = base64.b64decode(strOrList.replace("data:image/png;base64,", ""))
-                    desc_list_result.append(InlineImage(doc, io.BytesIO(base64_bytes), width=Mm(90)))
-                else:
-                    desc_list_result.append(strOrList)
+            desc_list_result = parse_html(problem.result, desc_list_result, doc)
             desc_list.extend(desc_list_result)
-            # 问题描述
+            # 问题描述赋值
             problem_dict['desc'] = desc_list
 
             # 4.原因分析
-            parser3 = MyHTMLParser()
-            parser3.feed(problem.analysis)
             desc_list_3 = ['【原因分析】']
-            for strOrList in parser3.allStrList:
-                if strOrList.startswith("data:image/png;base64"):
-                    base64_bytes = base64.b64decode(strOrList.replace("data:image/png;base64,", ""))
-                    desc_list_3.append(InlineImage(doc, io.BytesIO(base64_bytes), width=Mm(90)))
-                else:
-                    desc_list_3.append(strOrList)
+            desc_list_3 = parse_html(problem.analysis, desc_list_3, doc)
             problem_dict['cause'] = desc_list_3
 
             # 5.影响域分析
-            parser4 = MyHTMLParser()
-            parser4.feed(problem.effect_scope)
             desc_list_4 = ['【影响域分析】']
-            for strOrList in parser4.allStrList:
-                if strOrList.startswith("data:image/png;base64"):
-                    base64_bytes = base64.b64decode(strOrList.replace("data:image/png;base64,", ""))
-                    desc_list_4.append(InlineImage(doc, io.BytesIO(base64_bytes), width=Mm(90)))
-                else:
-                    desc_list_4.append(strOrList)
+            desc_list_4 = parse_html(problem.effect_scope, desc_list_4, doc)
             problem_dict['effect_scope'] = desc_list_4
 
             # 6.改正措施
             problem_dict['solve'] = problem.solve
 
             # 7.回归验证结果
-            parser5 = MyHTMLParser()
-            parser5.feed(problem.verify_result)
             desc_list_5 = []
-            for strOrList in parser5.allStrList:
-                if strOrList.startswith("data:image/png;base64"):
-                    base64_bytes = base64.b64decode(strOrList.replace("data:image/png;base64,", ""))
-                    desc_list_5.append(InlineImage(doc, io.BytesIO(base64_bytes), width=Mm(90)))
-                else:
-                    desc_list_5.append(strOrList)
+            desc_list_5 = parse_html(problem.verify_result, desc_list_5, doc)
             problem_dict['verify_result'] = desc_list_5
 
             # 8.其他日期和人员
