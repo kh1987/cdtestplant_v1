@@ -1,0 +1,1 @@
+"""针对ninja_extra的APIException来创建信息"""

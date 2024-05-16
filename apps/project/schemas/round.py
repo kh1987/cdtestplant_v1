@@ -1,4 +1,4 @@
-from ninja_schema import Schema,ModelSchema
+from ninja import Schema, ModelSchema
 from pydantic import Field
 from apps.project.models import Round
 
@@ -9,45 +9,48 @@ class TreeReturnRound(Schema):
     level: str = Field(..., alias='level')
 
 class RoundInfoOutSchema(ModelSchema):
-    class Config:
+    class Meta:
         model = Round
         exclude = ('remark',)
 
 class EditSchemaIn(Schema):
     beginTime: str
-    best_condition_tem: str
-    best_condition_voltage: str
+    best_condition_tem: str = None
+    best_condition_voltage: str = None
     create_datetime: str
     endTime: str
-    grade: str
+    grade: str = '3'
     id: int
     ident: str
     key: str
     level: str
-    low_condition_tem: str
-    low_condition_voltage: str
+    low_condition_tem: str = None
+    low_condition_voltage: str = None
     name: str
-    package: str
+    package: str = None
     project: int
-    speedGrade: str
+    speedGrade: str = None
     title: str
     update_datetime: str
-    typical_condition_tem: str
-    typical_condition_voltage: str
+    typical_condition_tem: str = None
+    typical_condition_voltage: str = None
 
 class DeleteSchema(Schema):
-    title:str
-    key:str
-    level:str
+    title: str
+    key: str
+    level: str
 
 class CreateRoundOutSchema(ModelSchema):
-    class Config:
+    class Meta:
         model = Round
-        exclude = ('remark',)
+        exclude = ['remark']
 
 class CreateRoundInputSchema(ModelSchema):
-    class Config:
+    class Meta:
         model = Round
-        include = ('beginTime', 'best_condition_tem', 'best_condition_voltage', 'endTime', 'grade', 'ident',
-                        'low_condition_tem', 'low_condition_voltage', 'name', 'package', 'speedGrade',
-                        'typical_condition_tem', 'typical_condition_voltage','key',)
+        fields = ['beginTime', 'best_condition_tem', 'best_condition_voltage', 'endTime', 'grade', 'ident',
+                  'low_condition_tem', 'low_condition_voltage', 'name', 'package', 'speedGrade',
+                  'typical_condition_tem', 'typical_condition_voltage', 'key']
+        fields_optional = ['best_condition_tem', 'best_condition_voltage',
+                           'low_condition_tem', 'low_condition_voltage', 'typical_condition_tem',
+                           'typical_condition_voltage', 'package', 'speedGrade', 'grade']

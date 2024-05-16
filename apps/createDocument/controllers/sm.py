@@ -114,6 +114,7 @@ class GenerateControllerSM(ControllerBase):
                         'expect': one.expect,
                     }
                     step_list.append(step_dict)
+                    index += 1
 
                 case_dict = {
                     'name': case.name,
@@ -217,10 +218,8 @@ class GenerateControllerSM(ControllerBase):
                     for test_item in test_items:
                         if test_item.testType in ['2', '3', '15', '8']:
                             design_dict.update({'name': "/", 'chapter': "/"})
-                        key_index = int(test_item.key.split("-")[-1]) + 1
-                        test_index = str(key_index).rjust(3, '0')
                         reveal_ident = "_".join(
-                            ["XQ", get_testType(test_item.testType, "testType"), test_item.ident, test_index])
+                            ["XQ", get_testType(test_item.testType, "testType"), test_item.ident])
                         # 查字典方式确认章节号最后一位
                         test_item_last_chapter = last_chapter_items[test_item.testType].index(test_item.key) + 1
                         test_chapter = ".".join([demand_prefix, str(testType_list.index(test_item.testType) + 1),
@@ -248,10 +247,8 @@ class GenerateControllerSM(ControllerBase):
                     test_items.extend(design.dtField.all())
                     test_items.extend(design.odField.all())
                     for test_item in test_items:
-                        key_index = int(test_item.key.split("-")[-1]) + 1
-                        test_index = str(key_index).rjust(3, '0')
                         reveal_ident = "_".join(
-                            ["XQ", get_testType(test_item.testType, "testType"), test_item.ident, test_index])
+                            ["XQ", get_testType(test_item.testType, "testType"), test_item.ident])
                         # 查字典方式确认章节号最后一位
                         test_item_last_chapter = last_chapter_items[test_item.testType].index(test_item.key) + 1
                         test_chapter = ".".join([demand_prefix, str(testType_list.index(test_item.testType) + 1),
@@ -266,27 +263,27 @@ class GenerateControllerSM(ControllerBase):
                             test_item_dict['case_list'].append(case_dict)
                         design_dict['test_demand'].append(test_item_dict)
                     design_list.append(design_dict)
-                context = {
-                    'design_list': design_list,
-                }
+        context = {
+            'design_list': design_list,
+        }
 
-                # 手动渲染tpl生成文档
-                input_file = Path.cwd() / 'media' / project_path_str / 'form_template' / 'sm' / '说明追踪.docx'
-                temporary_file = Path.cwd() / 'media' / project_path_str / 'form_template' / 'sm' / 'temporary' / '说明追踪_temp.docx'
-                out_put_file = Path.cwd() / 'media' / project_path_str / 'output_dir' / 'sm' / '说明追踪.docx'
-                doc = DocxTemplate(input_file)
-                doc.render(context)
-                doc.save(temporary_file)
-                # 通过docx合并单元格
-                if temporary_file.is_file():
-                    try:
-                        docu = Document(temporary_file)
-                        # 找到其中的表格
-                        util.merge_all_cell(docu.tables[0])
-                        # 储存到合适位置
-                        docu.save(out_put_file)
-                        return ChenResponse(code=200, status=200, message='文档生成成功...')
-                    except PermissionError as e:
-                        return ChenResponse(code=400, status=400, message='请检查文件是否打开，如果打开则关闭...')
-                else:
-                    return ChenResponse(code=400, status=400, message='中间文档未找到，请检查你模版是否存在...')
+        # 手动渲染tpl生成文档
+        input_file = Path.cwd() / 'media' / project_path_str / 'form_template' / 'sm' / '说明追踪.docx'
+        temporary_file = Path.cwd() / 'media' / project_path_str / 'form_template' / 'sm' / 'temporary' / '说明追踪_temp.docx'
+        out_put_file = Path.cwd() / 'media' / project_path_str / 'output_dir' / 'sm' / '说明追踪.docx'
+        doc = DocxTemplate(input_file)
+        doc.render(context)
+        doc.save(temporary_file)
+        # 通过docx合并单元格
+        if temporary_file.is_file():
+            try:
+                docu = Document(temporary_file)
+                # 找到其中的表格
+                util.merge_all_cell(docu.tables[0])
+                # 储存到合适位置
+                docu.save(out_put_file)
+                return ChenResponse(code=200, status=200, message='文档生成成功...')
+            except PermissionError as e:
+                return ChenResponse(code=400, status=400, message='请检查文件是否打开，如果打开则关闭...')
+        else:
+            return ChenResponse(code=400, status=400, message='中间文档未找到，请检查你模版是否存在...')

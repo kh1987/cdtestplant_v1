@@ -75,3 +75,5 @@ class DutCreateR1SoDutSchema(Schema):
     code_line: Union[str, int] = None
     mix_line: Union[str, int] = None
     comment_line: Union[str, int] = None
+    # 5月17日新增轮次的key
+    round_key: str

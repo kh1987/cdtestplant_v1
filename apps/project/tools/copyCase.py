@@ -2,10 +2,17 @@ from typing import Tuple, Any
 from copy import deepcopy
 from django.shortcuts import get_object_or_404
 from apps.project.models import Project
+from ninja.errors import HttpError
 
 # 1. case被移动到某测试项下面
 def case_move_to_test(project_id: int, case_key: str, demand_key: str) -> Tuple[str, Any]:
     """移动case到某个测试项下面，传入project_id，case的key，测试项的key，renturn -> 元组(旧case的key,新case的key)"""
+    same_root_flag = False
+    if '-'.join(case_key.split('-')[:-1]) == demand_key:
+        same_root_flag = True
+    # 判断是否移动到自己所属的demand的，直接返回不操作
+    if same_root_flag:
+        raise HttpError(500, message='无法移动到自己所属测试项里面')
     project_qs = get_object_or_404(Project, id=project_id)
     case = project_qs.pcField.filter(key=case_key).first()
     demand_origin = case.test  # 未变化之前case对应的测试项
@@ -28,6 +35,7 @@ def case_move_to_test(project_id: int, case_key: str, demand_key: str) -> Tuple[
 
 # 2.case复制到测试项中
 def case_copy_to_test(project_id: int, case_key: str, demand_key: str) -> Tuple[str, Any]:
+    # 初始化内容
     project_qs = get_object_or_404(Project, id=project_id)
     case = project_qs.pcField.filter(key=case_key).first()
     demand = project_qs.ptField.filter(key=demand_key).first()

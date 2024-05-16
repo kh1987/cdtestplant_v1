@@ -526,10 +526,8 @@ class GenerateControllerHSM(ControllerBase):
                 for test_item in test_items:
                     if test_item.testType in ['2', '3', '15', '8']:
                         design_dict.update({'name': "/", 'chapter': "/"})
-                    key_index = int(test_item.key.split("-")[-1]) + 1
-                    test_index = str(key_index).rjust(3, '0')
                     reveal_ident = "_".join(
-                        ["XQ", get_testType(test_item.testType, "testType"), test_item.ident, test_index])
+                        ["XQ", get_testType(test_item.testType, "testType"), test_item.ident])
                     # 查字典方式确认章节号最后一位
                     test_item_last_chapter = last_chapter_items[test_item.testType].index(test_item.key) + 1
                     test_chapter = ".".join([demand_prefix, str(testType_list.index(test_item.testType) + 1),
@@ -555,10 +553,8 @@ class GenerateControllerHSM(ControllerBase):
                 test_items.extend(design.dtField.all())
                 test_items.extend(design.odField.all())
                 for test_item in test_items:
-                    key_index = int(test_item.key.split("-")[-1]) + 1
-                    test_index = str(key_index).rjust(3, '0')
                     reveal_ident = "_".join(
-                        ["XQ", get_testType(test_item.testType, "testType"), test_item.ident, test_index])
+                        ["XQ", get_testType(test_item.testType, "testType"), test_item.ident])
                     # 查字典方式确认章节号最后一位
                     test_item_last_chapter = last_chapter_items[test_item.testType].index(test_item.key) + 1
                     test_chapter = ".".join([demand_prefix, str(testType_list.index(test_item.testType) + 1),

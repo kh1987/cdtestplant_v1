@@ -310,7 +310,7 @@ class GenerateControllerDG(ControllerBase):
         project_round = project_qs.pField.filter(key=0).first()
         first_round_SO = project_round.rdField.filter(type='SO').first()
         if not first_round_SO:
-            return ChenResponse(code=400,status=400,message='您还未创建轮次，请进入工作区创建')
+            return ChenResponse(code=400, status=400, message='您还未创建轮次，请进入工作区创建')
         version = first_round_SO.version
         line_count = int(first_round_SO.code_line) + int(first_round_SO.comment_line) + int(
             first_round_SO.mix_line) + int(first_round_SO.black_line)
@@ -445,10 +445,8 @@ class GenerateControllerDG(ControllerBase):
                     # 获取一个design的所有测试项
                     test_items = design.dtField.all()
                     for test_item in test_items:
-                        key_index = int(test_item.key.split("-")[-1]) + 1
-                        test_index = str(key_index).rjust(3, '0')
                         reveal_ident = "_".join(
-                            ["XQ", get_testType(test_item.testType, "testType"), test_item.ident, test_index])
+                            ["XQ", get_testType(test_item.testType, "testType"), test_item.ident])
                         # 查字典方式确认章节号最后一位
                         test_item_last_chapter = last_chapter_items[test_item.testType].index(test_item.key) + 1
                         test_chapter = ".".join([test_item_prefix, str(testType_list.index(test_item.testType) + 1),
@@ -456,10 +454,10 @@ class GenerateControllerDG(ControllerBase):
                         test_item_dict = {'name': test_item.name, 'chapter': test_chapter, 'ident': reveal_ident}
                         design_dict['test_demand'].append(test_item_dict)
                     design_list.append(design_dict)
-                context = {
-                    'design_list': design_list
-                }
-                return create_dg_docx('研制总要求追踪表.docx', context, id)
+        context = {
+            'design_list': design_list
+        }
+        return create_dg_docx('研制总要求追踪表.docx', context, id)
 
     # 生成需求规格说明-测试项追踪关系表
     @route.get('/create/xqComparison', url_name='create-xqComparison')
@@ -486,10 +484,8 @@ class GenerateControllerDG(ControllerBase):
                     for test_item in test_items:
                         # 只对文档审查、静态分析、代码走查、代码审查进行处理
                         if test_item.testType in ['8', '15', '3', '2']:
-                            key_index = int(test_item.key.split("-")[-1]) + 1
-                            test_index = str(key_index).rjust(3, '0')
                             reveal_ident = "_".join(
-                                ["XQ", get_testType(test_item.testType, "testType"), test_item.ident, test_index])
+                                ["XQ", get_testType(test_item.testType, "testType"), test_item.ident])
                             # 查字典方式确认章节号最后一位
                             test_item_last_chapter = last_chapter_items[test_item.testType].index(test_item.key) + 1
                             test_chapter = ".".join([test_item_prefix, str(testType_list.index(test_item.testType) + 1),
@@ -508,10 +504,8 @@ class GenerateControllerDG(ControllerBase):
                     test_items.extend(design.odField.all())
 
                     for test_item in test_items:
-                        key_index = int(test_item.key.split("-")[-1]) + 1
-                        test_index = str(key_index).rjust(3, '0')
                         reveal_ident = "_".join(
-                            ["XQ", get_testType(test_item.testType, "testType"), test_item.ident, test_index])
+                            ["XQ", get_testType(test_item.testType, "testType"), test_item.ident])
                         # 查字典方式确认章节号最后一位
                         test_item_last_chapter = last_chapter_items[test_item.testType].index(test_item.key) + 1
                         test_chapter = ".".join([test_item_prefix, str(testType_list.index(test_item.testType) + 1),
@@ -520,10 +514,10 @@ class GenerateControllerDG(ControllerBase):
                         design_dict['test_demand'].append(test_item_dict)
 
                     design_list.append(design_dict)
-                context = {
-                    'design_list': design_list
-                }
-                return create_dg_docx('需求规格说明追踪表.docx', context, id)
+            context = {
+                'design_list': design_list
+            }
+            return create_dg_docx('需求规格说明追踪表.docx', context, id)
 
     # 生成测试项-需求规格说明关系表【反向】
     @route.get('/create/fanXqComparison', url_name='create-fanXqComparison')
@@ -542,10 +536,8 @@ class GenerateControllerDG(ControllerBase):
             # 第二个处理被测件为"XQ"，第二个处理被测件为'SO'，并且为测试项testType为['8', '15', '3', '2']的
             if test_item.dut.type == 'XQ' or (test_item.dut.type == 'SO' and test_item.testType in ['8', '15', '3',
                                                                                                     '2']):
-                key_index = int(test_item.key.split("-")[-1]) + 1
-                test_index = str(key_index).rjust(3, '0')
                 reveal_ident = "_".join(
-                    ["XQ", get_testType(test_item.testType, "testType"), test_item.ident, test_index])
+                    ["XQ", get_testType(test_item.testType, "testType"), test_item.ident])
                 # 查字典方式确认章节号最后一位
                 test_item_last_chapter = last_chapter_items[test_item.testType].index(test_item.key) + 1
                 test_chapter = ".".join([test_item_prefix, str(testType_list.index(test_item.testType) + 1),
@@ -597,11 +589,12 @@ class GenerateControllerDG(ControllerBase):
             project_round_one = project_qs.pField.filter(key=0).first()
             # 找出第一轮的研总
             yz_dut = project_round_one.rdField.filter(type='YZ').first()
+            # 定义渲染变量列表-以研总的测试需求为单个变量
+            data_list = []
             if yz_dut:
                 # 查询出验证所有design
                 yz_designs = yz_dut.rsField.all()
-                # 定义渲染变量列表-以研总的测试需求为单个变量
-                data_list = []
+
                 # 然后检索出所有研总对应的测试需求
                 for design in yz_designs:
                     # 这里每个设计需求构造一个对象
@@ -618,5 +611,5 @@ class GenerateControllerDG(ControllerBase):
                             xq_design_dict = {'chapter': demand.design.chapter, 'description': '\a'.join(p_one_list)}
                             design_dict['testDemand'].append(xq_design_dict)
                     data_list.append(design_dict)
-                context = {'data_list': data_list}
-                return create_dg_docx('主要战技指标.docx', context, id)
+            context = {'data_list': data_list}
+            return create_dg_docx('主要战技指标.docx', context, id)

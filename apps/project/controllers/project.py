@@ -1,6 +1,6 @@
 from pathlib import Path
 from shutil import copytree, rmtree
-from django.db.models import Q
+from django.db.models import Q, F
 from django.db import transaction
 from ninja_extra import api_controller, ControllerBase, route
 from ninja_extra.permissions import IsAuthenticated
@@ -60,7 +60,6 @@ class ProjectController(ControllerBase):
         qs = create(self.context.request, data_dict, Project)
         # 创建项目时候添加第一轮测试
         if qs:
-            print('进入此处')
             Round.objects.create(project_id=qs.id, key='0', level='0', title='第1轮测试', name='第1轮测试',
                                  remark='第一轮测试', ident=''.join([qs.ident, '-R1']))
             # 在新增项目时，将/conf/base_document 移动到 /media/{项目ident}/下面
@@ -79,9 +78,21 @@ class ProjectController(ControllerBase):
             # setattr针对的是class
             setattr(project, attr, value)
         project.save()
+        old_ident = ident
+        new_ident = project.ident
         # 更新项目时判断ident是否修改，如果修改则需要改动media里面文件夹名字
         if project.ident != ident:
-            Path(media_path / ident).rename(media_path / project.ident)
+            try:
+                Path(media_path / ident).rename(media_path / project.ident)
+                # 同时要更改round和dut的标识
+                for r in project.pField.all():
+                    r.ident = r.ident.replace(old_ident, new_ident)
+                    r.save()
+                for d in project.pdField.all():
+                    d.ident = d.ident.replace(old_ident, new_ident)
+                    d.save()
+            except PermissionError:
+                return ChenResponse(code=500, status=500, message="请关闭文件资源管理器再试")
         return ChenResponse(code=200, status=200, message="项目更新成功")
 
     @route.delete("/delete")
