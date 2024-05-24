@@ -27,7 +27,7 @@ CELERY_TASK_RESULT_EXPIRES = 60 * 60 * 24  # 任务过期时间
 CELERY_REUSLT_SERIALIZER = "json"  # celery结果序列化,接受mime类型，任务序列化形式
 CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_TASK_SERIALIZER = 'json'
-DJANGO_CELERY_BEAT_TZ_AWARE = False  # 不知道
+DJANGO_CELERY_BEAT_TZ_AWARE = False
 CELERY_WORKER_CONCURRENCY = 5  # 并发数量
 CELERY_MAX_TASKS_PER_CHILD = 10  # 每worker最多执行5个任务自动销毁
 

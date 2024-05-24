@@ -21,6 +21,7 @@ Users = get_user_model()
 class DictController(ControllerBase):
     @route.get("/dataDict/list", response=List[DictItemOut], url_name="dict-list")
     def get_dict(self, code: str):
+        """传入code类型：例如testType，返回字典Item信息"""
         dict_qs = Dict.objects.get(code=code)
         items = dict_qs.dictItem.filter(status='1')
         return items
