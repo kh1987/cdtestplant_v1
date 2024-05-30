@@ -52,3 +52,16 @@ class DesignCreateInputSchema(Schema):
     demandType: str = Field(None, alias="demandType")
     description: str = Field(None, alias="description")
     chapter: str = Field(None, alias='chapter')
+
+class SingleDesignSchema(Schema):
+    ident: str = Field(None, alias="ident")
+    name: str = Field(None, alias="title")
+    demandType: str = Field(None, alias="demandType")
+    description: str = Field(None, alias="content")
+    chapter: str = Field(None, alias='chapter')
+
+# 批量新增design的Schema
+class MultiDesignCreateInputSchema(Schema):
+    project_id: int = Field(..., alias="projectId")
+    dut_key: str = Field(..., alias="key")
+    data: List[SingleDesignSchema]

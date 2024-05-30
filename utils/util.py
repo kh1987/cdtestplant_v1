@@ -75,7 +75,7 @@ def get_dict_info(dict_code, item_str):
             res['index'] = qs.sort
     return res
 
-# 简单HTML解析器 - 解析富文本的parser
+# 简单HTML解析器 - 解析富文本的parser - 复杂的使用apps/createDocument/extensions/parse_rich_text.py
 class MyHTMLParser(HTMLParser):
     def __init__(self):
         HTMLParser.__init__(self)
@@ -88,6 +88,9 @@ class MyHTMLParser(HTMLParser):
         if tag == 'img':
             img_base64 = attrs[0][1]
             self.allStrList.append(img_base64)
+
+    def handle_endtag(self, tag):
+        pass
 
     def handle_data(self, data):
         if data != '\n':

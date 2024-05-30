@@ -16,11 +16,12 @@ from apps.dict.models import Dict, DictItem
 # 导入工具函数
 from utils.util import get_str_dict, get_list_dict, get_testType, get_ident
 from utils.chapter_tools.csx_chapter import create_csx_chapter_dict
-from utils.util import MyHTMLParser, MyHTMLParser_p
+from utils.util import MyHTMLParser_p
 from django.shortcuts import get_object_or_404
 from django.forms.models import model_to_dict
 from apps.createDocument.extensions.util import create_dg_docx
 from utils.path_utils import project_path
+from apps.createDocument.extensions.parse_rich_text import RichParser
 
 # @api_controller("/generate", tags=['生成大纲文档'], auth=JWTAuth(), permissions=[IsAuthenticated])
 @api_controller("/generate", tags=['生成大纲文档'])
@@ -63,17 +64,10 @@ class GenerateControllerDG(ControllerBase):
                 for tm_item in single_qs.testMethod:
                     if tm_item == dict_item_qs.key:
                         testmethod_str += dict_item_qs.title + " "
-            # 解析测试项上级设计需求的描述富文本HTML
-            parser = MyHTMLParser()
-            parser.feed(single_qs.design.description)
-            desc_list = []
-            for strOrList in parser.allStrList:
-                if strOrList.startswith("data:image/png;base64"):
-                    base64_bytes = base64.b64decode(strOrList.replace("data:image/png;base64,", ""))
-                    # ~~~设置了固定宽度~~~
-                    desc_list.append(InlineImage(doc, io.BytesIO(base64_bytes), width=Mm(115)))
-                else:
-                    desc_list.append(strOrList)
+            # 富文本解析
+            html_parser = RichParser(single_qs.design.description)
+            desc_list = html_parser.get_final_list(doc)
+
             # 查询关联design以及普通design
             doc_list = [{'dut_name': single_qs.dut.name, 'design_chapter': single_qs.design.chapter,
                          'design_name': single_qs.design.name}]

@@ -17,6 +17,7 @@ from apps.project.schemas.dut import DutModelOutSchema, DutFilterSchema, DutTree
     DutCreateInputSchema, DutCreateOutSchema, DeleteSchema, DutCreateR1SoDutSchema
 # 导入自动生成design、demand、case的辅助函数
 from apps.project.tools.auto_create_data import auto_create_jt_and_dm, auto_create_wd
+from apps.project.tools.delete_change_key import dut_delete_sub_node_key
 
 @api_controller("/project", auth=JWTAuth(), permissions=[IsAuthenticated], tags=['被测件数据'])
 class DutController(ControllerBase):
@@ -124,11 +125,14 @@ class DutController(ControllerBase):
         ident_before_string = dut_all_qs[0].ident.split("UT")[0]  # 输出类似于“R2233-R1-”
         index = 0
         for single_qs in dut_all_qs:
-            dut_key = "".join([round_key, '-', str(index)])
+            dut_key = "".join([round_key, '-', str(index)])  # 重排现有的dut的key
             single_qs.key = dut_key
             single_qs.ident = ident_before_string + "UT" + str(index + 1)
             index = index + 1
             single_qs.save()
+            # 不仅重排自己的还要改所有子类的key，因为还是之前的key
+            dut_delete_sub_node_key(single_qs)
+
         return ChenResponse(message=message)
 
     # 查询项目中第一轮次是否存在源代码的被测件 -> 5月16日更改：查每一轮是否有源代码被测件

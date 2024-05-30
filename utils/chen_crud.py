@@ -24,7 +24,7 @@ def multi_delete(ids, model):
         instance.delete()
     pass
 
-# project删除，多对多关系也要删除
+# project删除，对应problem问题单多对多关系也要删除
 def multi_delete_project(ids, model):
     idents = []
     for item in ids:

@@ -11,6 +11,9 @@ pydantic~=2.7.1
 python-docx==1.1.2
 celery==5.3.1
 mysqlclient~=2.2.4
+# pandas解析html的表格用的
+pandas==2.0.3
+html5lib==1.1
 # 生成环境才使用
 waitress==3.0.0
 # 暂时没用到写在项目里面

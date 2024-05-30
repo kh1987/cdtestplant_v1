@@ -12,7 +12,8 @@ from utils.chen_crud import multi_delete_design
 from utils.codes import HTTP_INDEX_ERROR
 from apps.project.models import Design, Dut, Round, Project
 from apps.project.schemas.design import DeleteSchema, DesignFilterSchema, DesignModelOutSchema, DesignTreeReturnSchema, \
-    DesignTreeInputSchema, DesignCreateOutSchema, DesignCreateInputSchema
+    DesignTreeInputSchema, DesignCreateOutSchema, DesignCreateInputSchema, MultiDesignCreateInputSchema
+from apps.project.tools.delete_change_key import design_delete_sub_node_key
 
 @api_controller("/project", auth=JWTAuth(), permissions=[IsAuthenticated], tags=['设计需求数据'])
 class DesignController(ControllerBase):
@@ -28,13 +29,13 @@ class DesignController(ControllerBase):
                                    ident__icontains=datafilter.ident,
                                    name__icontains=datafilter.name,
                                    demandType__contains=datafilter.demandType,
-                                   chapter__icontains=datafilter.chapter).order_by("key")
+                                   chapter__icontains=datafilter.chapter).order_by('id')
         return qs
 
     # 处理树状数据
     @route.get("/getDesignDemandInfo", response=List[DesignTreeReturnSchema], url_name="design-info")
     def get_design_tree(self, payload: DesignTreeInputSchema = Query(...)):
-        qs = Design.objects.filter(project__id=payload.project_id, dut__key=payload.key)
+        qs = Design.objects.filter(project__id=payload.project_id, dut__key=payload.key).order_by('id')
         return qs
 
     # 添加设计需求
@@ -59,6 +60,33 @@ class DesignController(ControllerBase):
         asert_dict.pop("dut_key")
         qs = Design.objects.create(**asert_dict)
         return qs
+
+    # 批量增加设计需求，对应前端批量增加页面modal
+    @route.post('/designDemand/multi_save', url_name='design-multi-create')
+    @transaction.atomic
+    def multi_create_design(self, payload: MultiDesignCreateInputSchema):
+        project_obj = get_object_or_404(Project, id=payload.project_id)
+        dut_obj = project_obj.pdField.filter(key=payload.dut_key).first()
+        round_obj = dut_obj.round
+        # 当前dut下的design个数
+        design_count = Design.objects.filter(project=project_obj, dut=dut_obj).count()
+        key_index = design_count
+        # 这里根据payload.data批量增加
+        bulk_list = []
+        for desgin_obj in payload.data:
+            design_one = Design(**desgin_obj.model_dump())
+            design_one.title = design_one.name
+            # 计算出当前key应该为多少
+            design_one.key = ''.join([dut_obj.key, "-", str(key_index)])
+            key_index += 1
+            design_one.level = '2'
+            design_one.project = project_obj
+            design_one.round = round_obj
+            design_one.dut = dut_obj
+            bulk_list.append(design_one)
+        Design.objects.bulk_create(bulk_list)
+        # 为了前端更新，需要返回一个dut_key
+        return ChenResponse(status=200, code=200, data={'key': dut_obj.key + '-1'})
 
     # 更新设计需求
     @route.put("/editDesignDemand/{id}", response=DesignCreateOutSchema, url_name="design-update")
@@ -98,6 +126,8 @@ class DesignController(ControllerBase):
             single_qs.key = design_key
             index = index + 1
             single_qs.save()
+            design_delete_sub_node_key(single_qs)
+
         return ChenResponse(message="研制需求删除成功！")
 
     # 给复制功能级联选择器查询所有的设计需求

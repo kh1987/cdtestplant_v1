@@ -1,5 +1,4 @@
 from pathlib import Path
-from docx import Document
 from docxtpl import DocxTemplate
 from docx.table import Table
 from utils.chen_response import ChenResponse

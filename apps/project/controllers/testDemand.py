@@ -19,6 +19,7 @@ from apps.project.schemas.testDemand import DeleteSchema, TestDemandModelOutSche
 from apps.project.models import Project
 # 导入工具
 from apps.project.tools.copyDemand import demand_copy_to_design
+from apps.project.tools.delete_change_key import demand_delete_sub_node_key
 
 @api_controller("/project", auth=JWTAuth(), permissions=[IsAuthenticated], tags=['测试项接口'])
 class TestDemandController(ControllerBase):
@@ -151,6 +152,7 @@ class TestDemandController(ControllerBase):
             single_qs.key = test_demand_key
             index = index + 1
             single_qs.save()
+            demand_delete_sub_node_key(single_qs)
         return ChenResponse(message="测试需求删除成功！")
 
     # 查询一个项目的所有测试项
