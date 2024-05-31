@@ -7,6 +7,7 @@ from apps.project.schemas.round import TreeReturnRound, RoundInfoOutSchema, Edit
     CreateRoundOutSchema, CreateRoundInputSchema
 from typing import List
 from utils.chen_response import ChenResponse
+from apps.project.tools.delete_change_key import round_delete_sub_node_key
 
 @api_controller("/project", auth=JWTAuth(), permissions=[IsAuthenticated], tags=['轮次数据'])
 class RoundController(ControllerBase):
@@ -61,6 +62,7 @@ class RoundController(ControllerBase):
             single_qs.key = str(index)
             index = index + 1
             single_qs.save()
+            round_delete_sub_node_key(single_qs)
         return ChenResponse(message="删除成功")
 
     @route.post("/round/save", response=CreateRoundOutSchema, url_name="round-create")

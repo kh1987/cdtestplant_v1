@@ -143,6 +143,7 @@ class CaseController(ControllerBase):
             single_qs.save()
         return ChenResponse(message="测试用例删除成功！")
 
+    # 右键测试项，根据测试子项生成用例
     @route.post("/case/create_by_demand", url_name='case-create-by-demand')
     def create_case_by_demand(self, demand_node: DemandNodeSchema):
         project_qs = get_object_or_404(Project, id=demand_node.project_id)
@@ -189,6 +190,7 @@ class CaseController(ControllerBase):
         # 这里返回一个demand的key用于前端刷新树状图
         return ChenResponse(data={'key': demand_node.key}, status=200, code=200, message='测试项自动生成用例成功')
 
+    # 测试用例复制/移动到测试项上
     @route.get("/case/copy_or_move_to_demand", url_name='case-copy-move-demand')
     @transaction.atomic
     def copy_move_case_to_demand(self, project_id: int, case_key: str, demand_key: str, move: bool):
@@ -199,6 +201,7 @@ class CaseController(ControllerBase):
         # 返回刷新树状信息-需要刷新2个，原来的case_key和现在的case_key
         return ChenResponse(data={'oldCaseKey': {'key': old_key}, 'newCaseKey': {'key': new_key}})
 
+    # 测试用例复制/移动到用例
     @route.get("/case/copy_or_move_by_case", url_name='case-copy-move-case')
     @transaction.atomic
     def copy_move_case_by_case(self, project_id: int, drag_key: str, drop_key: str, move: bool, position: int):

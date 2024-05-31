@@ -1,5 +1,3 @@
-import base64
-import io
 from pathlib import Path
 # 导入框架东西
 from ninja_extra import ControllerBase, api_controller, route
@@ -15,17 +13,15 @@ from apps.project.models import Project
 from apps.dict.models import Dict
 # 导入文档处理类
 from docxtpl import DocxTemplate
-from docxtpl import InlineImage
-from docx.shared import Mm
 from docx import Document
 # 导入自己工具
 from utils.chen_response import ChenResponse
 from utils.util import get_ident, get_case_ident, get_testType
 from utils.chapter_tools.csx_chapter import create_csx_chapter_dict
-from utils.util import MyHTMLParser
 from apps.createDocument.extensions import util
 from apps.createDocument.extensions.util import create_sm_docx
 from utils.path_utils import project_path
+from apps.createDocument.extensions.parse_rich_text import RichParser
 
 # @api_controller("/generateSM", tags=['生成说明文档系列'], auth=JWTAuth(), permissions=[IsAuthenticated])
 @api_controller("/generateSM", tags=['生成说明文档系列'])
@@ -98,21 +94,14 @@ class GenerateControllerSM(ControllerBase):
                 index = 1
                 for one in case.step.all():
                     # 这里需要对operation富文本处理
-                    parser = MyHTMLParser()
-                    parser.feed(one.operation)
-                    desc_list = []
-                    for strOrList in parser.allStrList:
-                        if strOrList.startswith("data:image/png;base64"):
-                            base64_bytes = base64.b64decode(strOrList.replace("data:image/png;base64,", ""))
-                            # ~~~设置了固定宽度~~~
-                            desc_list.append(InlineImage(doc, io.BytesIO(base64_bytes), width=Mm(115)))
-                        else:
-                            desc_list.append(strOrList)
+                    rich_parser = RichParser(one.operation)
+                    desc_list = rich_parser.get_final_list(doc, img_size=70)
                     step_dict = {
                         'index': index,
-                        'operation': "\a".join(desc_list),
+                        'operation': desc_list,
                         'expect': one.expect,
                     }
+                    print(step_dict)
                     step_list.append(step_dict)
                     index += 1
 

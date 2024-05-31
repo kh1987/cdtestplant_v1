@@ -17,6 +17,7 @@ class TreeController(ControllerBase):
     @route.post("/copy", url_name="tree-copy")
     @transaction.atomic
     def tree_copy(self, data: CopySchema):
+        """新建下一个轮次，并复制选中的节点"""
         project_obj = get_object_or_404(Project, id=data.pid)
         round_count = project_obj.pField.count()
         tree_keys = data.data

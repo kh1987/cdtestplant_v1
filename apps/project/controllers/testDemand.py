@@ -217,8 +217,10 @@ class TestDemandController(ControllerBase):
                 ids.append(item.id)
         return ids
 
+    # 前端测试项右键复制到某个设计需求下面
     @route.post('/testDemand/copy_to_design', url_name='testDemand-copy')
     @transaction.atomic
     def copy_to_design(self, data: DemandCopyToDesignSchema):
+        """前端测试项右键复制到某个设计需求下面"""
         new_demand_key = demand_copy_to_design(data.project_id, data.demand_key, data.design_id, data.depth)
         return ChenResponse(data={'key': new_demand_key})

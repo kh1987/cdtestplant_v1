@@ -1,6 +1,7 @@
 from apps.project.models import Case, CaseStep
 from ninja import Field, Schema, ModelSchema
 from typing import List, Union
+from datetime import date
 
 # 删除schema
 class DeleteSchema(Schema):
@@ -81,6 +82,8 @@ class CaseCreateInputSchema(Schema):
     initialization: str = Field('', alias='initialization')
     premise: str = Field('', alias='premise')
     testStep: List[CaseInputSchema]
+    # 新增执行时间字段
+    exe_time: date = Field(None, alias='exe_time')
 
 # 由demand创建case的输入Schema
 class DemandNodeSchema(Schema):

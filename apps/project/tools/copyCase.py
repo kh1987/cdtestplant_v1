@@ -16,7 +16,7 @@ def case_move_to_test(project_id: int, case_key: str, demand_key: str) -> Tuple[
     project_qs = get_object_or_404(Project, id=project_id)
     case = project_qs.pcField.filter(key=case_key).first()
     demand_origin = case.test  # 未变化之前case对应的测试项
-    demand = project_qs.ptField.filter(key=demand_key).first()  # 移动到的新测试项
+    demand = project_qs.ptField.filter(key=demand_key).first()  # 新的demand对象
     case.ident = demand.ident
     case.test = demand
     case.round = demand.round

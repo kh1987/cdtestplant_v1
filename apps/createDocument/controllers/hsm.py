@@ -22,6 +22,7 @@ from utils.chen_response import ChenResponse
 from apps.createDocument.extensions import util
 from utils.path_utils import project_path
 from apps.createDocument.extensions.util import delete_dir_files
+from apps.createDocument.extensions.parse_rich_text import RichParser
 
 chinese_round_name: list = ['一', '二', '三', '四', '五', '六', '七', '八', '九', '十']
 
@@ -33,7 +34,10 @@ class GenerateControllerHSM(ControllerBase):
     def delete_hsm_document(self, id: int):
         project_path_str = project_path(id)
         save_path = Path.cwd() / 'media' / project_path_str / 'output_dir/hsm'
-        delete_dir_files(save_path)
+        try:
+            delete_dir_files(save_path)
+        except PermissionError:
+            return ChenResponse(code=400,status=400,message='另一个程序正在占用文件，请关闭后重试')
 
     @route.get("/create/basicInformation", url_name="create-basicInformation")
     @transaction.atomic
@@ -441,19 +445,11 @@ class GenerateControllerHSM(ControllerBase):
                     index = 1
                     for one in case.step.all():
                         # 这里需要对operation富文本处理
-                        parser = MyHTMLParser()
-                        parser.feed(one.operation)
-                        desc_list = []
-                        for strOrList in parser.allStrList:
-                            if strOrList.startswith("data:image/png;base64"):
-                                base64_bytes = base64.b64decode(strOrList.replace("data:image/png;base64,", ""))
-                                # ~~~设置了固定宽度~~~
-                                desc_list.append(InlineImage(doc, io.BytesIO(base64_bytes), width=Mm(115)))
-                            else:
-                                desc_list.append(strOrList)
+                        rich_parser = RichParser(one.operation)
+                        desc_list = rich_parser.get_final_list(doc, img_size=70)
                         step_dict = {
                             'index': index,
-                            'operation': "\a".join(desc_list),
+                            'operation': desc_list,
                             'expect': one.expect,
                         }
                         step_list.append(step_dict)
@@ -545,7 +541,7 @@ class GenerateControllerHSM(ControllerBase):
             # 找出当前轮次的被测件为'XQ'的第一个
             xq_dut = hround.rdField.filter(type='XQ').first()
             if not xq_dut:
-                return ChenResponse(code=400, status=400, message=f'第{cname}轮次没有找到需求被测件，请添加后再试')
+                return ChenResponse(code=400, status=400, message=f'第{cname}轮次没有找到需求被测件，只有放在被测件为<需求>的设计需求、测试项、用例才会被追踪')
             xq_designs = xq_dut.rsField.all()
             for design in xq_designs:
                 design_dict = {'name': design.name, 'chapter': design.chapter, 'test_demand': []}

@@ -16,13 +16,14 @@ from apps.createDocument.extensions import util
 from utils.chen_response import ChenResponse
 from apps.createDocument.extensions.util import create_bg_docx, get_round1_problem
 from utils.util import get_str_dict, get_list_dict, create_problem_grade_str, create_str_testType_list, \
-    create_demand_summary, create_problem_type_str, create_problem_table, MyHTMLParser_p
+    create_demand_summary, create_problem_type_str, create_problem_table
 # 根据轮次生成测评内容文档context
 from apps.createDocument.extensions.content_result_tool import create_round_context
 from apps.createDocument.extensions.zhui import create_bg_round1_zhui
 from apps.createDocument.extensions.solve_problem import create_one_problem_dit
 from utils.path_utils import project_path
 from apps.createDocument.extensions.util import delete_dir_files
+from apps.createDocument.extensions.parse_rich_text import RichParser
 
 # @api_controller("/generateBG", tags=['生成报告文档系列'], auth=JWTAuth(), permissions=[IsAuthenticated])
 @api_controller("/generateBG", tags=['生成报告文档系列'])
@@ -385,9 +386,9 @@ class GenerateControllerBG(ControllerBase):
         for design in round1_design_qs:
             design_dict = {'source': "".join([dut_name, design.name, ':', design.chapter])}
             # 将设计需求描述筛入
-            parser = MyHTMLParser_p()
-            parser.feed(design.description)
-            p_list = parser.allStrList
+            rich_parser = RichParser(design.description)
+            p_list = rich_parser.get_final_p_list()
+
             design_dict['description'] = '\a'.join(p_list)
             # 找出其中所有demand
             demand_qs = design.dtField.all()
@@ -413,9 +414,8 @@ class GenerateControllerBG(ControllerBase):
             has_YZ = True
             # 如果有研制总要求的dut，继续
             for design in round1_design_yz_qs:
-                parser = MyHTMLParser_p()
-                parser.feed(design.description)
-                p_list = parser.allStrList
+                rich_parser2 = RichParser(design.description)
+                p_list = rich_parser2.get_final_p_list()
                 design_dict = {'yz_des': "".join([design.chapter, '章节：', design.name, '\a', '\a'.join(p_list)])}
                 # 找出其中所有demand
                 demand_qs = design.dtField.all()

@@ -1,21 +1,18 @@
 # 导入内置模块
 from pathlib import Path
-import io
-import base64
 # 导入django、ninja等模块
 from ninja_extra import api_controller, ControllerBase, route
 from django.db import transaction
 from django.shortcuts import get_object_or_404
 # 导入文档处理模块
-from docxtpl import InlineImage, DocxTemplate
-from docx.shared import Mm
+from docxtpl import DocxTemplate, InlineImage
 # 导入ORM模型
 from apps.project.models import Project, Dut, Round
 # 导入工具
-from utils.util import get_str_abbr, get_str_dict, MyHTMLParser, MyHTMLParser_p
-from apps.createDocument.extensions.solve_problem import parse_html
+from utils.util import get_str_abbr, get_str_dict, MyHTMLParser_p
 from utils.chen_response import ChenResponse
 from utils.path_utils import project_path
+from apps.createDocument.extensions.parse_rich_text import RichParser
 
 # @api_controller("/generateWtd", tags=['生成问题单文档系列'], auth=JWTAuth(), permissions=[IsAuthenticated])
 @api_controller('/generateWtd', tags=['生成问题单文档系列'])
@@ -57,11 +54,17 @@ class GenerateControllerWtd(ControllerBase):
                         str_dut_name_list.append(project_obj.name + '软件')
                         str_dut_ident_list.append(so_dut.ref)
                         str_dut_version_list.append(so_dut.version)
-                        # TODO:如何处理设计需求的内容，暂时设置为去图片
-                        parser_p = MyHTMLParser_p()
-                        parser_p.feed(case.design.description)
-                        p_list = parser_p.allStrList
-                        case_design_list.append("-".join([case.dut.name, case.design.chapter + '章节' + ":" + '\a' + '\a'.join(p_list)]))
+                        # TODO:如何处理设计需求的内容，暂时设置为取出图片，只保留文字
+                        p_list = []
+                        rich_parse_remove_img = RichParser(case.design.description)
+                        rich_list = rich_parse_remove_img.get_final_list(doc)
+                        for rich in rich_list:
+                            if isinstance(rich, dict) or isinstance(rich, InlineImage):
+                                continue
+                            else:
+                                p_list.append(rich)
+
+                        case_design_list.append("-".join([case.dut.name, case.design.chapter + '章节' + ":" + ''.join(p_list)]))
                 # 2.用例标识修改-YL_测试项类型_测试项标识_用例key+1
                 demand = case.test  # 中间变量
                 demand_testType = demand.testType  # 中间变量
@@ -84,23 +87,27 @@ class GenerateControllerWtd(ControllerBase):
             problem_dict['yaoqiu'] = "\a".join(case_design_list)
             # 问题操作 - HTML解析
             desc_list = ['【问题操作】']
-            desc_list = parse_html(problem.operation, desc_list, doc)
+            rich_parser = RichParser(problem.operation)
+            desc_list.extend(rich_parser.get_final_list(doc))
 
             # 问题影响 - Html解析
             desc_list_result = ['\a【问题影响】']
-            desc_list_result = parse_html(problem.result, desc_list_result, doc)
+            rich_parser2 = RichParser(problem.operation)
             desc_list.extend(desc_list_result)
+            desc_list.extend(rich_parser2.get_final_list(doc))
             # 问题描述赋值
             problem_dict['desc'] = desc_list
 
             # 4.原因分析
             desc_list_3 = ['【原因分析】']
-            desc_list_3 = parse_html(problem.analysis, desc_list_3, doc)
+            rich_parser3 = RichParser(problem.analysis)
+            desc_list_3.extend(rich_parser3.get_final_list(doc))
             problem_dict['cause'] = desc_list_3
 
             # 5.影响域分析
             desc_list_4 = ['【影响域分析】']
-            desc_list_4 = parse_html(problem.effect_scope, desc_list_4, doc)
+            rich_parser4 = RichParser(problem.effect_scope)
+            desc_list_4.extend(rich_parser4.get_final_list(doc))
             problem_dict['effect_scope'] = desc_list_4
 
             # 6.改正措施
@@ -108,7 +115,8 @@ class GenerateControllerWtd(ControllerBase):
 
             # 7.回归验证结果
             desc_list_5 = []
-            desc_list_5 = parse_html(problem.verify_result, desc_list_5, doc)
+            rich_parser5 = RichParser(problem.verify_result)
+            desc_list_5.extend(rich_parser5.get_final_list(doc))
             problem_dict['verify_result'] = desc_list_5
 
             # 8.其他日期和人员

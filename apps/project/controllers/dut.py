@@ -180,3 +180,11 @@ class DutController(ControllerBase):
         # 2.自动生成文档审查在源代码被测件中
         auto_create_wd(user_name, dut_qs, project_obj)
         return dut_qs
+
+    # 进入dut页面，返回dut的类型，例如XQ/XY/SO
+    @route.get('/dut/dut_type', url_name='testDemand-type')
+    @transaction.atomic
+    def get_dut_type(self, project_id: int, key: str):
+        project_qs = get_object_or_404(Project, id=project_id)
+        dut = project_qs.pdField.filter(key=key).first()
+        return ChenResponse(code=200, status=200, data={'dut_type': dut.type})

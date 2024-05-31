@@ -4,25 +4,14 @@ from apps.project.models import Problem
 from utils.util import get_str_dict
 from docxtpl import InlineImage
 from docx.shared import Mm
-from utils.util import MyHTMLParser, MyHTMLParser_p
+from utils.util import MyHTMLParser
+from apps.createDocument.extensions.parse_rich_text import RichParser
 
 def parse_html(html_txt, a_list, doc):
     """解析HTML字段的文字和图片到列表,输入是HTML字段的txt以及列表，输出列表"""
-    parser = MyHTMLParser()
-    # 传入需要解析的HTML字段
-    parser.feed(html_txt)
-    for strOrList in parser.allStrList:
-        if strOrList.startswith("data:image/png;base64"):
-            base64_bytes = base64.b64decode(strOrList.replace("data:image/png;base64,", ""))
-            # ~~~设置了固定宽度~~~
-            a_list.append(InlineImage(doc, io.BytesIO(base64_bytes), width=Mm(70)))
-        else:
-            a_list.append(strOrList)
+    parser = RichParser(html_txt)
+    a_list.extend(parser.get_final_list(doc, img_size=100))
     return a_list
-
-def parse_p_html():
-    """解析HTML字段只有文字到列表"""
-    ...
 
 def create_one_problem_dit(problem: Problem, problem_prefix: str, doc) -> dict:
     """问题单汇总表每个问题作为一行的数据"""

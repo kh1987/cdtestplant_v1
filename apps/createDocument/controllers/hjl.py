@@ -18,6 +18,7 @@ from utils.util import get_list_dict, get_str_dict, get_ident, MyHTMLParser, get
 from utils.chapter_tools.csx_chapter import create_csx_chapter_dict
 from utils.path_utils import project_path
 from apps.createDocument.extensions.util import delete_dir_files
+from apps.createDocument.extensions.parse_rich_text import RichParser
 
 chinese_round_name: list = ['一', '二', '三', '四', '五', '六', '七', '八', '九', '十']
 
@@ -126,27 +127,10 @@ class GenerateControllerHJL(ControllerBase):
                     index = 1
                     for one in case.step.all():
                         # 这里需要对operation富文本处理
-                        parser = MyHTMLParser()
-                        parser.feed(one.operation)
-                        desc_list = []
-                        for strOrList in parser.allStrList:
-                            if strOrList.startswith("data:image/png;base64"):
-                                base64_bytes = base64.b64decode(strOrList.replace("data:image/png;base64,", ""))
-                                # ~~~设置了固定宽度~~~
-                                desc_list.append(InlineImage(doc, io.BytesIO(base64_bytes), width=Mm(40)))
-                            else:
-                                desc_list.append(strOrList)
-                        # 这里需要对result富文本处理
-                        parser2 = MyHTMLParser()
-                        parser2.feed(one.result)
-                        res_list = []
-                        for strList in parser2.allStrList:
-                            if strList.startswith("data:image/png;base64"):
-                                base64_bytes = base64.b64decode(strList.replace("data:image/png;base64,", ""))
-                                # ~~~设置了固定宽度~~~
-                                res_list.append(InlineImage(doc, io.BytesIO(base64_bytes), width=Mm(40)))
-                            else:
-                                res_list.append(strList)
+                        rich_parser = RichParser(one.operation)
+                        desc_list = rich_parser.get_final_list(doc, img_size=68)
+                        rich_parser2 = RichParser(one.result)
+                        res_list = rich_parser2.get_final_list(doc, img_size=75)
                         # 组装用例里面的步骤dict
                         passed = '通过'
                         if one.passed == '2':
@@ -155,9 +139,9 @@ class GenerateControllerHJL(ControllerBase):
                             passed = '未执行'
                         step_dict = {
                             'index': index,
-                            'operation': "\a".join(desc_list),
+                            'operation': desc_list,
                             'expect': one.expect,
-                            'result': "\a".join(res_list),
+                            'result': res_list,
                             'passed': passed,
                             'execution': one.status,
                         }
@@ -192,7 +176,7 @@ class GenerateControllerHJL(ControllerBase):
                         'monitor_person': case.monitorPerson,
                         'step': step_list,
                         'execution': execution_str,
-                        'time': str(case.update_datetime),
+                        'time': str(case.exe_time) if case.exe_time is not None else str(case.update_datetime),
                         'problems': "、".join(problem_list)
                     }
                     demand_dict['item'].append(case_dict)

@@ -251,6 +251,8 @@ class Case(CoreModel):
                            help_text="round-dut-designkey-testdemand-case")
     level = models.CharField(max_length=64, blank=True, null=True, verbose_name="树-level", help_text="树-level",
                              default=4)  # 默认为4
+    # 2024年5月31日新增属性：执行时间
+    exe_time = models.DateField(blank=True, null=True, verbose_name='执行时间', help_text='执行时间')
 
     def __str__(self):
         return f'测试用例:{self.name}'
