@@ -2,7 +2,7 @@ from ninja_schema import ModelSchema
 from apps.dict.models import Dict, DictItem
 from apps.project.models import Contact, Abbreviation
 from ninja import Field, Schema
-from typing import List
+from typing import List, Union
 
 # class DictItemOut(ModelSchema):
 #     class Config:
@@ -80,7 +80,7 @@ class ContactOut(ModelSchema):
         include = ('id', 'entrust_person', 'name', 'key', 'update_datetime', 'addr')
 
 class ContactListInputSchema(Schema):
-    key: str = Field(None, alias='key')
+    key: Union[str, int] = Field(None, alias='key')
     name: str = Field(None, alias='name')
     entrust_person: str = Field(None, alias='entrust_person')
     addr: str = Field(None, alias='addr')

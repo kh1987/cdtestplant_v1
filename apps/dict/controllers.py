@@ -21,6 +21,7 @@ Users = get_user_model()
 class DictController(ControllerBase):
     @route.get("/dataDict/list", response=List[DictItemOut], url_name="dict-list")
     def get_dict(self, code: str):
+        print(code)
         """传入code类型：例如testType，返回字典Item信息"""
         dict_qs = Dict.objects.get(code=code)
         items = dict_qs.dictItem.filter(status='1')
@@ -177,7 +178,6 @@ class ContactController(ControllerBase):
     @route.put("/contact/update/{id}", response=ContactOut, url_name='contact-update')
     @transaction.atomic
     def update_contact(self, id: int, data: ContactListInputSchema):
-        print(id)
         for attr, value in data.__dict__.items():
             if getattr(data, attr) is None:
                 setattr(data, attr, '')

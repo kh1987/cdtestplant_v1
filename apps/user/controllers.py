@@ -16,6 +16,8 @@ from apps.user.schema import UserInfoOutSchema, CreateUserSchema, CreateUserOutS
     UserRetrieveOutSchema, UpdateDeleteUserSchema, UpdateDeleteUserOutSchema, DeleteUserSchema, LogOutSchema, \
     LogInputSchema, LogDeleteInSchema
 from apps.user.models import OperationLog
+from django.contrib.auth.models import Group
+
 # 工具函数
 from utils.chen_crud import update, multi_delete
 from apps.user.tools.ldap_tools import load_ldap_users
@@ -109,7 +111,7 @@ class UserManageController(ControllerBase):
         except Exception as exc:
             print(exc)
             return ChenResponse(status=500, code=500, message='加载LDAP用户错误')
-
+        
 # 操作日志接口
 @api_controller("/system/log", tags=['日志记录'], auth=JWTAuth())
 class LogController(ControllerBase):

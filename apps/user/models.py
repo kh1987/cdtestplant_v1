@@ -1,4 +1,4 @@
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, Group
 from django.db import models
 from utils.models import CoreModel
 
@@ -26,8 +26,8 @@ class Users(AbstractUser, CoreModel):
     personalWebsite = models.CharField(max_length=255, verbose_name='个人网站', null=True, blank=True,
                                        help_text='个人网站')
     phone = models.CharField(max_length=255, verbose_name="电话", null=True, blank=True, help_text="电话", default='18888888888')
-    accountId = models.CharField(max_length=255, verbose_name="用户标识", null=True, blank=True, help_text="用户标识",default='1')
-    role = models.CharField(max_length=64, verbose_name="角色", null=True, blank=True, help_text="角色",default='user')
+    accountId = models.CharField(max_length=255, verbose_name="用户标识", null=True, blank=True, help_text="用户标识", default='1')
+    role = models.CharField(max_length=64, verbose_name="角色", null=True, blank=True, help_text="角色", default='user')
 
     def __str__(self):
         return f'用户账号:{self.username}-用户名:{self.name}'

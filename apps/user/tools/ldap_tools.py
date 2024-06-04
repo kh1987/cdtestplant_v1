@@ -1,5 +1,6 @@
 import ldap
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group
 
 def load_ldap_users(url='ldap://dns.paisat.cn:389',
                     dn="CN=Administrator,CN=Users,DC=sstc,DC=ctu",
@@ -52,3 +53,5 @@ def load_ldap_users(url='ldap://dns.paisat.cn:389',
             user_single = Users.objects.create(**user_dict)
             user_single.set_password('wxwx2018!!!')
             user_single.save()
+            # 6月3日新增组别
+
