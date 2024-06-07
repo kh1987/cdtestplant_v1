@@ -23,6 +23,7 @@ from apps.createDocument.extensions import util
 from utils.path_utils import project_path
 from apps.createDocument.extensions.util import delete_dir_files
 from apps.createDocument.extensions.parse_rich_text import RichParser
+from apps.createDocument.extensions.documentTime import DocTime
 
 chinese_round_name: list = ['一', '二', '三', '四', '五', '六', '七', '八', '九', '十']
 
@@ -37,7 +38,7 @@ class GenerateControllerHSM(ControllerBase):
         try:
             delete_dir_files(save_path)
         except PermissionError:
-            return ChenResponse(code=400,status=400,message='另一个程序正在占用文件，请关闭后重试')
+            return ChenResponse(code=400, status=400, message='另一个程序正在占用文件，请关闭后重试')
 
     @route.get("/create/basicInformation", url_name="create-basicInformation")
     @transaction.atomic
@@ -151,14 +152,16 @@ class GenerateControllerHSM(ControllerBase):
         if project_obj.report_type == '9':
             doc_name = f'{project_obj.name}软件鉴定测评大纲'
         # TODO:当文档版本升级如何处理？
+        # 时间控制类
+        timer = DocTime(id)
         dg_duty = {'doc_name': doc_name, 'ident_version': f'PT-{project_obj.ident}-TO-1.00',
-                   'publish_date': '2024-03-17', 'source': project_obj.test_unit}
+                   'publish_date': timer.dg_cover_time, 'source': project_obj.test_unit}
         std_documents.append(dg_duty)
         # 需要添加说明、记录 - TODO：1.说明/记录版本升级后版本处理 2.说明/记录时间如何处理？
         sm_duty = {'doc_name': f'{project_obj.name}软件测试说明', 'ident_version': f'PT-{project_obj.ident}-TD-1.00',
-                   'publish_date': '2024-03-22', 'source': project_obj.test_unit}
+                   'publish_date': timer.sm_cover_time, 'source': project_obj.test_unit}
         jl_duty = {'doc_name': f'{project_obj.name}软件测试记录', 'ident_version': f'PT-{project_obj.ident}-TN',
-                   'publish_date': '2024-03-28', 'source': project_obj.test_unit}
+                   'publish_date': timer.jl_cover_time, 'source': project_obj.test_unit}
         std_documents.extend([sm_duty, jl_duty])
 
         # 非第一轮的轮次
@@ -171,10 +174,10 @@ class GenerateControllerHSM(ControllerBase):
             cname = chinese_round_name[int(hround.key)]
             hsm_duty = {'doc_name': f'{project_obj.name}软件第{cname}轮测试说明',
                         'ident_version': f'PT-{project_obj.ident}-TD{int(hround.key) + 1}-1.00',
-                        'publish_date': '2024-03-29', 'source': project_obj.test_unit}
+                        'publish_date': hround.beginTime, 'source': project_obj.test_unit}
             hjl_duty = {'doc_name': f'{project_obj.name}软件第{cname}轮测试记录',
                         'ident_version': f'PT-{project_obj.ident}-TN{int(hround.key) + 1}',
-                        'publish_date': '2024-04-08', 'source': project_obj.test_unit}
+                        'publish_date': hround.endTime, 'source': project_obj.test_unit}
             std_documents.extend([hsm_duty, hjl_duty])
             context = {
                 'std_documents': std_documents_round
@@ -541,7 +544,8 @@ class GenerateControllerHSM(ControllerBase):
             # 找出当前轮次的被测件为'XQ'的第一个
             xq_dut = hround.rdField.filter(type='XQ').first()
             if not xq_dut:
-                return ChenResponse(code=400, status=400, message=f'第{cname}轮次没有找到需求被测件，只有放在被测件为<需求>的设计需求、测试项、用例才会被追踪')
+                return ChenResponse(code=400, status=400,
+                                    message=f'第{cname}轮次没有找到需求被测件，只有放在被测件为<需求>的设计需求、测试项、用例才会被追踪')
             xq_designs = xq_dut.rsField.all()
             for design in xq_designs:
                 design_dict = {'name': design.name, 'chapter': design.chapter, 'test_demand': []}

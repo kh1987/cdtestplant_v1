@@ -95,6 +95,8 @@ class Round(CoreModel):
     level = models.CharField(max_length=15, verbose_name='树状级别第一级', help_text="树状级别第一级", default='0')
     key = models.CharField(max_length=15, verbose_name='给前端的树状级别', help_text="给前端的树状级别")
     title = models.CharField(max_length=15, verbose_name='给前端的name', help_text="给前端的name")
+    # 新增执行地点
+    location = models.CharField(max_length=30, verbose_name='测评执行地点', help_text='测评执行地点')
 
     def __str__(self):
         return f'第{str(int(self.key) + 1)}轮次'

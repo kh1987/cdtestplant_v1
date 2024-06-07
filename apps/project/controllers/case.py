@@ -50,6 +50,15 @@ class CaseController(ControllerBase):
     @transaction.atomic
     def get_case_tree(self, payload: CaseTreeInputSchema = Query(...)):
         qs = Case.objects.filter(project__id=payload.project_id, test__key=payload.key)
+        for q in qs:
+            # 遍历每个用例节点，查看是否有关联问题单
+            if q.caseField.count() > 0:
+                q.isRelatedProblem = True
+            # 遍历用例的step查看是否有未通过
+            q.isNotPassed = False
+            for step in q.step.all():
+                if step.passed == '2':
+                    q.isNotPassed = True
         return qs
 
     # 添加测试用例

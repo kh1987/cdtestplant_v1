@@ -1,4 +1,3 @@
-# 测试运行时间
 import time
 from ninja_extra.controllers import api_controller, ControllerBase, route
 from ninja_jwt.authentication import JWTAuth
@@ -14,6 +13,8 @@ from apps.createSeiTaiDocument.docXmlUtils import generate_temp_doc
 from utils.chen_response import ChenResponse
 # 模型模块
 from apps.project.models import Project, Dut, Round
+# 时间设置模块
+from apps.createDocument.extensions.documentTime import DocTime
 
 # @api_controller("/create", tags=['生成产品文档接口'], auth=JWTAuth(), permissions=[IsAuthenticated])
 @api_controller("/create", tags=['生成产品文档接口'])
@@ -39,16 +40,16 @@ class GenerateSeitaiController(ControllerBase):
             context['member'] = context['duty_person']
         context['entrust_unit'] = project_obj.entrust_unit
 
+        # 这里插入时间变量
+        timer = DocTime(id)
+        context.update(**timer.dg_final_time())
+
         result = generate_temp_doc('dg', id)
         if isinstance(result, dict):
             return ChenResponse(status=400, code=400, message=result.get('msg', 'dg未报出错误原因，反正在生成文档出错'))
         dg_replace_path, dg_seitai_final_path = result
-        # behavior
         doc = DocxTemplate(dg_replace_path)
-        start = time.time()
         doc.render(context)  # 耗时最长，TODO:异步任务处理？或前端等待？
-        end = time.time()
-        print('渲染耗时：', end - start)
         try:
             doc.save(dg_seitai_final_path)
             return ChenResponse(status=200, code=200, message="最终大纲生成成功！")
@@ -79,11 +80,12 @@ class GenerateSeitaiController(ControllerBase):
             return ChenResponse(code=400, status=400, message=result.get('msg', '无错误原因'))
         sm_to_tpl_file, sm_seitai_final_file = result
 
+        # 注册时间变量
+        timer = DocTime(id)
+        context.update(**timer.sm_final_time())
+
         doc = DocxTemplate(sm_to_tpl_file)
-        start = time.time()
         doc.render(context)  # 耗时最长，TODO:异步任务处理？或前端等待？
-        end = time.time()
-        print('渲染耗时：', end - start)
         try:
             doc.save(sm_seitai_final_file)
             return ChenResponse(status=200, code=200, message="最终大纲生成成功！")
@@ -117,11 +119,12 @@ class GenerateSeitaiController(ControllerBase):
             return ChenResponse(code=400, status=400, message=result.get('msg', '无错误原因'))
         jl_to_tpl_file, jl_seitai_final_file = result
 
+        # 注入文档变量
+        timer = DocTime(id)
+        context.update(**timer.jl_final_time())
+
         doc = DocxTemplate(jl_to_tpl_file)
-        start = time.time()
         doc.render(context)  # 耗时最长，TODO:异步任务处理？或前端等待？
-        end = time.time()
-        print('渲染耗时：', end - start)
         try:
             doc.save(jl_seitai_final_file)
             return ChenResponse(status=200, code=200, message="最终大纲生成成功！")
@@ -146,12 +149,13 @@ class GenerateSeitaiController(ControllerBase):
         if isinstance(result, dict):
             return ChenResponse(status=400, code=400, message=result.get('msg', 'bg未报出错误原因，反正在生成文档出错'))
         bg_replace_path, bg_seitai_final_path = result
-        # behavior
+
+        # 注入时间
+        timer = DocTime(id)
+        context.update(**timer.bg_final_time())
+
         doc = DocxTemplate(bg_replace_path)
-        start = time.time()
         doc.render(context)  # 耗时最长，TODO:异步任务处理？或前端等待？
-        end = time.time()
-        print('渲染耗时：', end - start)
         try:
             doc.save(bg_seitai_final_path)
             return ChenResponse(status=200, code=200, message="最终报告生成成功！")
@@ -172,12 +176,11 @@ class GenerateSeitaiController(ControllerBase):
         if isinstance(result, dict):
             return ChenResponse(status=400, code=400, message=result.get('msg', 'wtd未报出错误原因，反正在生成文档出错'))
         wtd_replace_path, wtd_seitai_final_path = result
-        # behavior
+        # 注入时间
+        timer = DocTime(id)
+        context.update(**timer.wtd_final_time())
         doc = DocxTemplate(wtd_replace_path)
-        start = time.time()
         doc.render(context)  # 耗时最长，TODO:异步任务处理？或前端等待？
-        end = time.time()
-        print('渲染耗时：', end - start)
         try:
             doc.save(wtd_seitai_final_path)
             return ChenResponse(status=200, code=200, message="问题单生成成功！")
@@ -212,6 +215,10 @@ class GenerateSeitaiController(ControllerBase):
             if isinstance(result, dict):
                 return ChenResponse(status=400, code=400,
                                     message=result.get('msg', 'hsm未报出错误原因，反正在生成文档出错'))
+            # 注入时间
+            timer = DocTime(id)
+            context.update(**timer.hsm_final_time(hround.key))
+
             hsm_replace_path, hsm_seitai_final_path = result
             doc = DocxTemplate(hsm_replace_path)
             doc.render(context)
@@ -240,6 +247,11 @@ class GenerateSeitaiController(ControllerBase):
                        'round_num': int(hround.key) + 1}
             if project_obj.report_type == '9':
                 context['is_JD'] = True
+
+            # 注入时间
+            timer = DocTime(id)
+            context.update(**timer.hsm_final_time(hround.key))
+
             result = generate_temp_doc('hjl', id, round_num=cname)
             if isinstance(result, dict):
                 return ChenResponse(status=400, code=400,

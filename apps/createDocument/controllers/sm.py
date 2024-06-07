@@ -22,6 +22,7 @@ from apps.createDocument.extensions import util
 from apps.createDocument.extensions.util import create_sm_docx
 from utils.path_utils import project_path
 from apps.createDocument.extensions.parse_rich_text import RichParser
+from apps.createDocument.extensions.documentTime import DocTime
 
 # @api_controller("/generateSM", tags=['生成说明文档系列'], auth=JWTAuth(), permissions=[IsAuthenticated])
 @api_controller("/generateSM", tags=['生成说明文档系列'])
@@ -41,9 +42,11 @@ class GenerateControllerSM(ControllerBase):
         doc_name = f'{project_obj.name}软件测评大纲'
         if project_obj.report_type == '9':
             doc_name = f'{project_obj.name}软件鉴定测评大纲'
-        # 这里大纲版本升级如何处理 - TODO：1.大纲版本升级后版本处理 2.大纲时间如何处理？
+        # 这里大纲版本升级如何处理 - TODO：1.大纲版本升级后版本处理
+        # 时间控制类
+        timer = DocTime(id)
         dg_duty = {'doc_name': doc_name, 'ident_version': f'PT-{project_obj.ident}-TO-1.00',
-                   'publish_date': '2024-03-17', 'source': project_obj.test_unit}
+                   'publish_date': timer.dg_cover_time, 'source': project_obj.test_unit}
         std_documents.append(dg_duty)
         # 生成二级文档
         context = {

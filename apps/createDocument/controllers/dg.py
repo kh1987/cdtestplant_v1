@@ -1,18 +1,15 @@
-import base64
-import io
-from datetime import datetime, timedelta
+from datetime import timedelta
 from ninja_extra import ControllerBase, api_controller, route
 from ninja_extra.permissions import IsAuthenticated
 from ninja_jwt.authentication import JWTAuth
 from django.db import transaction
 from django.db.models import Q
-from docxtpl import DocxTemplate, RichText, InlineImage
-from docx.shared import Mm
+from docxtpl import DocxTemplate
 from pathlib import Path
 from utils.chen_response import ChenResponse
 # 导入数据库ORM
-from apps.project.models import TestDemand, TestDemandContent, Project, Contact, Design, Abbreviation
-from apps.dict.models import Dict, DictItem
+from apps.project.models import Project, Contact, Abbreviation
+from apps.dict.models import Dict
 # 导入工具函数
 from utils.util import get_str_dict, get_list_dict, get_testType, get_ident
 from utils.chapter_tools.csx_chapter import create_csx_chapter_dict
@@ -20,8 +17,9 @@ from utils.util import MyHTMLParser_p
 from django.shortcuts import get_object_or_404
 from django.forms.models import model_to_dict
 from apps.createDocument.extensions.util import create_dg_docx
-from utils.path_utils import project_path
 from apps.createDocument.extensions.parse_rich_text import RichParser
+from apps.createDocument.extensions.documentTime import DocTime
+from utils.path_utils import project_path
 
 # @api_controller("/generate", tags=['生成大纲文档'], auth=JWTAuth(), permissions=[IsAuthenticated])
 @api_controller("/generate", tags=['生成大纲文档'])
@@ -172,28 +170,8 @@ class GenerateControllerDG(ControllerBase):
     @route.get('/create/timeaddress', url_name='create-timeaddress')
     @transaction.atomic
     def create_timeaddress(self, id: int):
-        project_qs = get_object_or_404(Project, id=id)
-        # 获取项目开始日期
-        beginTime = project_qs.beginTime
-        beginTime_strf = beginTime.strftime("%Y%m%d")
-        # 生成大纲编制开始和结束时间
-        dgCompileStart = (beginTime + timedelta(days=1)).strftime("%Y%m%d")
-        dgCompileEnd = (beginTime + timedelta(days=6)).strftime("%Y%m%d")
-        # 测评设计与实现开始和结束时间
-        designStart = (beginTime + timedelta(days=7)).strftime("%Y%m%d")
-        designEnd = (beginTime + timedelta(days=13)).strftime("%Y%m%d")
-        # 生成文档
-        begin_time = project_qs.beginTime
-        context = {
-            'year': begin_time.year,
-            'month': begin_time.month,
-            'day': begin_time.day,
-            'beginTime_strf': beginTime_strf,
-            'dgCompileStart': dgCompileStart,
-            'dgCompileEnd': dgCompileEnd,
-            'designStart': designStart,
-            'designEnd': designEnd,
-        }
+        doc_timer = DocTime(id)
+        context = doc_timer.dg_address_time()
         return create_dg_docx('测评时间和地点.docx', context, id)
 
     # 生成被测软件功能-根据需求表生成

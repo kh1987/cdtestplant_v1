@@ -43,6 +43,9 @@ class CaseTreeReturnSchema(Schema):
     level: str = Field(..., alias='level')
     # 3月13日新增字段，让case作为树状尾部节点
     isLeaf: bool = Field(True, alias='isLeaf')
+    # 2024年6月6日新增：用于树图显示
+    isRelatedProblem: bool = Field(False, alias='isRelatedProblem')
+    isNotPassed: bool = Field(False, alias='isNotPassed')
 
 class CaseTreeInputSchema(Schema):
     # 注意这里有alias

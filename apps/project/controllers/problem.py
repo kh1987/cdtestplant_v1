@@ -9,10 +9,12 @@ from django.db import transaction
 from typing import List, Optional
 from utils.chen_response import ChenResponse
 from utils.codes import HTTP_INDEX_ERROR
-from apps.project.models import Design, Dut, Round, TestDemand, TestDemandContent, Case, CaseStep, Problem
+from django.shortcuts import get_object_or_404
+from apps.project.models import Project, Design, Dut, Round, TestDemand, TestDemandContent, Case, CaseStep, Problem
 from apps.project.schemas.problem import DeleteSchema, ProblemModelOutSchema, ProblemFilterSchema, \
     ProblemTreeReturnSchema, ProblemTreeInputSchema, ProblemCreateOutSchema, ProblemCreateInputSchema, \
     ProblemSingleInputSchema, ProblemUpdateInputSchema
+from utils.util import get_str_abbr
 
 @api_controller("/project", auth=JWTAuth(), permissions=[IsAuthenticated], tags=['问题单系列'])
 class ProblemController(ControllerBase):
@@ -198,6 +200,27 @@ class ProblemController(ControllerBase):
                 index += 1
 
         return ChenResponse(message="问题单删除成功！")
+
+    # 根据问题单id，返回关联的用例s
+    @route.get('/getRelativeCases', url_name='problem-relative-case')
+    @transaction.atomic
+    def get_relative_cases(self, id: int):
+        problem_qs = get_object_or_404(Problem, id=id)
+        cases = problem_qs.case.all()
+        case_list = []
+        for case in cases:
+            case_dict = {
+                'case': case.title,
+                'round': case.round.title,
+                'dut': case.dut.title,
+                'design': case.design.title,
+            }
+            demand = case.test
+            case_dict['demand'] = demand.title
+            demand_testType_showtitle = get_str_abbr(demand.testType, 'testType')
+            case_dict['demand_ident'] = "-".join(['XQ', demand_testType_showtitle, demand.ident])
+            case_list.append(case_dict)
+        return case_list
 
     # 单独显示问题单页面需要数据
     @route.get("/getSingleProblem", url_name="problem-single", response=ProblemCreateOutSchema)

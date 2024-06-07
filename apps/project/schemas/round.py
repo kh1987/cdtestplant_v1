@@ -34,6 +34,8 @@ class EditSchemaIn(Schema):
     update_datetime: str
     typical_condition_tem: str = None
     typical_condition_voltage: str = None
+    # 新增
+    location: str
 
 class DeleteSchema(Schema):
     title: str
@@ -50,7 +52,7 @@ class CreateRoundInputSchema(ModelSchema):
         model = Round
         fields = ['beginTime', 'best_condition_tem', 'best_condition_voltage', 'endTime', 'grade', 'ident',
                   'low_condition_tem', 'low_condition_voltage', 'name', 'package', 'speedGrade',
-                  'typical_condition_tem', 'typical_condition_voltage', 'key']
+                  'typical_condition_tem', 'typical_condition_voltage', 'key', 'location']
         fields_optional = ['best_condition_tem', 'best_condition_voltage',
                            'low_condition_tem', 'low_condition_voltage', 'typical_condition_tem',
                            'typical_condition_voltage', 'package', 'speedGrade', 'grade']

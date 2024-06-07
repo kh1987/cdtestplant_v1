@@ -24,6 +24,7 @@ from apps.createDocument.extensions.solve_problem import create_one_problem_dit
 from utils.path_utils import project_path
 from apps.createDocument.extensions.util import delete_dir_files
 from apps.createDocument.extensions.parse_rich_text import RichParser
+from apps.createDocument.extensions.documentTime import DocTime
 
 # @api_controller("/generateBG", tags=['生成报告文档系列'], auth=JWTAuth(), permissions=[IsAuthenticated])
 @api_controller("/generateBG", tags=['生成报告文档系列'])
@@ -50,53 +51,43 @@ class GenerateControllerBG(ControllerBase):
         doc_name = f'{project_obj.name}软件测评大纲'
         if project_obj.report_type == '9':
             doc_name = f'{project_obj.name}软件鉴定测评大纲'
+        # 时间控制类
+        timer = DocTime(id)
         # 这里大纲版本升级如何处理 - TODO：1.大纲版本升级后版本处理 2.大纲时间如何处理？
         dg_duty = {'doc_name': doc_name, 'ident_version': f'PT-{project_obj.ident}-TO-1.00',
-                   'publish_date': '2024-03-17', 'source': project_obj.test_unit}
+                   'publish_date': timer.dg_cover_time, 'source': project_obj.test_unit}
         std_documents.append(dg_duty)
-
         # 需要添加说明、记录 - TODO：1.说明/记录版本升级后版本处理 2.说明/记录时间如何处理？
         sm_duty = {'doc_name': f'{project_obj.name}软件测试说明', 'ident_version': f'PT-{project_obj.ident}-TD-1.00',
-                   'publish_date': '2024-03-22', 'source': project_obj.test_unit}
+                   'publish_date': timer.sm_cover_time, 'source': project_obj.test_unit}
         jl_duty = {'doc_name': f'{project_obj.name}软件测试记录', 'ident_version': f'PT-{project_obj.ident}-TN',
-                   'publish_date': '2024-03-28', 'source': project_obj.test_unit}
-        hsm_duty = {'doc_name': f'{project_obj.name}软件回归测试说明',
-                    'ident_version': f'PT-{project_obj.ident}-TD2-1.00',
-                    'publish_date': '2024-03-29', 'source': project_obj.test_unit}
-        hjl_duty = {'doc_name': f'{project_obj.name}软件回归测试记录',
-                    'ident_version': f'PT-{project_obj.ident}-TN2',
-                    'publish_date': '2024-04-08', 'source': project_obj.test_unit}
-        std_documents.extend([sm_duty, jl_duty, hsm_duty, hjl_duty])
+                   'publish_date': timer.jl_cover_time, 'source': project_obj.test_unit}
+        # 循环所有轮次，除了第一轮
+        std_documents.extend([sm_duty, jl_duty])
+        rounds = project_obj.pField.exclude(key='0')
+        name_list = ['一', '二', '三', '四', '五', '六', '七', '八', '九', '十']
+        index = 1
+        for r in rounds:
+            hsm_duty = {'doc_name': f'{project_obj.name}软件第{name_list[index]}轮测试说明',
+                        'ident_version': f'PT-{project_obj.ident}-TD{str(index + 1)}-1.00',
+                        'publish_date': r.beginTime, 'source': project_obj.test_unit}
+            hjl_duty = {'doc_name': f'{project_obj.name}软件第{name_list[index]}轮测试记录',
+                        'ident_version': f'PT-{project_obj.ident}-TN{str(index + 1)}',
+                        'publish_date': r.endTime, 'source': project_obj.test_unit}
+            std_documents.extend([hsm_duty, hjl_duty])
+            index += 1
         # 生成二级文档
         context = {
             'std_documents': std_documents
         }
         return create_bg_docx("技术依据文件.docx", context, id)
 
+    # 测评地点和时间接口
     @route.get('/create/timeaddress')
     @transaction.atomic
     def create_timeaddress(self, id: int):
-        project_obj = get_object_or_404(Project, id=id)
-        bg_generate_date = date.today()
-        begin_time = project_obj.beginTime
-        # 研制单位名称+'实验室'为地点
-        dynamit_location = project_obj.dev_unit + '实验室'
-        context = {
-            'begin_year': begin_time.year,
-            'begin_month': begin_time.month,
-            'end_year': bg_generate_date.year,
-            'end_month': bg_generate_date.month,
-            'begin_time': begin_time.strftime('%Y%m%d'),
-            'end_time': bg_generate_date.strftime('%Y%m%d'),
-            'dynamit_location': dynamit_location,
-            'dg_weave_start_date': (begin_time + timedelta(days=1)).strftime('%Y%m%d'),
-            'dg_weave_end_date': (begin_time + timedelta(days=6)).strftime('%Y%m%d'),
-            'sj_weave_start_date': (begin_time + timedelta(days=7)).strftime('%Y%m%d'),
-            'sj_weave_end_date': (begin_time + timedelta(days=14)).strftime('%Y%m%d'),
-            'exe_weave_start_date': (begin_time + timedelta(days=15)).strftime('%Y%m%d'),
-            'exe_weave_end_date': (begin_time + timedelta(days=31)).strftime('%Y%m%d'),
-            'summary_start_date': (begin_time + timedelta(days=32)).strftime('%Y%m%d'),
-        }
+        timer = DocTime(id)
+        context = timer.bg_address_time()
         return create_bg_docx('测评时间和地点.docx', context, id)
 
     # 在报告生成多个版本被测软件基本信息
@@ -172,6 +163,10 @@ class GenerateControllerBG(ControllerBase):
                 'round_index': rounds_str_chinese[int(r.key)],
                 'last_problem_count': last_problem_count,
                 'current_round_description': current_round_description,
+                'start_year': r.beginTime.year,
+                'start_month': r.beginTime.month,
+                'end_year': (r.beginTime + timedelta(days=4)).year,  # 这里只是简单+4有待商榷
+                'end_month': (r.beginTime + timedelta(days=4)).month,
             }
             round_list.append(r_dict)
 
@@ -190,6 +185,10 @@ class GenerateControllerBG(ControllerBase):
             'end_time_month': date.today().month,
             'round_list': round_list
         }
+        # 注入时间
+        timer = DocTime(id)
+        context.update(**timer.bg_completion_situation())
+
         return create_bg_docx('测评完成情况.docx', context, id)
 
     # 生成综述
@@ -470,7 +469,7 @@ class GenerateControllerBG(ControllerBase):
         problem_count = project_obj.projField.count()
         # 如果没有轮次信息则返回错误
         if not last_dut_so:
-            return ChenResponse(code=400,status=400,message='您还未创建轮次，请进入工作区创建')
+            return ChenResponse(code=400, status=400, message='您还未创建轮次，请进入工作区创建')
         context = {
             'last_version': last_dut_so.version,  # 最后轮次代码版本
             'comment_percent': last_dut_so.comment_line,  # 最后轮次代码注释率
