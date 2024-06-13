@@ -3,7 +3,7 @@ from ninja import Query
 from apps.dict.models import Dict, DictItem
 from apps.project.models import Contact, Abbreviation, Project
 from ninja_jwt.authentication import JWTAuth
-from ninja_extra.permissions import IsAuthenticated
+from ninja_extra.permissions import IsAuthenticated, IsAdminUser
 from ninja.pagination import paginate
 from utils.chen_pagination import MyPagination
 from django.db import transaction
@@ -17,7 +17,7 @@ from apps.dict.schema import DictItemOut, DictOut, DictIndexInput, ChangeStautsS
 
 Users = get_user_model()
 
-@api_controller("/system", tags=['字典相关'], auth=JWTAuth(), permissions=[IsAuthenticated])
+@api_controller("/system", tags=['字典相关'], auth=JWTAuth(), permissions=[IsAuthenticated, IsAdminUser])
 class DictController(ControllerBase):
     @route.get("/dataDict/list", response=List[DictItemOut], url_name="dict-list")
     def get_dict(self, code: str):

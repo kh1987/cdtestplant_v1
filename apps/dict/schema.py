@@ -4,11 +4,6 @@ from apps.project.models import Contact, Abbreviation
 from ninja import Field, Schema
 from typing import List, Union
 
-# class DictItemOut(ModelSchema):
-#     class Config:
-#         model = DictItem
-#         include = ('id', 'title', 'key', 'sort', 'status',)
-
 class DictOut(ModelSchema):
     class Config:
         model = Dict
@@ -32,7 +27,7 @@ class DictIndexInput(Schema):
 
 class ChangeStautsSchemaInput(Schema):
     id: int = Field(None, alias='id')
-    status: str = Field(None, alias='status')
+    status: Union[str, int] = Field(None, alias='status')
 
 class DictItemInput(Schema):
     dict_id: int = Field(None, alias='id')
