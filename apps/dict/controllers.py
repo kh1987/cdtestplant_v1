@@ -1,3 +1,4 @@
+from datetime import date
 from ninja_extra import api_controller, ControllerBase, route
 from ninja import Query
 from apps.dict.models import Dict, DictItem
@@ -21,7 +22,6 @@ Users = get_user_model()
 class DictController(ControllerBase):
     @route.get("/dataDict/list", response=List[DictItemOut], url_name="dict-list")
     def get_dict(self, code: str):
-        print(code)
         """传入code类型：例如testType，返回字典Item信息"""
         dict_qs = Dict.objects.get(code=code)
         items = dict_qs.dictItem.filter(status='1')
@@ -203,10 +203,10 @@ class CommonController(ControllerBase):
     @route.get("/getNoticeList")
     def get_notice(self, pageSize, orderBy, orderType):
         item_list = []
-        item1 = {"title": "后台公告1:关于加强后端逻辑能力", "created_at": "2022-09-23",
-                 "content": "猫眼可见，undefined 是一个鲁棒只读的属性，表面上相当靠谱"}
+        item1 = {"title": "测试管理平台V0.0.1测试发布", "created_at": "2023-09-23",
+                 "content": "测试管理平台V0.0.1发布，正在进行内部测试.."}
         item_list.append(item1)
-        item2 = {"title": "后台公告2:关于加强前端样式能力", "created_at": "2023-09-23", "content": "由此可见这个是内容"}
+        item2 = {"title": "测试管理平台更新公共", "created_at": "2024-06-17", "content": "<p>1.修改大纲和报告模版<p><p>2.修复多个bug<p>"}
         item_list.append(item2)
         return item_list
 
@@ -221,6 +221,23 @@ class CommonController(ControllerBase):
         project_processing_count = project_qs.filter(step='1').count()
         return ChenResponse(data={'pcount': project_count, 'ucount': user_count,
                                   'pdcount': project_done_count, 'ppcount': project_processing_count})
+
+    @route.get('/statistics/chart')
+    @transaction.atomic
+    def get_chart(self):
+        """该接口返回当前年份下，每月的项目统计，返回横坐标12个月的字符串以及12个月数据"""
+        current_year = date.today().year
+        month_list = []
+        # 构造数组，里面是字典
+        for i in range(12):
+            month_dict = {'month': i + 1, 'count': 0}
+            month_list.append(month_dict)
+        project_qs = Project.objects.all()
+        for project in project_qs:
+            for m in month_list:
+                if m['month'] == project.beginTime.month and project.beginTime.year == current_year:
+                    m['count'] += 1
+        return ChenResponse(status=200, code=200, data=month_list)
 
 @api_controller("/system", tags=['缩略语接口'], auth=JWTAuth(), permissions=[IsAuthenticated])
 class AbbreviationController(ControllerBase):

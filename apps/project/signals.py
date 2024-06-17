@@ -1,4 +1,3 @@
-# 感觉这样写有点费性能，暂时这样做
 import jwt
 from django.conf import settings
 from threading import local
@@ -13,6 +12,9 @@ from apps.project.models import CaseStep, TestDemandContent
 # 导入异常处理
 from jwt.exceptions import ExpiredSignatureError
 from utils.chen_response import ChenResponse
+# 导入中间件记录日志模型
+from apps.system.models import LoginLog
+from apps.system.models import OperationLog as OLog
 
 log_manager = OperationLog.objects
 
@@ -61,7 +63,7 @@ def set_request_locals(sender, **kwargs):
 def post_save_handler(sender, instance, created, **kwargs):
     """模型新增-操作日志填写"""
     # 注意排除日志模块、用例步骤表、测试项步骤表
-    if sender == OperationLog or sender == CaseStep or sender == TestDemandContent:
+    if sender == OperationLog or sender == CaseStep or sender == TestDemandContent or sender == LoginLog or sender == OLog:
         return
     user = get_current_user()
     ope_dict = {
@@ -77,7 +79,7 @@ def post_save_handler(sender, instance, created, **kwargs):
 def post_delete_handler(sender, instance, **kwargs):
     """模型删除-操作日志填写"""
     # 注意排除日志模块、用例步骤表、测试项步骤表
-    if sender == OperationLog or sender == CaseStep or sender == TestDemandContent:
+    if sender == OperationLog or sender == CaseStep or sender == TestDemandContent or sender == LoginLog or sender == OLog:
         return
     user = get_current_user()
     ope_dict = {

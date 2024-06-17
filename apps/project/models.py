@@ -2,6 +2,15 @@ from django.db import models
 from utils.models import CoreModel
 from tinymce.models import HTMLField
 
+# 由于makemigrations命令不支持lambda函数，使用实际函数
+
+
+def create_list():
+    return []
+
+def create_list_1():
+    return ['1']
+
 class Project(CoreModel):
     ident = models.CharField(max_length=64, blank=True, null=True, verbose_name="项目标识",
                              help_text="项目标识")  # 后面加上unique=True
@@ -14,7 +23,7 @@ class Project(CoreModel):
                                  verbose_name="开始时间")
     endTime = models.DateField(auto_now_add=True, null=True, blank=True, help_text="结束时间", verbose_name="结束时间")
     duty_person = models.CharField(max_length=64, verbose_name="负责人", help_text="负责人")
-    member = models.JSONField(null=True, blank=True, help_text="项目成员", verbose_name="项目成员", default=[])
+    member = models.JSONField(null=True, blank=True, help_text="项目成员", verbose_name="项目成员", default=create_list)
     # 8月新增字段
     quality_person = models.CharField(max_length=64, verbose_name="质量保证员", help_text="质量保证员")
     vise_person = models.CharField(max_length=64, verbose_name="质量监督员", help_text="质量监督员")
@@ -22,11 +31,11 @@ class Project(CoreModel):
     # ~~~~~~~~~~~
     security_level = models.CharField(max_length=8, blank=True, null=True, verbose_name="安全等级",
                                       help_text="安全等级")
-    test_level = models.JSONField(null=True, blank=True, help_text="测试级别", verbose_name="测试级别", default=[])
-    plant_type = models.JSONField(null=True, blank=True, help_text="平台类型", verbose_name="平台类型", default=[])
+    test_level = models.JSONField(null=True, blank=True, help_text="测试级别", verbose_name="测试级别", default=create_list)
+    plant_type = models.JSONField(null=True, blank=True, help_text="平台类型", verbose_name="平台类型", default=create_list)
     report_type = models.CharField(max_length=64, blank=True, null=True, verbose_name="报告类型", help_text="报告类型")
-    language = models.JSONField(null=True, blank=True, help_text="被测语言", verbose_name="被测语言", default=[])
-    standard = models.JSONField(null=True, blank=True, help_text="依据标准", verbose_name="依据标准", default=[])
+    language = models.JSONField(null=True, blank=True, help_text="被测语言", verbose_name="被测语言", default=create_list)
+    standard = models.JSONField(null=True, blank=True, help_text="依据标准", verbose_name="依据标准", default=create_list)
     entrust_unit = models.CharField(max_length=64, verbose_name="委托方单位", help_text="委托方单位")
     entrust_contact = models.CharField(max_length=64, blank=True, null=True, verbose_name="委托方联系人",
                                        help_text="委托方联系人")
@@ -50,7 +59,7 @@ class Project(CoreModel):
                                   help_text="测评中心邮箱")
     step = models.CharField(max_length=8, blank=True, null=True, verbose_name="项目阶段", help_text="项目阶段")
     # ~~~~2024年2月27日新增：缩略语~~~~
-    abbreviation = models.JSONField(null=True, blank=True, help_text="缩略语", verbose_name="缩略语", default=[])
+    abbreviation = models.JSONField(null=True, blank=True, help_text="缩略语", verbose_name="缩略语", default=create_list)
     # ~~~~2024年3月32日新增：软件类型（新研，改造）~~~~ 非必填有默认值1
     soft_type = models.SmallIntegerField(verbose_name='软件类型', choices=((1, '新研'), (2, '改造'), (3, '沿用')), default=1)
     runtime = models.CharField(max_length=8, blank=True, null=True, verbose_name="运行环境",
@@ -190,7 +199,7 @@ class TestDemand(CoreModel):
     priority = models.CharField(max_length=8, blank=True, null=True, verbose_name="优先级", help_text="优先级")
     testType = models.CharField(max_length=8, null=True, blank=True, help_text="测试类型", verbose_name="测试类型",
                                 default="1")
-    testMethod = models.JSONField(blank=True, help_text="测试方法", verbose_name="测试方法", default=[])
+    testMethod = models.JSONField(blank=True, help_text="测试方法", verbose_name="测试方法", default=create_list)
     title = models.CharField(max_length=64, blank=True, null=True, verbose_name="树-名称", help_text="树-名称")
     key = models.CharField(max_length=64, blank=True, null=True, verbose_name="round-dut-designkey-testdemand",
                            help_text="round-dut-designkey-testdemand")
@@ -205,7 +214,7 @@ class TestDemand(CoreModel):
     design = models.ForeignKey(to="Design", db_constraint=False, related_name="dtField", on_delete=models.CASCADE,
                                verbose_name='归属设计需求', help_text='归属设计需求', related_query_name='dtQuery')
     otherDesign = models.ManyToManyField(to="Design", db_constraint=False, related_name="odField",
-                                         related_query_name='odQuery', null=True, blank=True)
+                                         related_query_name='odQuery', blank=True)
 
     def __str__(self):
         return f'测试项:{self.name}'
@@ -289,7 +298,7 @@ class Problem(CoreModel):
     grade = models.CharField(max_length=8, blank=True, null=True, verbose_name="缺陷等级", help_text="缺陷等级")
     # 问题类型1-其他问题 2-文档问题 3-程序问题 4-设计问题 5-需求问题 6-数据问题
     type = models.CharField(max_length=8, blank=True, null=True, verbose_name="缺陷类型", help_text="缺陷类型")
-    closeMethod = models.JSONField(null=True, blank=True, help_text="闭环方式", verbose_name="闭环方式", default=['1'])
+    closeMethod = models.JSONField(null=True, blank=True, help_text="闭环方式", verbose_name="闭环方式", default=create_list_1)
     operation = HTMLField(blank=True, null=True, verbose_name="问题描述", help_text="问题描述")
     # 2024年5月14日更新：删除字段expect
     # 2024年5月14日更新：result字段表示问题影响，富文本字段

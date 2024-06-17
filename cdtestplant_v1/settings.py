@@ -26,7 +26,8 @@ INSTALLED_APPS = [
     'apps.dict',
     'apps.project',
     'apps.createDocument',
-    'apps.createSeiTaiDocument'
+    'apps.createSeiTaiDocument',
+    "apps.system"
 ]
 
 MIDDLEWARE = [
@@ -37,6 +38,8 @@ MIDDLEWARE = [
     # 'django.contrib.auth.middleware.AuthenticationMiddleware',
     # 'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    # 新加入日志记录的中间件
+    'utils.log_util.middleware.ApiLoggingMiddleware'
 ]
 
 # 设置跨域
@@ -131,6 +134,19 @@ NINJA_EXTRA = {}
 # -> 会将所有app静态文件移动到STATIC_ROOT目录下面
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+
 # 配置MEDIA_ROOT和MEDIA_URL
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# 接口日志记录
+API_LOG_ENABLE = True
+API_LOG_METHODS = ['POST', 'GET', 'DELETE', 'PUT']
+API_MODEL_MAP = {}  # 暂时不使用，使用信号记录模型操作
+API_OPERATION_EXCLUDE_START = [
+    '/api/system/dataDict',  # 不记录字典的操作日志
+    '/api/system/contact/index',  # 不记录查询所有联系人的操作
+    '/api/system/abbreviation/index',  # 不记查询所有缩略语的操作
+    '/api/project/dut/soExist',  # 不记录操作：判断轮次是否有源代码被测件
+    '/api/system/log/',  # 不记录自己
+]
