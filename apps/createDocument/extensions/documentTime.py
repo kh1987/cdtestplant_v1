@@ -138,7 +138,7 @@ class DocTime:
             'exec_end_time_day': self.round_time[0]['end'].day,
         }
 
-    # 该函数生成最终大纲的事件
+    # 该函数生成最终大纲的时间
     def dg_final_time(self):
         cover_time = self.dg_bz_end
         context = times_by_cover_time(cover_time)

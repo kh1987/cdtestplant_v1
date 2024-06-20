@@ -56,7 +56,7 @@ class UserTokenController(TokenObtainPairController):
 @api_controller("/system/user", tags=['用户管理'], auth=JWTAuth())
 class UserManageController(ControllerBase):
     # 用户创建接口
-    @route.post("/save", response={201: CreateUserOutSchema}, url_name="user_create", auth=None)
+    @route.post("/save", response={201: CreateUserOutSchema}, url_name="user_create", auth=JWTAuth(), permissions=[IsAuthenticated, IsAdminUser])
     def create_user(self, user_schema: CreateUserSchema):
         user = user_schema.create()
         return user
@@ -105,6 +105,18 @@ class UserManageController(ControllerBase):
                 ids.pop(item)
         multi_delete(ids, Users)
         return ChenResponse(code=200, status=200, message="删除成功")
+
+    # 管理员改变用户状态是否停用/启用
+    @route.get('/change_status', auth=JWTAuth(), permissions=[IsAuthenticated, IsAdminUser], url_name='user-change')
+    def change_user_status(self, user_status: str, userId: int):
+        user = Users.objects.filter(id=userId).first()
+        if not user:
+            return ChenResponse(status=400, code=400, message='用户未找到')
+        if user.id == 1:
+            return ChenResponse(status=400, code=400, message='管理员不能被禁用，此操作无效')
+        user.status = user_status
+        user.save()
+        return user.status
 
     @route.get("/ldap", url_name='user-ldap')
     def load_ldap(self):

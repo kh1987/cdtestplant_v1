@@ -24,10 +24,10 @@ INSTALLED_APPS = [
     # apps
     'apps.user',
     'apps.dict',
+    'apps.system',
     'apps.project',
     'apps.createDocument',
     'apps.createSeiTaiDocument',
-    "apps.system"
 ]
 
 MIDDLEWARE = [

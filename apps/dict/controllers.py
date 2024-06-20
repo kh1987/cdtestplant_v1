@@ -55,7 +55,7 @@ class DictController(ControllerBase):
 
     @route.put("/dataDict/changeItemStatus", url_name="dict-changeItemStatus")
     @transaction.atomic
-    def change_dict_status(self, data: ChangeStautsSchemaInput):
+    def change_dict_item_status(self, data: ChangeStautsSchemaInput):
         qs = DictItem.objects.get(id=data.id)
         qs.status = data.status
         qs.save()
@@ -168,7 +168,7 @@ class ContactController(ControllerBase):
                 setattr(data, attr, '')
         # 判重key
         assert_dict = data.dict()
-        key_qs = Contact.objects.filter(key=data.key)
+        key_qs = Contact.objects.filter(key=str(data.key))
         if len(key_qs) > 0:
             return ChenResponse(code=400, status=400, message="公司或单位的编号重复，请修改")
         # 正常添加
@@ -181,15 +181,17 @@ class ContactController(ControllerBase):
         for attr, value in data.__dict__.items():
             if getattr(data, attr) is None:
                 setattr(data, attr, '')
-        key_qs = Contact.objects.filter(key=data.key)
-        if len(key_qs) > 1:
-            return ChenResponse(code=400, status=400, message="公司或单位的编号重复，请修改")
-        # 查询id
-        qs = Contact.objects.get(id=id)
-        for attr, value in data.__dict__.items():
-            setattr(qs, attr, value)
-        qs.save()
-        return qs
+        qs = Contact.objects.filter(id=id).first()
+        if qs:
+            if qs.key != data.key:
+                key_qs = Contact.objects.filter(key=str(data.key))
+                if len(key_qs) > 0:
+                    return ChenResponse(code=400, status=400, message="公司或单位的编号重复，请修改")
+            # 更新联系人数据
+            for attr, value in data.__dict__.items():
+                setattr(qs, attr, value)
+            qs.save()
+            return qs
 
     @route.delete('/contact/delete', url_name='contact-delete')
     @transaction.atomic

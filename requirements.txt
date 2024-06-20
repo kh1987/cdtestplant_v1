@@ -1,5 +1,5 @@
 # 升级后的内容
-Django==4.2.11
+Django==4.2.13
 django_tinymce==3.6.1
 docxtpl~=0.17.0
 django-ninja~=1.1.0
@@ -7,7 +7,7 @@ django-ninja-jwt~=5.3.1
 django-ninja-extra~=0.20.7
 ninja_schema==0.13.6
 numpy==1.24.2
-pydantic~=2.7.1
+pydantic~=2.7.4
 python-docx==1.1.2
 celery==5.3.1
 mysqlclient~=2.2.4
@@ -19,5 +19,5 @@ waitress==3.0.0
 # 暂时没用到写在项目里面
 django-redis~=5.4.0
 redis~=5.0.3
-pyinstaller~=6.6.0
+pyinstaller~=6.8.0
 user-agents~=2.2.0

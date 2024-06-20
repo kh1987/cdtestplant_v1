@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import uuid
 from django.apps import apps
 from django.db import models
 from cdtestplant_v1 import settings
@@ -13,11 +12,11 @@ class CoreModel(models.Model):
     remark = models.CharField(max_length=255, verbose_name="描述", null=True, blank=True, help_text="描述")
     update_datetime = models.DateField(auto_now=True, null=True, blank=True, help_text="修改时间", verbose_name="修改时间")
     create_datetime = models.DateField(auto_now_add=True, null=True, blank=True, help_text="创建时间",
-                                           verbose_name="创建时间")
+                                       verbose_name="创建时间")
     sort = models.IntegerField(default=1, null=True, blank=True, verbose_name="显示排序", help_text="显示排序")
 
     class Meta:
-        abstract = True # 指定为True不会创建表，只会当做父类
+        abstract = True  # 指定为True不会创建表，只会当做父类
         verbose_name = '核心模型'
         verbose_name_plural = verbose_name
 

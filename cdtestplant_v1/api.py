@@ -8,8 +8,8 @@ api = ChenNinjaAPI(
     description="成都测试平台的接口一系列接口函数",
     urls_namespace="cdtestplant_v1",
     parser=MyParser(),
-    renderer=MyRenderer()
+    renderer=MyRenderer(),
 )
 
-# ninja_extra特性:自动寻找apps里面的controllers.py文件中被@api_controller修饰的类
+# 自动寻找每个app下面controllers.py中被@api_controller修饰的类
 api.auto_discover_controllers()

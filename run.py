@@ -1,7 +1,7 @@
 import os
 from waitress import serve
 from cdtestplant_v1.wsgi import application
-# ~~~打包添加~~~
+# ~~~为了打包而添加~~~
 import orjson
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'cdtestplant_v1.settings')
