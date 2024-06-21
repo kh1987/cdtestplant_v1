@@ -70,7 +70,7 @@ class DutCreateR1SoDutSchema(Schema):
     version: str
     ref: str = Field(..., alias='userRef')
     release_union: str = Field(..., alias='unit')
-    release_date: date = Field(..., alias='date')
+    release_date: date = Field(None, alias='date')
     black_line: Union[str, int] = None
     code_line: Union[str, int] = None
     mix_line: Union[str, int] = None
