@@ -171,15 +171,18 @@ class Design(CoreModel):
                            help_text="round-dut-designkey")
     level = models.CharField(max_length=64, blank=True, null=True, verbose_name="树-level", help_text="树-level",
                              default=2)  # 默认为2
-    # 增加chapter章节号字段 - 8月21日
     chapter = models.CharField(max_length=64, blank=True, verbose_name="设计需求章节号", help_text="设计需求章节号")
-    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     project = models.ForeignKey(to="Project", db_constraint=False, related_name="psField", on_delete=models.CASCADE,
                                 verbose_name='归属项目', help_text='归属项目', related_query_name='psQuery')
     round = models.ForeignKey(to="Round", db_constraint=False, related_name="dsField", on_delete=models.CASCADE,
                               verbose_name='归属轮次', help_text='归属轮次', related_query_name='rsQuery')
     dut = models.ForeignKey(to="Dut", db_constraint=False, related_name="rsField", on_delete=models.CASCADE,
                             verbose_name='归属轮次', help_text='归属轮次', related_query_name='rsQuery')
+    # 如果是demandTye='3'则加上如下字段
+    source = models.CharField(max_length=64, blank=True, null=True, default='', verbose_name='接口来源', help_text='接口来源')
+    to = models.CharField(max_length=64, blank=True, null=True, default='', verbose_name='接口目的地', help_text='接口目的地')
+    type = models.CharField(max_length=64, blank=True, null=True, default='', verbose_name='接口类型', help_text='接口类型')
+    protocal = models.CharField(max_length=64, blank=True, null=True, default='', verbose_name='接口协议', help_text='接口协议')
 
     def __str__(self):
         return f'设计需求:{self.name}'
@@ -300,11 +303,7 @@ class Problem(CoreModel):
     type = models.CharField(max_length=8, blank=True, null=True, verbose_name="缺陷类型", help_text="缺陷类型")
     closeMethod = models.JSONField(null=True, blank=True, help_text="闭环方式", verbose_name="闭环方式", default=create_list_1)
     operation = HTMLField(blank=True, null=True, verbose_name="问题描述", help_text="问题描述")
-    # 2024年5月14日更新：删除字段expect
-    # 2024年5月14日更新：result字段表示问题影响，富文本字段
     result = HTMLField(blank=True, null=True, verbose_name="问题结果/影响", help_text="问题结果/影响")
-    # 2024年5月14日更新：删除违反规则字段rules，改为从设计需求提取影响的需求
-    # 2024年5月14日更新：删除建议字段suggesst
     postPerson = models.CharField(max_length=16, blank=True, null=True, verbose_name="提出人员", help_text="提出人员")
     postDate = models.DateField(auto_now_add=True, null=True, blank=True, help_text="提单日期", verbose_name="提单日期")
     designerPerson = models.CharField(max_length=16, blank=True, null=True, verbose_name="开发人员",
@@ -314,16 +313,13 @@ class Problem(CoreModel):
     verifyPerson = models.CharField(max_length=16, blank=True, null=True, verbose_name="验证人员", help_text="验证人员")
     verifyDate = models.DateField(auto_now_add=True, null=True, blank=True, help_text="验证日期",
                                   verbose_name="验证日期")
-    # 2024年5月14日更新：删除revokePerson和revokeDate字段
     project = models.ForeignKey(to="Project", db_constraint=False, related_name="projField", on_delete=models.CASCADE,
                                 verbose_name='归属项目', help_text='归属项目', related_query_name='projQuery')
     case = models.ManyToManyField(to="Case", db_constraint=False, related_name="caseField", verbose_name='归属测试用例',
                                   help_text='归属测试用例-多对多', related_query_name='caseQuery')
-    # ~~~~~3月27日新增字段：问题处理方式，新增研制方填写的 -> 原因分析字段、影响域分析字段~~~~~
     solve = models.TextField(verbose_name='开发人员填写-改正措施', help_text='开发人员填写-改正措施，该字段需要关联“status=1”', blank=True, null=True)
     analysis = HTMLField(blank=True, null=True, verbose_name="开发人员填写-原因分析", help_text="开发人员填写-原因分析")
     effect_scope = HTMLField(blank=True, null=True, verbose_name="开发人员填写-影响域分析", help_text="开发人员填写-影响域分析")
-    # 5月14日新增：回归验证结果
     verify_result = HTMLField(blank=True, null=True, verbose_name="回归结果", help_text="回归结果")
 
     def __str__(self):

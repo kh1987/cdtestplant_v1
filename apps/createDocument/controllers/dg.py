@@ -203,6 +203,7 @@ class GenerateControllerDG(ControllerBase):
     @route.get('/create/interfaceList', url_name='create-interfaceList')
     @transaction.atomic
     def create_interfaceList(self, id: int):
+        print('进入了该区域，为调试代码请检查为什么进入此处')
         pass
 
     # 生成测评对象 - 包括大纲、说明
@@ -231,11 +232,26 @@ class GenerateControllerDG(ControllerBase):
             index += 1
             if index < iters_length:
                 interfaceNameList.append('、')
+        # 对每个接口进行字典处理
+        interface_list = []
+        for interface in iters:
+            parser = RichParser(interface.description)
+            interface_dict = {
+                'name': interface.name,
+                'ident': interface.ident,
+                'desc': "，".join(parser.get_final_p_list()),
+                'source': interface.source,
+                'to': interface.to,
+                'type': interface.type,
+                'protocal': interface.protocal,
+            }
+            # 对接口类型设计需求的描述进行处理，不提取图片
+            interface_list.append(interface_dict)
         # 渲染文档
         context = {
             'project_name': project_name,
             'iters': interfaceNameList,
-            'iter_list': iters,
+            'iter_list': interface_list,
         }
         ### TODO:生成接口列表
         return create_dg_docx('被测软件接口.docx', context, id)
