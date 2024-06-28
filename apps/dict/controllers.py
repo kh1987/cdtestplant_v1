@@ -18,7 +18,7 @@ from apps.dict.schema import DictItemOut, DictOut, DictIndexInput, ChangeStautsS
 
 Users = get_user_model()
 
-@api_controller("/system", tags=['字典相关'], auth=JWTAuth(), permissions=[IsAuthenticated, IsAdminUser])
+@api_controller("/system", tags=['字典相关'], auth=JWTAuth(), permissions=[IsAuthenticated])
 class DictController(ControllerBase):
     @route.get("/dataDict/list", response=List[DictItemOut], url_name="dict-list")
     def get_dict(self, code: str):
@@ -45,7 +45,7 @@ class DictController(ControllerBase):
                                  update_datetime__range=date_list)
         return qs
 
-    @route.put("/dataDict/changeStatus", url_name="dict-changeStatus")
+    @route.put("/dataDict/changeStatus", url_name="dict-changeStatus", permissions=[IsAdminUser])
     @transaction.atomic
     def change_dict_status(self, data: ChangeStautsSchemaInput):
         qs = Dict.objects.get(id=data.id)
@@ -53,7 +53,7 @@ class DictController(ControllerBase):
         qs.save()
         return ChenResponse(code=200, status=200, message="修改状态成功")
 
-    @route.put("/dataDict/changeItemStatus", url_name="dict-changeItemStatus")
+    @route.put("/dataDict/changeItemStatus", url_name="dict-changeItemStatus", permissions=[IsAdminUser])
     @transaction.atomic
     def change_dict_item_status(self, data: ChangeStautsSchemaInput):
         qs = DictItem.objects.get(id=data.id)
@@ -120,7 +120,7 @@ class DictController(ControllerBase):
         return dictitem_qs
 
     # 删除dictItem数据
-    @route.delete("/dictType/realDeleteItem", url_name="dictitem-delete")
+    @route.delete("/dictType/realDeleteItem", url_name="dictitem-delete", permissions=[IsAdminUser])
     @transaction.atomic
     def delete_dictitem(self, data: DeleteSchema):
         # 根据其中一个id查询出dict的id

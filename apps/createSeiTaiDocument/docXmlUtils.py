@@ -82,17 +82,22 @@ def generate_temp_doc(doc_type: str, project_id: int, round_num=None):
     image_part_list = []
     # 遍历所有控件 -> 放入area_name_list【这里准备提取公共代码】
     for sdt_ele in sdt_element_list:
+        isLock = False
         for elem in sdt_ele.iterchildren():
-            # 获取“域”的名称
+            # 【一】用户设置lock
+            if elem.tag.endswith('sdtPr'):
+                for el in elem.getchildren():
+                    if el.tag.endswith('lock'):
+                        isLock = True
             if elem.tag.endswith('sdtPr'):
                 for el in elem.getchildren():
                     if el.tag.endswith('alias'):
-                        if len(el.attrib.values()) > 0:
+                        # 【一】用户设置lock
+                        if len(el.attrib.values()) > 0 and (isLock == False):
                             area_name = el.attrib.values()[0]
                             area_name_list.append(area_name)
             # 开始替换里面的“域”
             if elem.tag.endswith('sdtContent'):
-                elem.clear()
                 if len(area_name_list) > 0:
                     area_pop_name = area_name_list.pop(0)
                     # 取到“域名称”，这里先去找media/output_dir/xx下文件，然后找media/output下文件
@@ -131,6 +136,7 @@ def generate_temp_doc(doc_type: str, project_id: int, round_num=None):
                                 copied_element_list.append(Paragraph(elet, doc_copied))
                             if isinstance(elet, CT_Tbl):
                                 copied_element_list.append(Table(elet, doc_copied))
+                        elem.clear() # 【一】用户设置lock
                         for para_copied in copied_element_list:
                             elem.append(para_copied._element)
 

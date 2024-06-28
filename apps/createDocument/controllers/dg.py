@@ -178,6 +178,8 @@ class GenerateControllerDG(ControllerBase):
     @route.get('/create/funcList', url_name='create-funcList')
     @transaction.atomic
     def create_funcList(self, id: int):
+        input_path = Path.cwd() / 'media' / project_path(id) / 'form_template' / 'dg' / '被测软件功能.docx'
+        doc = DocxTemplate(input_path)
         # 获取context数据
         project_qs = get_object_or_404(Project, id=id)
         funcList = []
@@ -187,17 +189,19 @@ class GenerateControllerDG(ControllerBase):
             # 如果需求类型字典值为1
             if designDemand.demandType == '1':
                 func['func_name'] = designDemand.name
-                parser = MyHTMLParser_p()
-                parser.feed(designDemand.description)
-                p_list = parser.allStrList
-                # 拼接具体内容，如果有多项则换行
-                func['func_description'] = '\a'.join(p_list)
+                parser = RichParser(designDemand.description)
+                func['func_description'] = parser.get_final_list(doc, img_size=100)
                 funcList.append(func)
         context = {
             'project_name': project_qs.name,
             'funcList': funcList
         }
-        return create_dg_docx('被测软件功能.docx', context, id)
+        doc.render(context)
+        try:
+            doc.save(Path.cwd() / "media" / project_path(id) / "output_dir" / '被测软件功能.docx')
+            return ChenResponse(status=200, code=200, message="文档生成成功！")
+        except PermissionError as e:
+            return ChenResponse(status=400, code=400, message="模版文件已打开，请关闭后再试，{0}".format(e))
 
     # 生成被测软件接口-根据需求类型为接口的生成
     @route.get('/create/interfaceList', url_name='create-interfaceList')

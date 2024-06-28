@@ -250,4 +250,4 @@ class ProblemController(ControllerBase):
         else:
             case_obj.caseField.remove(problem_obj)
             flag = True
-        return ChenResponse(code=200, status=200, message='关联或取消关联成功...', data={'isOK': flag})
+        return ChenResponse(code=200, status=200, message='关联或取消关联成功...', data={'isOK': flag, 'key': case_obj.key})

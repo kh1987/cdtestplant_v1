@@ -104,7 +104,10 @@ class ProjectController(ControllerBase):
         # 查询media所属项目文件夹，并删除
         for ident in idents:
             project_media_path = media_path / ident
-            rmtree(project_media_path)
+            try:
+                rmtree(project_media_path)
+            except FileNotFoundError as e:
+                return ChenResponse(status=400, code=400, message='项目模版目录可能不存在，可能之前已删除')
         return ChenResponse(message="删除成功！")
 
     # 看板页面接口

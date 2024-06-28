@@ -3,7 +3,7 @@
 
 a = Analysis(
     ['run.py'],
-    pathex=['E:\\PycharmProject\\cdtestplant_v1'],
+    pathex=[],
     binaries=[],
     datas=[],
     hiddenimports=[
@@ -26,12 +26,18 @@ a = Analysis(
         'apps.project.controllers',
         'apps.project.schemas',
         'apps.project.tools',
+        'apps.system',
+        'apps.system.controllers',
+        'apps.system.schemas',
+        'utils.log_util',
+        'utils.log_util.middleware',
     ],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
     excludes=[],
     noarchive=False,
+    optimize=0,
 )
 pyz = PYZ(a.pure)
 
