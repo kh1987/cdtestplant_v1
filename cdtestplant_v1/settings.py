@@ -1,6 +1,7 @@
 from pathlib import Path
 import os
 from conf.env import *
+from conf.ninja_extra_settings import *
 import datetime
 from django_auth_ldap.config import LDAPSearch
 
@@ -127,8 +128,6 @@ NINJA_JWT = {
     "REFRESH_TOKEN_LIFETIME": datetime.timedelta(days=1),
 }
 ALLOWED_HOSTS = ["*"]  # 线上环境设置
-# Extra配置
-NINJA_EXTRA = {}
 
 # 静态文件目录 - manage.py collectstatic
 # -> 会将所有app静态文件移动到STATIC_ROOT目录下面
@@ -143,10 +142,11 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 API_LOG_ENABLE = True
 API_LOG_METHODS = ['POST', 'GET', 'DELETE', 'PUT']
 API_MODEL_MAP = {}  # 暂时不使用，使用信号记录模型操作
+# 接口日志黑名单：字典的操作日志、所有联系人的操作、所有缩略语的操作、判断轮次是否有源代码被测件、不记录自己
 API_OPERATION_EXCLUDE_START = [
-    '/api/system/dataDict',  # 不记录字典的操作日志
-    '/api/system/contact/index',  # 不记录查询所有联系人的操作
-    '/api/system/abbreviation/index',  # 不记查询所有缩略语的操作
-    '/api/project/dut/soExist',  # 不记录操作：判断轮次是否有源代码被测件
-    '/api/system/log/',  # 不记录自己
+    '/api/system/dataDict',
+    '/api/system/contact/index',
+    '/api/system/abbreviation/index',
+    '/api/project/dut/soExist',
+    '/api/system/log/',
 ]

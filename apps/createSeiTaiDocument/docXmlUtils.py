@@ -1,6 +1,5 @@
 from io import BytesIO
 from pathlib import Path
-
 from docx import Document
 from docx.text.paragraph import Paragraph
 from docx.table import Table
