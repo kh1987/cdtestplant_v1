@@ -38,8 +38,7 @@ class Users(AbstractUser, CoreModel):
         verbose_name_plural = verbose_name
         ordering = ('-create_datetime',)
 
-# ~~~~~2024年4月12日新增~~~~~
-class OperationLog(models.Model):
+class TableOperationLog(models.Model):
     create_datetime = models.DateTimeField(auto_now_add=True, null=True, blank=True, help_text="创建时间",
                                            verbose_name="创建时间")
     user = models.ForeignKey(to="Users", db_constraint=False, related_name="ruser", on_delete=models.CASCADE,

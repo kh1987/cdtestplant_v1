@@ -1,4 +1,4 @@
-from apps.user.models import Users, OperationLog
+from apps.user.models import Users
 from django.contrib.auth.models import Group
 from ninja_schema import ModelSchema, model_validator, Schema
 from ninja_extra.exceptions import APIException

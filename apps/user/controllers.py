@@ -15,7 +15,7 @@ from utils.chen_response import ChenResponse
 from apps.user.schema import UserInfoOutSchema, CreateUserSchema, CreateUserOutSchema, UserRetrieveInputSchema, \
     UserRetrieveOutSchema, UpdateDeleteUserSchema, UpdateDeleteUserOutSchema, DeleteUserSchema, LogOutSchema, \
     LogInputSchema, LogDeleteInSchema
-from apps.user.models import OperationLog
+from apps.user.models import TableOperationLog
 
 # 工具函数
 from utils.chen_crud import update, multi_delete
@@ -136,8 +136,8 @@ class LogController(ControllerBase):
         for attr, value in data.model_dump().items():
             if getattr(data, attr) is None:
                 setattr(data, attr, '')
-        logs = OperationLog.objects.values('id', 'user__username', 'operate_obj', 'create_datetime',
-                                           'operate_des').order_by(
+        logs = TableOperationLog.objects.values('id', 'user__username', 'operate_obj', 'create_datetime',
+                                                'operate_des').order_by(
             '-create_datetime')
         # 根据条件搜索
         logs = logs.filter(user__username__icontains=data.user, create_datetime__range=data.create_datetime)
@@ -146,7 +146,7 @@ class LogController(ControllerBase):
     @route.get('/operation_delete', url_name='log_delete', permissions=[IsAuthenticated, IsAdminUser], auth=JWTAuth())
     def log_delete(self, data: LogDeleteInSchema = Query(...)):
         time = datetime.now() - timedelta(days=data.day)
-        log_qs = OperationLog.objects.filter(create_datetime__lt=time)
+        log_qs = TableOperationLog.objects.filter(create_datetime__lt=time)
         log_qs.delete()
         if data.day > 0:
             return ChenResponse(message=f'删除{data.day}天前数据成功')
