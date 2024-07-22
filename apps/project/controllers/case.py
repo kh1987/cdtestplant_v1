@@ -1,4 +1,3 @@
-from copy import deepcopy
 from ninja_extra import api_controller, ControllerBase, route
 from ninja import Query
 from ninja_jwt.authentication import JWTAuth
@@ -10,7 +9,7 @@ from django.shortcuts import get_object_or_404
 from typing import List
 from utils.chen_response import ChenResponse
 from utils.chen_crud import multi_delete_case
-from apps.project.models import Design, Dut, Round, TestDemand, Case, CaseStep, Project
+from apps.project.models import Design, Dut, Round, TestDemand, Case, CaseStep, Project, Problem
 from apps.project.schemas.case import DeleteSchema, CaseModelOutSchema, CaseFilterSchema, CaseTreeReturnSchema, \
     CaseTreeInputSchema, CaseCreateOutSchema, CaseCreateInputSchema, DemandNodeSchema
 from utils.util import get_testType
@@ -24,6 +23,7 @@ class CaseController(ControllerBase):
     @transaction.atomic
     @paginate(MyPagination)
     def get_case_list(self, data: CaseFilterSchema = Query(...)):
+        """展示表格case数据"""
         for attr, value in data.__dict__.items():
             if getattr(data, attr) is None:
                 setattr(data, attr, '')
@@ -42,6 +42,10 @@ class CaseController(ControllerBase):
             setattr(query_single, "testStep", query_single.step.all().values())
             # 增加一个字段，测试类型例如：FT
             setattr(query_single, 'testType', get_testType(query_single.test.testType, dict_code='testType'))
+            # 如果有问题单字段则添加上
+            related_problem: Problem = query_single.caseField.first()
+            if query_single.caseField.all():
+                setattr(query_single, 'problem', related_problem)
             query_list.append(query_single)
         return query_list
 

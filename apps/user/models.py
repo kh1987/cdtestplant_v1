@@ -12,7 +12,6 @@ class Users(AbstractUser, CoreModel):
                                 help_text="用户账号")
     name = models.CharField(max_length=40, verbose_name="姓名", help_text="姓名")
     avatar = models.TextField(verbose_name="头像", null=True, blank=True, help_text="头像")
-    email = models.EmailField(max_length=255, verbose_name="邮箱", null=True, blank=True, help_text="邮箱")
     status = models.CharField(max_length=15, verbose_name='启用状态', help_text="status", default='1')
     job = models.CharField(max_length=255, verbose_name='工作', null=True, blank=True, help_text='工作')
     jobName = models.CharField(max_length=255, verbose_name='工作名称', null=True, blank=True, help_text='工作名称')

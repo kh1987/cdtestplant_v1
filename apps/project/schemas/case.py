@@ -1,7 +1,9 @@
-from apps.project.models import Case, CaseStep
+from apps.project.models import Case, CaseStep, Problem
 from ninja import Field, Schema, ModelSchema
-from typing import List, Union
+from typing import List, Union, Optional
 from datetime import date
+# 关联问题单
+from apps.project.schemas.problem import ProblemModelOutSchema
 
 # 删除schema
 class DeleteSchema(Schema):
@@ -16,6 +18,8 @@ class CaseStepSchema(ModelSchema):
 class CaseModelOutSchema(ModelSchema):
     testStep: List[CaseStepSchema]
     testType: str  # 用例额外字段，用于测试类型FT的标识给前端
+    # 新增：关联的问题单
+    problem: Optional[ProblemModelOutSchema] = None
 
     class Config:
         model = Case

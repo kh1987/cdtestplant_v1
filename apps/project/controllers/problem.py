@@ -10,10 +10,10 @@ from typing import List, Optional
 from utils.chen_response import ChenResponse
 from utils.codes import HTTP_INDEX_ERROR
 from django.shortcuts import get_object_or_404
-from apps.project.models import Project, Design, Dut, Round, TestDemand, TestDemandContent, Case, CaseStep, Problem
+from apps.project.models import Case, CaseStep, Problem
 from apps.project.schemas.problem import DeleteSchema, ProblemModelOutSchema, ProblemFilterSchema, \
     ProblemTreeReturnSchema, ProblemTreeInputSchema, ProblemCreateOutSchema, ProblemCreateInputSchema, \
-    ProblemSingleInputSchema, ProblemUpdateInputSchema
+    ProblemSingleInputSchema, ProblemUpdateInputSchema, ProblemFilterWithHangSchema
 from utils.util import get_str_abbr
 
 @api_controller("/project", auth=JWTAuth(), permissions=[IsAuthenticated], tags=['问题单系列'])
@@ -62,7 +62,8 @@ class ProblemController(ControllerBase):
                url_name="problem-allList")
     @transaction.atomic
     @paginate(MyPagination)
-    def get_all_problems(self, round_key: Optional[str] = False, data: ProblemFilterSchema = Query(...)):
+    def get_all_problems(self, round_key: Optional[str] = False, data: ProblemFilterWithHangSchema = Query(...)):
+
         for attr, value in data.__dict__.items():
             if getattr(data, attr) is None:
                 setattr(data, attr, '')
@@ -122,7 +123,19 @@ class ProblemController(ControllerBase):
                         if case_obj.id == re_case.id:
                             related = True
                     setattr(pro_obj, "related", related)
-        return query_final
+        # 过滤查询悬挂逻辑
+        query_last = []
+        if data.hang == '3':
+            query_last = query_final
+        if data.hang == '2':
+            for pp in query_final:
+                if not pp.hang:
+                    query_last.append(pp)
+        if data.hang == '1':
+            for pp in query_final:
+                if pp.hang is True:
+                    query_last.append(pp)
+        return query_last
 
     # 添加问题单
     @route.post("/problem/save", response=ProblemCreateOutSchema, url_name="problem-create")

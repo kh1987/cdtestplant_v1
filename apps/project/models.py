@@ -182,7 +182,8 @@ class Design(CoreModel):
     source = models.CharField(max_length=64, blank=True, null=True, default='', verbose_name='接口来源', help_text='接口来源')
     to = models.CharField(max_length=64, blank=True, null=True, default='', verbose_name='接口目的地', help_text='接口目的地')
     type = models.CharField(max_length=64, blank=True, null=True, default='', verbose_name='接口类型', help_text='接口类型')
-    protocal = models.CharField(max_length=64, blank=True, null=True, default='', verbose_name='接口协议', help_text='接口协议')
+    # 注意：该字段改为接口数据
+    protocal = models.CharField(max_length=64, blank=True, null=True, default='', verbose_name='接口数据', help_text='接口数据')
 
     def __str__(self):
         return f'设计需求:{self.name}'
@@ -337,6 +338,8 @@ class Contact(CoreModel):
     key = models.IntegerField(auto_created=True, verbose_name="公司编号", help_text="公司编号")
     # 新增地址
     addr = models.CharField(max_length=64, blank=True, verbose_name="公司地址", help_text="公司地址")
+    # 新增简称
+    refer_name = models.CharField(max_length=32, blank=True, verbose_name='公司简称', help_text='公司简称')
 
     def __str__(self):
         return f'联系方式:{self.name}'

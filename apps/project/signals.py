@@ -6,7 +6,7 @@ from django.dispatch import receiver
 from django.utils.functional import SimpleLazyObject
 from django.contrib.auth import get_user_model
 # 导入日志的模型
-from apps.user.models import TableOperationLog
+from apps.user.models import TableOperationLog, Users
 # 导入其他模型用于排除
 from apps.project.models import CaseStep, TestDemandContent
 # 导入异常处理
@@ -63,7 +63,8 @@ def set_request_locals(sender, **kwargs):
 def post_save_handler(sender, instance, created, **kwargs):
     """模型新增-操作日志填写"""
     # 注意排除日志模块、用例步骤表、测试项步骤表
-    if sender == TableOperationLog or sender == CaseStep or sender == TestDemandContent or sender == LoginLog or sender == OperationLog:
+    if (sender == TableOperationLog or sender == CaseStep or sender == TestDemandContent or sender == LoginLog or sender == OperationLog or sender
+            == Users):
         return
     user = get_current_user()
     ope_dict = {
@@ -79,7 +80,8 @@ def post_save_handler(sender, instance, created, **kwargs):
 def post_delete_handler(sender, instance, **kwargs):
     """模型删除-操作日志填写"""
     # 注意排除日志模块、用例步骤表、测试项步骤表
-    if sender == TableOperationLog or sender == CaseStep or sender == TestDemandContent or sender == LoginLog or sender == OperationLog:
+    if (sender == TableOperationLog or sender == CaseStep or sender == TestDemandContent or sender == LoginLog or sender == OperationLog or sender
+            == Users):
         return
     user = get_current_user()
     ope_dict = {

@@ -20,7 +20,7 @@ def times_by_cover_time(cover_time: date) -> dict:
     }
 
 class DocTime:
-    def __init__(self, project_id):
+    def __init__(self, project_id: int):
         self.project = get_object_or_404(Project, id=project_id)
         # 用户录入时间-项目
         self.p_start = self.project.beginTime  # 被测件接收时间/

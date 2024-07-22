@@ -6,6 +6,8 @@ from utils.chen_pagination import MyPagination
 from ninja_extra.permissions import IsAuthenticated, IsAdminUser
 from ninja import Query
 from django.db import transaction
+from django.contrib.auth import authenticate
+from django.shortcuts import get_object_or_404
 from ninja_jwt.tokens import RefreshToken
 from ninja_jwt.authentication import JWTAuth
 from ninja_jwt.controller import TokenObtainPairController
@@ -14,16 +16,16 @@ from typing import List
 from utils.chen_response import ChenResponse
 from apps.user.schema import UserInfoOutSchema, CreateUserSchema, CreateUserOutSchema, UserRetrieveInputSchema, \
     UserRetrieveOutSchema, UpdateDeleteUserSchema, UpdateDeleteUserOutSchema, DeleteUserSchema, LogOutSchema, \
-    LogInputSchema, LogDeleteInSchema
-from apps.user.models import TableOperationLog
-
+    LogInputSchema, LogDeleteInSchema, AdminModifyPasswordSchema
+from apps.user.models import TableOperationLog, Users as UserClass
+from apps.project.models import Project
 # 工具函数
 from utils.chen_crud import update, multi_delete
 from apps.user.tools.ldap_tools import load_ldap_users
 # 导入登录日志函数
 from utils.log_util.request_util import save_login_log
 
-Users = get_user_model()
+Users: UserClass = get_user_model()
 
 # 定义用户登录接口，包含token刷新和生成
 @api_controller("/system", tags=['用户token控制和登录接口'])
@@ -56,7 +58,7 @@ class UserTokenController(TokenObtainPairController):
 @api_controller("/system/user", tags=['用户管理'], auth=JWTAuth())
 class UserManageController(ControllerBase):
     # 用户创建接口
-    @route.post("/save", response={201: CreateUserOutSchema}, url_name="user_create", auth=JWTAuth(), permissions=[IsAuthenticated, IsAdminUser])
+    @route.post("/save", response=CreateUserOutSchema, url_name="user_create", auth=JWTAuth(), permissions=[IsAuthenticated, IsAdminUser])
     def create_user(self, user_schema: CreateUserSchema):
         user = user_schema.create()
         return user
@@ -64,8 +66,16 @@ class UserManageController(ControllerBase):
     # 给前端传所有用户当做字典
     @route.get('/list', response=List[UserRetrieveOutSchema], url_name="user_list", auth=None)
     @transaction.atomic
-    def list_user(self):
+    def list_user(self, project_id: int = None):
+        """如果传了project_id则返回项目中的成员而非全部用户"""
         qs = Users.objects.all()
+        if project_id is not None:
+            project_obj = get_object_or_404(Project, id=project_id)
+            all_member: list = project_obj.member
+            # 将member和duty_person联合
+            if project_obj.duty_person not in project_obj.member:
+                all_member.append(project_obj.duty_person)
+            qs = qs.filter(name__in=all_member)
         return qs
 
     # 用户检索接口
@@ -118,14 +128,27 @@ class UserManageController(ControllerBase):
         user.save()
         return user.status
 
+    @route.post("/modifyPassword", auth=JWTAuth(), permissions=[IsAuthenticated, IsAdminUser])
+    def modify_password(self, payload: AdminModifyPasswordSchema):
+        user: UserClass = self.context.request.user
+        if user:
+            # 判断就密码是否正确
+            user_old = authenticate(username=user.username, password=payload.oldPassword)
+            if not user_old:
+                return ChenResponse(status=500, code=500, message='旧密码错误，请检查')
+            user.set_password(payload.newPassword)
+            user.save()
+            return ChenResponse(status=200, code=200, message='管理员修改密码成功')
+
+    # 用户登录后动态读取LDAP用户录入数据
     @route.get("/ldap", url_name='user-ldap')
     def load_ldap(self):
         try:
             load_ldap_users()
-            return ChenResponse(status=200, code=200, message='加载LDAP用户成功，并同步数据库')
+            return ChenResponse(status=200, code=200, message='连接LDAP服务器成功，同步用户数据')
         except Exception as exc:
             print(exc)
-            return ChenResponse(status=500, code=500, message='加载LDAP用户错误')
+            return ChenResponse(status=200, code=200, message='欢迎您，正在外网访问')
 
 # 操作日志接口
 @api_controller("/system/log", tags=['日志记录'], auth=JWTAuth())

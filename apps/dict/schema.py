@@ -72,11 +72,12 @@ class DeleteSchema(Schema):
 class ContactOut(ModelSchema):
     class Config:
         model = Contact
-        include = ('id', 'entrust_person', 'name', 'key', 'update_datetime', 'addr')
+        include = ('id', 'entrust_person', 'name', 'refer_name', 'key', 'update_datetime', 'addr')
 
 class ContactListInputSchema(Schema):
     key: Union[str, int] = Field(None, alias='key')
     name: str = Field(None, alias='name')
+    refer_name: str = Field(None, alias='refer_name')
     entrust_person: str = Field(None, alias='entrust_person')
     addr: str = Field(None, alias='addr')
 

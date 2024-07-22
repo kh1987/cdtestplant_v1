@@ -1,6 +1,5 @@
 import ldap
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import Group
 
 def load_ldap_users(url='ldap://dns.paisat.cn:389',
                     dn="CN=Administrator,CN=Users,DC=sstc,DC=ctu",

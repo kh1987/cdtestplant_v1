@@ -171,7 +171,11 @@ class ContactController(ControllerBase):
         key_qs = Contact.objects.filter(key=str(data.key))
         if len(key_qs) > 0:
             return ChenResponse(code=400, status=400, message="公司或单位的编号重复，请修改")
-        # 正常添加
+        # 全称判重
+        name_qs = Contact.objects.filter(name=data.name)
+        if len(name_qs) > 0:
+            return ChenResponse(code=400, status=400, message="全称重复，请修改")
+
         qs = Contact.objects.create(**assert_dict)
         return qs
 
@@ -187,6 +191,11 @@ class ContactController(ControllerBase):
                 key_qs = Contact.objects.filter(key=str(data.key))
                 if len(key_qs) > 0:
                     return ChenResponse(code=400, status=400, message="公司或单位的编号重复，请修改")
+            if qs.name != data.name:
+                name_qs = Contact.objects.filter(name=data.name)
+                print(name_qs)
+                if len(name_qs) > 0:
+                    return ChenResponse(code=400, status=400, message="全称重复，请修改")
             # 更新联系人数据
             for attr, value in data.__dict__.items():
                 setattr(qs, attr, value)
@@ -205,8 +214,8 @@ class CommonController(ControllerBase):
     @route.get("/getNoticeList")
     def get_notice(self, pageSize, orderBy, orderType):
         item_list = []
-        item1 = {"title": "测试管理平台V0.0.1测试发布", "created_at": "2023-09-23",
-                 "content": "测试管理平台V0.0.1发布，正在进行内部测试.."}
+        item1 = {"title": "测试管理平台V0.0.2测试发布", "created_at": "2023-09-23",
+                 "content": "测试管理平台V0.0.2发布，正在进行内部测试.."}
         item_list.append(item1)
         item2 = {"title": "测试管理平台更新公共", "created_at": "2024-06-17", "content": "<p>1.修改大纲和报告模版<p><p>2.修复多个bug<p>"}
         item_list.append(item2)

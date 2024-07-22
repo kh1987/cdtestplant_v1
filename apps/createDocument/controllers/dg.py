@@ -228,7 +228,7 @@ class GenerateControllerDG(ControllerBase):
         project_name = project_qs.name
         interfaceNameList = []
         # 查询接口列表
-        iters = project_qs.psField.filter(demandType=3)
+        iters = project_qs.psField.filter(demandType=3) # todo：有固定代码
         iters_length = len(iters)
         index = 0
         for inter in iters:
@@ -239,25 +239,20 @@ class GenerateControllerDG(ControllerBase):
         # 对每个接口进行字典处理
         interface_list = []
         for interface in iters:
-            parser = RichParser(interface.description)
             interface_dict = {
                 'name': interface.name,
                 'ident': interface.ident,
-                'desc': "，".join(parser.get_final_p_list()),
                 'source': interface.source,
                 'to': interface.to,
                 'type': interface.type,
-                'protocal': interface.protocal,
+                'protocal': interface.protocal, # todo：protocal修改为data
             }
-            # 对接口类型设计需求的描述进行处理，不提取图片
             interface_list.append(interface_dict)
-        # 渲染文档
         context = {
             'project_name': project_name,
             'iters': interfaceNameList,
             'iter_list': interface_list,
         }
-        ### TODO:生成接口列表
         return create_dg_docx('被测软件接口.docx', context, id)
 
     # 生成被测软件性能章节

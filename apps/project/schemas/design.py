@@ -52,7 +52,7 @@ class DesignCreateInputSchema(Schema):
     demandType: str = Field(None, alias="demandType")
     description: str = Field(None, alias="description")
     chapter: str = Field(None, alias='chapter')
-    # 接口特殊的4个字段
+    # 接口独有的4个字段
     source: str = Field('', alias='source')
     to: str = Field('', alias='to')
     type: str = Field('', alias='type')

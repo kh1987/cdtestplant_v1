@@ -15,6 +15,8 @@ from utils.chen_crud import create, multi_delete_project
 from apps.project.models import Project, Round
 from apps.project.schemas.project import ProjectRetrieveSchema, ProjectFilterSchema, ProjectCreateInput, DeleteSchema
 from utils.util import get_str_dict
+# 时间处理模块
+from apps.project.tool.timeList import time_return_to
 
 media_path = Path.cwd() / 'media'
 base_document_path = Path.cwd() / 'conf/base_document'
@@ -228,3 +230,10 @@ class ProjectController(ControllerBase):
             'time_line': timers,
             'statistics': data_list,
         }
+
+    # 看板页面的生成文档时间接口
+    @route.get('/document_time_show')
+    @transaction.atomic
+    def document_time_show(self, id: int):
+        time = time_return_to(id)
+        return time

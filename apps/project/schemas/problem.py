@@ -1,13 +1,13 @@
 import json
 from apps.project.models import Problem
 from ninja import Field, Schema, ModelSchema
-from typing import List, Optional
+from typing import List, Optional, Any
 
 # 删除schema
 class DeleteSchema(Schema):
     ids: List[int]
 
-# 测试项-输出schema
+# 问题单-输出schema
 class ProblemModelOutSchema(ModelSchema):
     related: Optional[bool] = Field(False)  # 给前端反应是否为关联的问题单
     hang: bool = Field(False)  # 给前端反应是否是悬挂状态（即没有关联case）
@@ -16,7 +16,7 @@ class ProblemModelOutSchema(ModelSchema):
         model = Problem
         model_exclude = ['case', 'remark', 'sort']
 
-# 查询测试项
+# 查询问题单
 class ProblemFilterSchema(Schema):
     project_id: int = Field(None, alias='projectId')
     round_id: str = Field(None, alias='round')
@@ -33,6 +33,10 @@ class ProblemFilterSchema(Schema):
     grade: str = Field(None, alias='grade')
     operation: str = Field(None, alias='operation')
     postPerson: str = Field(None, alias='postPerson')
+
+class ProblemFilterWithHangSchema(ProblemFilterSchema):
+    # 搜索增加hang字段
+    hang: str = Field('3', alias='hang')
 
 # 处理树状结构的schema
 class ProblemTreeReturnSchema(Schema):

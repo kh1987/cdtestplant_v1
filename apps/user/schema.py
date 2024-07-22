@@ -4,8 +4,7 @@ from ninja_schema import ModelSchema, model_validator, Schema
 from ninja_extra.exceptions import APIException
 from ninja_extra import status
 from datetime import datetime
-from typing import List, Optional
-from utils.chen_response import ChenResponse
+from typing import List
 from ninja import Field
 
 UserModel = Users
@@ -27,7 +26,7 @@ class GroupSchema(ModelSchema):
 class CreateUserSchema(ModelSchema):
     class Config:
         model = UserModel
-        include = ('username', 'email', 'name', 'password', 'phone', 'status',)
+        include = ('username', 'name', 'password', 'phone', 'status',)
 
     # username判重
     @model_validator("username")
@@ -38,7 +37,7 @@ class CreateUserSchema(ModelSchema):
 
     def create(self):
         # 注意这里使用exclude_none，dict()方式属于pydantic
-        return UserModel.objects.create_user(**self.dict(exclude_none=True))
+        return UserModel.objects.create_user(**self.dict(exclude_none=True),email='xxx@qq.com')
 
 # schema:作用于创建用户后response
 class CreateUserOutSchema(ModelSchema):
@@ -70,7 +69,7 @@ class UserRetrieveOutSchema(ModelSchema):
 class UpdateDeleteUserSchema(ModelSchema):
     class Config:
         model = UserModel
-        include = ("name", "username", "phone", "email", "status")
+        include = ("name", "username", "phone", "status")
 
 class UpdateDeleteUserOutSchema(Schema):
     message: str
@@ -78,6 +77,7 @@ class UpdateDeleteUserOutSchema(Schema):
 class DeleteUserSchema(Schema):
     ids: List[int]
 
+# ~~~~~~~~~~~~~~~~~~~~日志schema~~~~~~~~~~~~~~~~~~~~
 # 操作日志的schema
 class LogOutSchema(Schema):
     id: int
@@ -94,3 +94,9 @@ class LogInputSchema(Schema):
 # 操作日志的删除输入
 class LogDeleteInSchema(Schema):
     day: int = Field(7, ge=0, description='删除多少天前的数据')
+
+# 管理员修改密码
+class AdminModifyPasswordSchema(Schema):
+    newPassword: str
+    newPassword_confirmation: str
+    oldPassword: str
