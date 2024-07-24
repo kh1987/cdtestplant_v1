@@ -4,8 +4,8 @@ from cdtestplant_v1.parser import MyParser
 from cdtestplant_v1.renderer import MyRenderer
 
 api = ChenNinjaAPI(
-    title="成都测试平台API",
-    description="成都测试平台的接口一系列接口函数",
+    title="测试管理平台API",
+    description="测试管理平台的接口一系列接口函数",
     urls_namespace="cdtestplant_v1",
     parser=MyParser(),
     renderer=MyRenderer(),

@@ -1,4 +1,3 @@
-from ninja_schema import Schema
 from django.shortcuts import get_object_or_404
 
 # 这个函数参数1：request、参数2：schema或schema.dict()、参数3：ORM模型

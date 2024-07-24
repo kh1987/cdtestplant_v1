@@ -5,6 +5,6 @@ from .api import api
 
 urlpatterns = [
     path("api/",api.urls),
-    # 这样可以url访问路径
-    re_path(r'media/(?P<path>.*)$',serve,{'document_root':settings.MEDIA_ROOT}),
+    # 访问静态资源
+    re_path(r'uploads/(?P<path>.*)$',serve,{'document_root':settings.MEDIA_ROOT}),
 ]

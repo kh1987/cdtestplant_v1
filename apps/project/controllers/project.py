@@ -54,6 +54,12 @@ class ProjectController(ControllerBase):
             qs = qs.filter(soft_type=filters.soft_type)
         return qs
 
+    @route.get("/findOneById/{int:project_id}", response=ProjectRetrieveSchema)
+    @transaction.atomic
+    def get_project_by_id(self, project_id: int):
+        project_obj = get_object_or_404(Project, id=project_id)
+        return project_obj
+
     @route.post("/save")
     @transaction.atomic
     def create_project(self, data: ProjectCreateInput):
