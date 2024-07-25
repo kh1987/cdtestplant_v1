@@ -16,9 +16,20 @@ def update(request, id, data, model):
     instance.save()
     return instance
 
+# 更新便捷函数-无request参数 -> data参数为schema对象
+def updateWithoutRequestParam(id, data, model):
+    dict_data = data.model_dump(exclude_none=True)
+    instance = get_object_or_404(model, id=id)
+    for attr, value in dict_data.items():
+        if attr != 'id': # 不对id更新
+            setattr(instance, attr, value)
+    instance.save()
+    return instance
+
 # 多个id删除便捷函数，参数1:ids数组，参数2：ORM模型
 def multi_delete(ids, model):
     for item in ids:
+        # 删除多对多关系 - project
         instance = get_object_or_404(model, pk=item)
         instance.delete()
     pass
