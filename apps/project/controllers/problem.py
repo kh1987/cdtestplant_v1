@@ -63,7 +63,6 @@ class ProblemController(ControllerBase):
     @transaction.atomic
     @paginate(MyPagination)
     def get_all_problems(self, round_key: Optional[str] = False, data: ProblemFilterWithHangSchema = Query(...)):
-
         for attr, value in data.__dict__.items():
             if getattr(data, attr) is None:
                 setattr(data, attr, '')
@@ -125,7 +124,7 @@ class ProblemController(ControllerBase):
                     setattr(pro_obj, "related", related)
         # 过滤查询悬挂逻辑
         query_last = []
-        if data.hang == '3':
+        if data.hang == '3' or data.hang == '': # 疑问：为什么会是空字符串
             query_last = query_final
         if data.hang == '2':
             for pp in query_final:

@@ -70,7 +70,7 @@ class ProblemCreateInputSchema(Schema):
     ident: str = Field(None, alias='ident')
     name: str = Field(None, alias='name')
     grade: str = Field(None, alias='grade')
-    operation: str = Field(None, alias='operation')
+    operation: str = Field("", alias='operation') # !重要：由于保存到数据库为null，则查询空字符串无法查询出来
     result: str = Field(None, alias='result')
     status: str = Field(None, alias='status')
     type: str = Field(None, alias='type')

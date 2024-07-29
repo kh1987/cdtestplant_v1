@@ -28,6 +28,7 @@ class FragmentOutSchema(ModelSchema):
         model = Fragment
         fields = ['id', 'name', 'belong_doc', 'project', 'is_main', 'content']
 
+
 ## 更新文档片段
 class FragmentUpdateSchema(Schema):
     name: str = None

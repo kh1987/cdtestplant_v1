@@ -47,7 +47,7 @@ class DesignController(ControllerBase):
         dut_key = "".join([payload.round_key, "-", payload.dut_key])
         # 判重标识-不需要再查询round以后的
         if Design.objects.filter(project__id=payload.project_id, round__key=payload.round_key, dut__key=dut_key,
-                                 ident=payload.ident).exists():
+                                 ident=payload.ident).exists() and asert_dict['ident'] != "":
             return ChenResponse(code=400, status=400, message='研制需求的标识重复，请检查')
         # 查询当前key应该为多少
         design_count = Design.objects.filter(project__id=payload.project_id, dut__key=dut_key).count()
@@ -94,7 +94,7 @@ class DesignController(ControllerBase):
     def update_design(self, id: int, payload: DesignCreateInputSchema):
         design_search = Design.objects.filter(project__id=payload.project_id, ident=payload.ident)
         # 判断是否和同项目同轮次的标识重复
-        if len(design_search) > 1:
+        if len(design_search) > 1 and payload.ident != '':
             return ChenResponse(code=400, status=400, message='研制需求的标识重复，请检查')
         # 查到当前
         design_qs = Design.objects.get(id=id)

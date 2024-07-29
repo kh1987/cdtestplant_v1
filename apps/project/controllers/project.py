@@ -75,7 +75,14 @@ class ProjectController(ControllerBase):
             # 在新增项目时，将/conf/base_document 移动到 /media/{项目ident}/下面
             src_dir = base_document_path
             dist_dir = media_path / qs.ident
-            copytree(src_dir, dist_dir)  # shutil模块直接是复制并命名，如果命名文件存在则抛出FileExists异常
+            try:
+                copytree(src_dir, dist_dir)  # shutil模块直接是复制并命名，如果命名文件存在则抛出FileExists异常
+            except PermissionError:
+                return ChenResponse(code=500, status=500, message="错误，检查是否打开了服务器的conf中的文档，关闭后重试")
+            except FileExistsError:
+                return ChenResponse(code=500, status=500, message='文件标识已存在或输入为空格，请修改')
+            except FileNotFoundError:
+                return ChenResponse(code=500, status=500, message='文件不存在，请检查')
             return ChenResponse(code=200, status=200, message="添加项目成功，并添加第一轮测试")
 
     @route.put("/update/{project_id}")
@@ -102,7 +109,11 @@ class ProjectController(ControllerBase):
                     d.ident = d.ident.replace(old_ident, new_ident)
                     d.save()
             except PermissionError:
-                return ChenResponse(code=500, status=500, message="请关闭文件资源管理器再试")
+                return ChenResponse(code=500, status=500, message="错误，请关闭文件资源管理器再试")
+            except FileExistsError:
+                return ChenResponse(code=500, status=500, message='文件标识已存在或输入为空格，请修改')
+            except FileNotFoundError:
+                return ChenResponse(code=500, status=500, message='文件不存在，请检查')
         return ChenResponse(code=200, status=200, message="项目更新成功")
 
     @route.delete("/delete")

@@ -34,7 +34,7 @@ class DesignTreeInputSchema(Schema):
     key: str = Field(None, alias='key')
     level: str = Field(None, alias='level')
 
-# 增加设计需求
+# 增加设计需求/更新设计需求
 class DesignCreateOutSchema(ModelSchema):
     level: Union[str, int]
 
@@ -47,7 +47,7 @@ class DesignCreateInputSchema(Schema):
     project_id: int = Field(..., alias="projectId")
     round_key: str = Field(..., alias="round")
     dut_key: str = Field(..., alias="dut")
-    ident: str = Field(None, alias="ident")
+    ident: str = Field("", alias="ident")
     name: str = Field(None, alias="name")
     demandType: str = Field(None, alias="demandType")
     description: str = Field(None, alias="description")
