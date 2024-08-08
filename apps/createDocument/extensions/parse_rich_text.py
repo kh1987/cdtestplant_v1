@@ -80,6 +80,8 @@ class RichParser:
                 final_list.append(InlineImage(doc, io.BytesIO(base64_bytes), width=Mm(img_size)))
             else:
                 final_list.append(oneline)
+        if len(final_list) <= 0:
+            final_list.append("")
         return final_list
 
     # 5.最终方法，去掉图片和table元素 -> 纯文本列表

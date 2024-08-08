@@ -8,6 +8,7 @@ from tinymce.models import HTMLField
 def create_list():
     return []
 
+# 暂时无用但不想修改数据库结构
 def create_list_1():
     return ['1']
 

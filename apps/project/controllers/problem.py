@@ -1,3 +1,4 @@
+import datetime
 import numpy as np
 from ninja_extra import api_controller, ControllerBase, route
 from ninja import Query
@@ -10,7 +11,7 @@ from typing import List, Optional
 from utils.chen_response import ChenResponse
 from utils.codes import HTTP_INDEX_ERROR
 from django.shortcuts import get_object_or_404
-from apps.project.models import Case, CaseStep, Problem
+from apps.project.models import Case, CaseStep, Problem, Project
 from apps.project.schemas.problem import DeleteSchema, ProblemModelOutSchema, ProblemFilterSchema, \
     ProblemTreeReturnSchema, ProblemTreeInputSchema, ProblemCreateOutSchema, ProblemCreateInputSchema, \
     ProblemSingleInputSchema, ProblemUpdateInputSchema, ProblemFilterWithHangSchema
@@ -124,7 +125,7 @@ class ProblemController(ControllerBase):
                     setattr(pro_obj, "related", related)
         # 过滤查询悬挂逻辑
         query_last = []
-        if data.hang == '3' or data.hang == '': # 疑问：为什么会是空字符串
+        if data.hang == '3' or data.hang == '':  # 疑问：为什么会是空字符串
             query_last = query_final
         if data.hang == '2':
             for pp in query_final:
@@ -136,23 +137,38 @@ class ProblemController(ControllerBase):
                     query_last.append(pp)
         return query_last
 
+    @staticmethod
+    def __date_solve(payload: ProblemCreateInputSchema):
+        """辅助函数：设置问题单时间，而不是默认进入时间，传入schema对象，返回schema对象，只对里面时间进行处理"""
+        project_obj = get_object_or_404(Project, id=payload.project_id)
+        round_obj = project_obj.pField.filter(key=payload.round_key).first()
+        if round_obj:
+            if payload.postDate is None:
+                payload.postDate = round_obj.beginTime + datetime.timedelta(days=1)
+            if payload.designDate is None:
+                payload.designDate = round_obj.beginTime + datetime.timedelta(days=2)
+        return payload
+
     # 添加问题单
     @route.post("/problem/save", response=ProblemCreateOutSchema, url_name="problem-create")
     @transaction.atomic
     def create_case_demand(self, payload: ProblemCreateInputSchema):
+        print(payload)
+        payload = self.__date_solve(payload)
         asert_dict = payload.dict()
         # 查询problem的总数
         problem_count = Problem.objects.filter(project_id=payload.project_id).count()
         # 查询当前各个前面节点的instance
-        asert_dict.pop("round_key")
-        asert_dict.pop("dut_key")
-        asert_dict.pop("design_key")
-        asert_dict.pop("test_key")
-        asert_dict.pop("case_key")
+        pop_keys: List[str] = ["round_key", "dut_key", "design_key", "test_key", "case_key"]
+        for pkey in pop_keys:
+            asert_dict.pop(pkey)
         # 处理问题单标识PT_项目ident_数目依次增加
         asert_dict["ident"] = str(problem_count + 1)
-        # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         qs = Problem.objects.create(**asert_dict)
+        # 处理时间
+        qs.postDate = payload.postDate
+        qs.designDate = payload.designDate
+        qs.save()
         # 由于有不关联用例直接创建问题单，所以如下处理
         if payload.case_key:
             # 构造case_key

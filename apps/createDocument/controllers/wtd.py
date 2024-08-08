@@ -90,24 +90,19 @@ class GenerateControllerWtd(ControllerBase):
             rich_parser = RichParser(problem.operation)
             desc_list.extend(rich_parser.get_final_list(doc))
 
-            # 问题影响 - Html解析
-            desc_list_result = ['\a【问题影响】']
-            rich_parser2 = RichParser(problem.operation)
+            # 问题影响
+            desc_list_result = [f'\a【问题影响】\a{problem.result}']
             desc_list.extend(desc_list_result)
-            desc_list.extend(rich_parser2.get_final_list(doc))
             # 问题描述赋值
+            print(desc_list)
             problem_dict['desc'] = desc_list
 
             # 4.原因分析
-            desc_list_3 = ['【原因分析】']
-            rich_parser3 = RichParser(problem.analysis)
-            desc_list_3.extend(rich_parser3.get_final_list(doc))
+            desc_list_3 = [f'【原因分析】\a{problem.analysis}']
             problem_dict['cause'] = desc_list_3
 
-            # 5.影响域分析
-            desc_list_4 = ['【影响域分析】']
-            rich_parser4 = RichParser(problem.effect_scope)
-            desc_list_4.extend(rich_parser4.get_final_list(doc))
+            # 5.影响域分析~~~~
+            desc_list_4 = [f'【影响域分析】\a{problem.effect_scope}']
             problem_dict['effect_scope'] = desc_list_4
 
             # 6.改正措施

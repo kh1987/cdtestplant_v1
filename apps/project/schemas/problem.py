@@ -71,7 +71,7 @@ class ProblemCreateInputSchema(Schema):
     name: str = Field(None, alias='name')
     grade: str = Field(None, alias='grade')
     operation: str = Field("", alias='operation') # !重要：由于保存到数据库为null，则查询空字符串无法查询出来
-    result: str = Field(None, alias='result')
+    result: str = Field("", alias='result') # 问题影响
     status: str = Field(None, alias='status')
     type: str = Field(None, alias='type')
     postPerson: str = Field(None, alias='postPerson')
@@ -82,11 +82,11 @@ class ProblemCreateInputSchema(Schema):
     verifyDate: str = Field(None, alias='verifyDate')
     closeMethod: List[str]
     # 2024年3月27日新增-处理方式字段
-    solve: Optional[str] = None
+    solve: Optional[str] = ""
     # 2024年5月13日新增
-    analysis: str = Field(None, alias='analysis')
-    effect_scope: str = Field(None, alias='effect_scope')
-    verify_result: str = Field(None, alias='verify_result')
+    analysis: str = Field("", alias='analysis')
+    effect_scope: str = Field("", alias='effect_scope')
+    verify_result: str = Field("", alias='verify_result')
 
 # 不带round_key、dut_key、design_key、test_key、case_key的更新Schema
 class ProblemUpdateInputSchema(Schema):
