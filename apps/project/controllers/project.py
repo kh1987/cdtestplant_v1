@@ -68,7 +68,7 @@ class ProjectController(ControllerBase):
         if ident_qucover:
             return ChenResponse(code=400, status=400, message="项目标识重复，请重新设置")
         qs = create(self.context.request, data_dict, Project)
-        # 创建项目时候添加第一轮测试
+        # 创建项目时候自动添加第一轮测试
         if qs:
             Round.objects.create(project_id=qs.id, key='0', level='0', title='第1轮测试', name='第1轮测试',
                                  remark='第一轮测试', ident=''.join([qs.ident, '-R1']))
