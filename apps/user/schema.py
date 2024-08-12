@@ -1,6 +1,7 @@
 from apps.user.models import Users
 from django.contrib.auth.models import Group
 from ninja_schema import ModelSchema, model_validator, Schema
+from pydantic import field_validator
 from ninja_extra.exceptions import APIException
 from ninja_extra import status
 from datetime import datetime
@@ -30,6 +31,7 @@ class CreateUserSchema(ModelSchema):
 
     # username判重
     @model_validator("username")
+    @classmethod
     def unique_username(cls, value):
         if UserModel.objects.filter(username__icontains=value).exists():
             raise UsernameException()
@@ -37,7 +39,7 @@ class CreateUserSchema(ModelSchema):
 
     def create(self):
         # 注意这里使用exclude_none，dict()方式属于pydantic
-        return UserModel.objects.create_user(**self.dict(exclude_none=True),email='xxx@qq.com')
+        return UserModel.objects.create_user(**self.dict(exclude_none=True), email='xxx@qq.com')
 
 # schema:作用于创建用户后response
 class CreateUserOutSchema(ModelSchema):
@@ -70,6 +72,18 @@ class UpdateDeleteUserSchema(ModelSchema):
     class Config:
         model = UserModel
         include = ("name", "username", "phone", "status")
+
+    def validate_unique_username(self, id: int):
+        user_filters = UserModel.objects.filter(username=self.username)
+        if len(user_filters) > 1:
+            raise UsernameException()
+        elif len(user_filters) == 1:
+            if user_filters[0].id == id:
+                return
+            else:
+                raise UsernameException()
+        else:
+            return
 
 class UpdateDeleteUserOutSchema(Schema):
     message: str

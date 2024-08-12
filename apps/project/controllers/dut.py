@@ -121,7 +121,7 @@ class DutController(ControllerBase):
                 ids.remove(id)
                 message = '源代码被测件不能删除，其他被测件删除成功...'
         multi_delete_dut(ids, Dut)
-        dut_all_qs = Dut.objects.filter(round__id=round_id)
+        dut_all_qs = Dut.objects.filter(round__id=round_id).order_by('id')
         ident_before_string = dut_all_qs[0].ident.split("UT")[0]  # 输出类似于“R2233-R1-”
         index = 0
         for single_qs in dut_all_qs:

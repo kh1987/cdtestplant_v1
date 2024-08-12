@@ -55,7 +55,7 @@ class RoundController(ControllerBase):
         instance.delete()
         # 注意：删除中间key必须发生变化，重写key
         ## 先查询出当前有多少轮次
-        round_all_qs = Round.objects.filter(project__id=project_id).order_by('key')
+        round_all_qs = Round.objects.filter(project__id=project_id).order_by('id')
         ## 按顺序将轮次的key从1~N排序
         index = 0
         for single_qs in round_all_qs:

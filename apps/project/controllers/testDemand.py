@@ -146,7 +146,7 @@ class TestDemandController(ControllerBase):
         design_key = test_demand_single.design.key
         multi_delete_testDemand(data.ids, TestDemand)
         index = 0
-        test_demand_all_qs = TestDemand.objects.filter(design__id=design_id)
+        test_demand_all_qs = TestDemand.objects.filter(design__id=design_id).order_by('id')
         for single_qs in test_demand_all_qs:
             test_demand_key = "".join([design_key, '-', str(index)])
             single_qs.key = test_demand_key

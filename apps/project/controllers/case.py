@@ -148,7 +148,7 @@ class CaseController(ControllerBase):
         test_key = case_single.test.key
         multi_delete_case(data.ids, Case)
         index = 0
-        case_all_qs = Case.objects.filter(test__id=test_id)
+        case_all_qs = Case.objects.filter(test__id=test_id).order_by('id')
         for single_qs in case_all_qs:
             case_key = "".join([test_key, '-', str(index)])
             single_qs.key = case_key

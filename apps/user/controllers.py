@@ -36,8 +36,11 @@ class UserTokenController(TokenObtainPairController):
     def obtain_token(self, user_token: schema.TokenObtainPairSerializer):
         """新版本有特性，后期修改"""
         # 注意TokenObtainPairSerializer是老版本，所以兼容，本质是TokenObtainPairInputSchema
-        user = user_token._user
+        user: UserClass = user_token._user
         if user:
+            # 判断是否为启用状态
+            if user.status == '2':
+                return ChenResponse(status=500, code=500, message='账号已被禁用，请联系管理员...')
             save_login_log(request=self.context.request, user=user)  # 保存登录日志
         refresh = RefreshToken.for_user(user)
         token = refresh.access_token  # type:ignore
@@ -103,6 +106,7 @@ class UserManageController(ControllerBase):
     def update_user(self, user_id: int, payload: UpdateDeleteUserSchema):
         if payload.username == "superAdmin":
             return ChenResponse(code=400, status=400, message="无法编辑，唯一管理员账号")
+        payload.validate_unique_username(user_id)
         update_user = update(self.context.request, user_id, payload, Users)
         return {"message": "用户更新成功"}
 

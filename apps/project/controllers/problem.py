@@ -153,7 +153,6 @@ class ProblemController(ControllerBase):
     @route.post("/problem/save", response=ProblemCreateOutSchema, url_name="problem-create")
     @transaction.atomic
     def create_case_demand(self, payload: ProblemCreateInputSchema):
-        print(payload)
         payload = self.__date_solve(payload)
         asert_dict = payload.dict()
         # 查询problem的总数

@@ -120,15 +120,14 @@ class DesignController(ControllerBase):
         dut_key = design_single.dut.key
         multi_delete_design(data.ids, Design)
         index = 0
-        design_all_qs = Design.objects.filter(dut__id=dut_id)
+        design_all_qs = Design.objects.filter(dut__id=dut_id).order_by('id')
         for single_qs in design_all_qs:
             design_key = "".join([dut_key, '-', str(index)])
             single_qs.key = design_key
             index = index + 1
             single_qs.save()
             design_delete_sub_node_key(single_qs)
-
-        return ChenResponse(message="研制需求删除成功！")
+        return ChenResponse(message="设计需求删除成功！")
 
     # 给复制功能级联选择器查询所有的设计需求
     @route.get("/designDemand/getRelatedDesign", url_name='dut-relatedDesign')
