@@ -4,6 +4,8 @@ from conf.env import *
 from conf.ninja_extra_settings import *
 import datetime
 from django_auth_ldap.config import LDAPSearch
+# 导入日志配置
+from conf.logConfig import LOGGING
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 

@@ -20,10 +20,14 @@ from apps.createDocument.extensions.util import create_dg_docx
 from apps.createDocument.extensions.parse_rich_text import RichParser
 from apps.createDocument.extensions.documentTime import DocTime
 from utils.path_utils import project_path
+# 记录生成日志
+from apps.createSeiTaiDocument.extensions.logger import GenerateLogger
 
 # @api_controller("/generate", tags=['生成大纲文档'], auth=JWTAuth(), permissions=[IsAuthenticated])
 @api_controller("/generate", tags=['生成大纲文档'])
 class GenerateControllerDG(ControllerBase):
+    logger = GenerateLogger('测评大纲')
+
     @route.get("/create/testdemand", url_name="create-testdemand")
     @transaction.atomic
     def create_testdemand(self, id: int):
@@ -63,6 +67,11 @@ class GenerateControllerDG(ControllerBase):
                     if tm_item == dict_item_qs.key:
                         testmethod_str += dict_item_qs.title + " "
             # 富文本解析
+            # ***Inspect-start：检查设计需求的描述是否为空***
+            if single_qs.design.description == '':
+                design_info = single_qs.design.ident + '-' + single_qs.design.name
+                self.logger.write_warning_log('测试项', f'设计需求中的描述为空，请检查 -> {design_info}')
+            # ***Inspect-end***
             html_parser = RichParser(single_qs.design.description)
             desc_list = html_parser.get_final_list(doc)
 
@@ -228,7 +237,7 @@ class GenerateControllerDG(ControllerBase):
         project_name = project_qs.name
         interfaceNameList = []
         # 查询接口列表
-        iters = project_qs.psField.filter(demandType=3) # todo：有固定代码
+        iters = project_qs.psField.filter(demandType=3)  # todo：有固定代码
         iters_length = len(iters)
         index = 0
         for inter in iters:
@@ -245,7 +254,7 @@ class GenerateControllerDG(ControllerBase):
                 'source': interface.source,
                 'to': interface.to,
                 'type': interface.type,
-                'protocal': interface.protocal, # todo：protocal修改为data
+                'protocal': interface.protocal,  # todo：protocal修改为data
             }
             interface_list.append(interface_dict)
         context = {

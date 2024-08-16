@@ -1,3 +1,4 @@
+"""该文件是：替换文档片段然后生成辅助生成最终文档"""
 from io import BytesIO
 from pathlib import Path
 from docx import Document
@@ -135,7 +136,7 @@ def generate_temp_doc(doc_type: str, project_id: int, round_num=None):
                                 copied_element_list.append(Paragraph(elet, doc_copied))
                             if isinstance(elet, CT_Tbl):
                                 copied_element_list.append(Table(elet, doc_copied))
-                        elem.clear() # 【一】用户设置lock
+                        elem.clear()  # 【一】用户设置lock
                         for para_copied in copied_element_list:
                             elem.append(para_copied._element)
 

@@ -25,10 +25,14 @@ from utils.path_utils import project_path
 from apps.createDocument.extensions.util import delete_dir_files
 from apps.createDocument.extensions.parse_rich_text import RichParser
 from apps.createDocument.extensions.documentTime import DocTime
+# 导入生成日志记录模块
+from apps.createSeiTaiDocument.extensions.logger import GenerateLogger
 
 # @api_controller("/generateBG", tags=['生成报告文档系列'], auth=JWTAuth(), permissions=[IsAuthenticated])
 @api_controller("/generateBG", tags=['生成报告文档系列'])
 class GenerateControllerBG(ControllerBase):
+    logger = GenerateLogger('测评报告')
+
     # important：删除之前的文件
     @route.get('/create/deleteBGDocument', url_name='delete-bg-document')
     def delete_bg_document(self, id: int):
@@ -496,7 +500,12 @@ class GenerateControllerBG(ControllerBase):
             if dut_so:
                 last_dut_so = dut_so
                 break
-
+        # ***Inspect-start***
+        if not last_dut_so:
+            self.logger.model = '测评报告'
+            self.logger.write_warning_log('总体结论', f'项目没创建轮次，请检查')
+            return
+        # ***Inspect-end***
         context = {
             'name': project_obj.name,
             'last_version': last_dut_so.version,

@@ -1,4 +1,3 @@
-import time
 from ninja_extra.controllers import api_controller, ControllerBase, route
 from ninja_jwt.authentication import JWTAuth
 from ninja_extra.permissions import IsAuthenticated

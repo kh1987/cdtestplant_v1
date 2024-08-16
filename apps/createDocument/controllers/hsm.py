@@ -24,12 +24,16 @@ from utils.path_utils import project_path
 from apps.createDocument.extensions.util import delete_dir_files
 from apps.createDocument.extensions.parse_rich_text import RichParser
 from apps.createDocument.extensions.documentTime import DocTime
+# 导入生成日志记录模块
+from apps.createSeiTaiDocument.extensions.logger import GenerateLogger
 
 chinese_round_name: list = ['一', '二', '三', '四', '五', '六', '七', '八', '九', '十']
 
 # @api_controller("/generateHSM", tags=['生成回归说明系列文档'], auth=JWTAuth(), permissions=[IsAuthenticated])
 @api_controller("/generateHSM", tags=['生成回归说明系列文档'])
 class GenerateControllerHSM(ControllerBase):
+    logger = GenerateLogger('回归测试说明')
+
     # important：删除之前的文件
     @route.get('/create/deleteHSMDocument', url_name='delete-hsm-document')
     def delete_hsm_document(self, id: int):
@@ -57,7 +61,11 @@ class GenerateControllerHSM(ControllerBase):
         # 取非第一轮次
         hround_list: QuerySet = project_obj.pField.exclude(key='0')
         if len(hround_list) < 1:
-            return ChenResponse(code=400, status=400, message='无其他轮次，请生成后再试')
+            # ***Inspect-start***
+            self.logger.model = '回归测试说明'
+            self.logger.write_warning_log('当前文档全部片段', f'该项目没有创建轮次')
+            # ***Inspect-end***
+            return ChenResponse(code=400, status=400, message='您未创建轮次，请创建完毕后再试')
 
         context = {
             'project_name': project_obj.name,
@@ -107,7 +115,7 @@ class GenerateControllerHSM(ControllerBase):
         # 非第一轮轮次对象
         hround_list: QuerySet = project_obj.pField.exclude(key='0')
         if len(hround_list) < 1:
-            return ChenResponse(code=400, status=400, message='无其他轮次，请生成后再试')
+            return
 
         context = {
             'project_obj': project_obj.name,
@@ -167,7 +175,7 @@ class GenerateControllerHSM(ControllerBase):
         # 非第一轮的轮次
         hround_list: QuerySet = project_obj.pField.exclude(key='0')
         if len(hround_list) < 1:
-            return ChenResponse(code=400, status=400, message='无其他轮次，请生成后再试')
+            return
         for hround in hround_list:
             std_documents_round = deepcopy(std_documents)
             # 取出当前轮次key
@@ -207,7 +215,7 @@ class GenerateControllerHSM(ControllerBase):
         # 非第一轮的轮次
         hround_list: QuerySet = project_obj.pField.exclude(key='0')
         if len(hround_list) < 1:
-            return ChenResponse(code=400, status=400, message='无其他轮次，请生成后再试')
+            return
         for hround in hround_list:
             context_round = deepcopy(context)
             cname = chinese_round_name[int(hround.key)]  # 输出二、三...
@@ -261,9 +269,9 @@ class GenerateControllerHSM(ControllerBase):
         # 非第一轮轮次对象
         hround_list: QuerySet = project_obj.pField.exclude(key='0')
         if len(hround_list) < 1:
-            return ChenResponse(code=400, status=400, message='无其他轮次，请生成后再试')
+            return
 
-        # 遍历非第一轮的轮次
+            # 遍历非第一轮的轮次
         for hround in hround_list:
             cname = chinese_round_name[int(hround.key)]  # var：输出二、三字样
             # 先查询dict字典，查出总共有多少个testType
@@ -360,7 +368,7 @@ class GenerateControllerHSM(ControllerBase):
         # 非第一轮轮次对象
         hround_list: QuerySet = project_obj.pField.exclude(key='0')
         if len(hround_list) < 1:
-            return ChenResponse(code=400, status=400, message='无其他轮次，请生成后再试')
+            return
         for hround in hround_list:
             # 先查询dict字典，查出总共有多少个testType
             test_type_len = Dict.objects.get(code='testType').dictItem.count()
@@ -417,7 +425,7 @@ class GenerateControllerHSM(ControllerBase):
         # 非第一轮轮次对象
         hround_list: QuerySet = project_obj.pField.exclude(key='0')
         if len(hround_list) < 1:
-            return ChenResponse(code=400, status=400, message='无其他轮次，请生成后再试')
+            return
         for hround in hround_list:
             cname = chinese_round_name[int(hround.key)]  # 输出二、三...
             # 先查询dict字典，查出总共有多少个testType
@@ -506,7 +514,7 @@ class GenerateControllerHSM(ControllerBase):
         hround_list: QuerySet = project_obj.pField.exclude(key='0')
         demand_prefix = '4.1'
         if len(hround_list) < 1:
-            return ChenResponse(code=400, status=400, message='无其他轮次，请生成后再试')
+            return
         for hround in hround_list:
             # 取出当前轮次key减1就是上一轮次
             cname = chinese_round_name[int(hround.key)]  # 输出二、三...

@@ -1,5 +1,3 @@
-import io
-import base64
 from copy import deepcopy
 from pathlib import Path
 from ninja_extra import api_controller, ControllerBase, route
@@ -7,24 +5,27 @@ from ninja_extra.permissions import IsAuthenticated
 from ninja_jwt.authentication import JWTAuth
 from django.db import transaction
 from django.db.models import QuerySet
-from docxtpl import DocxTemplate, RichText, InlineImage
-from docx.shared import Mm
-from apps.dict.models import Dict, DictItem
+from docxtpl import DocxTemplate
+from apps.dict.models import Dict
 from utils.chen_response import ChenResponse
 from django.shortcuts import get_object_or_404
 from typing import Union
 from apps.project.models import Dut, Project, Round
-from utils.util import get_list_dict, get_str_dict, get_ident, MyHTMLParser, get_case_ident
+from utils.util import get_list_dict, get_str_dict, get_ident, get_case_ident
 from utils.chapter_tools.csx_chapter import create_csx_chapter_dict
 from utils.path_utils import project_path
 from apps.createDocument.extensions.util import delete_dir_files
 from apps.createDocument.extensions.parse_rich_text import RichParser
+# 导入生成日志记录模块
+from apps.createSeiTaiDocument.extensions.logger import GenerateLogger
 
 chinese_round_name: list = ['一', '二', '三', '四', '五', '六', '七', '八', '九', '十']
 
 # @api_controller("/generateHSM", tags=['生成回归记录系列文档'], auth=JWTAuth(), permissions=[IsAuthenticated])
 @api_controller("/generateHJL", tags=['生成回归记录系列文档'])
 class GenerateControllerHJL(ControllerBase):
+    logger = GenerateLogger('回归测试记录')
+
     # important：删除之前的文件
     @route.get('/create/deleteHJLDocument', url_name='delete-hjl-document')
     def delete_hjl_document(self, id: int):
@@ -49,7 +50,11 @@ class GenerateControllerHJL(ControllerBase):
         # 取非第一轮次
         hround_list: QuerySet = project_obj.pField.exclude(key='0')
         if len(hround_list) < 1:
-            return ChenResponse(code=400, status=400, message='无其他轮次，请生成后再试')
+            # ***Inspect-start***
+            self.logger.model = '回归测试记录'
+            self.logger.write_warning_log('当前文档全部片段', f'该项目没有创建轮次')
+            # ***Inspect-end***
+            return ChenResponse(code=400, status=400, message='您未创建轮次，请创建完毕后再试')
 
         context = {
             'project_name': project_obj.name,
@@ -98,7 +103,7 @@ class GenerateControllerHJL(ControllerBase):
         project_obj = get_object_or_404(Project, id=id)
         hround_list: QuerySet = project_obj.pField.exclude(key='0')
         if len(hround_list) < 1:
-            return ChenResponse(code=400, status=400, message='无其他轮次，请生成后再试')
+            return
         demand_prefix = '4.1'
         # 循环每轮轮次对象
         for hround in hround_list:

@@ -104,7 +104,6 @@ class GenerateControllerSM(ControllerBase):
                         'operation': desc_list,
                         'expect': one.expect,
                     }
-                    print(step_dict)
                     step_list.append(step_dict)
                     index += 1
 

@@ -50,7 +50,7 @@ class DesignCreateInputSchema(Schema):
     ident: str = Field("", alias="ident")
     name: str = Field(None, alias="name")
     demandType: str = Field(None, alias="demandType")
-    description: str = Field(None, alias="description")
+    description: str = Field("", alias="description")
     chapter: str = Field(None, alias='chapter')
     # 接口独有的4个字段
     source: str = Field('', alias='source')

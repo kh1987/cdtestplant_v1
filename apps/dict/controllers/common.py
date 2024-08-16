@@ -4,6 +4,7 @@ from apps.project.models import Project
 from django.db import transaction
 from django.contrib.auth import get_user_model
 from utils.chen_response import ChenResponse
+from django.db.models import Q
 
 Users = get_user_model()
 
@@ -11,6 +12,7 @@ Users = get_user_model()
 @api_controller("/system", tags=['通用接口'])
 class CommonController(ControllerBase):
     """通用接口类：工作台内的信息"""
+
     @route.get("/getNoticeList")
     def get_notice(self, pageSize, orderBy, orderType):
         item_list = []
@@ -29,7 +31,7 @@ class CommonController(ControllerBase):
         project_qs = Project.objects.all()
         project_count = project_qs.count()
         project_done_count = project_qs.filter(step='3').count()
-        project_processing_count = project_qs.filter(step='1').count()
+        project_processing_count = project_qs.filter(Q(step='1') | Q(step='2')).count()
         return ChenResponse(data={'pcount': project_count, 'ucount': user_count,
                                   'pdcount': project_done_count, 'ppcount': project_processing_count})
 
