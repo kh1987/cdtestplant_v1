@@ -2,23 +2,47 @@ from apps.dict.models import Dict, DictItem
 from apps.project.models import TestDemand
 from html.parser import HTMLParser
 from django.db.models import QuerySet
+# 导入生成文档检查器log - 单例模式
+from apps.createSeiTaiDocument.extensions.logger import GenerateLogger
+
+logger = GenerateLogger(model='字典模块')
 
 # 传入一个字符串数字以及字典标志code，返回真实的title名字
 def get_str_dict(a, dict_code):
-    return DictItem.objects.get(dict__code=dict_code, key=a).title
+    dict_obj = DictItem.objects.filter(dict__code=dict_code, key=a).first()
+    if dict_obj:
+        return dict_obj.title
+    else:
+        # 如果用户没填写内容则记录检查中心log
+        logger.write_warning_log(fragment='字典数据缺失', message=f'字典数据{dict_code}数据缺失，请检查相应数据是否存在')
+        return ''
 
 # 传入一个字符串数字以及字典标志code，返回字典所属的缩写(show_title)
 def get_str_abbr(a, dict_code):
-    return DictItem.objects.get(dict__code=dict_code, key=a).show_title
+    dict_obj = DictItem.objects.filter(dict__code=dict_code, key=a).first()
+    if dict_obj:
+        return dict_obj.show_title
+    else:
+        logger.write_warning_log(fragment='字典数据缺失', message=f'查询字段数据缩写问题，字典数据{dict_code}数据可能缺失')
+        return ""
 
 # 传入一个字符串数组（测试项类型），字典标志code，返回(真实title,sort)
 def get_str_dict_plus(a, dict_code):
-    info = DictItem.objects.get(dict__code=dict_code, key=a)
-    return info.title, info.sort
+    dict_obj = DictItem.objects.filter(dict__code=dict_code, key=a).first()
+    if dict_obj:
+        return dict_obj.title, dict_obj.sort
+    else:
+        logger.write_warning_log(fragment='字典数据查询错误', message=f'字典{dict_code}未查询到数据，请检查')
+        return "", 1
 
 # 找到testType字典中的缩写，例如“DC”“FT”
 def get_testType(a, dict_code):
-    return DictItem.objects.get(dict__code=dict_code, key=a).show_title
+    dict_obj = DictItem.objects.filter(dict__code=dict_code, key=a).first()
+    if dict_obj:
+        return dict_obj.show_title
+    else:
+        logger.write_warning_log(fragment='字典数据查询错误', message=f'查询字段数据缩写问题，字典数据{dict_code}数据可能缺失')
+        return ""
 
 # 标识处理：获取测试需求（测试项的）生成文档的ident（标识）
 def get_ident(test_item):

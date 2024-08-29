@@ -195,7 +195,7 @@ class DocTime:
         cover_time = self.p_end
         # 这里做判断，如果项目结束时间/最后一轮结束时间
         if cover_time < self.round_time[-1]['end']:
-            raise HttpError(status_code=400, message='项目结束时间早于最后一轮次结束时间，请修改项目结束时间')
+            raise HttpError(status_code=400, message='项目结束时间早于最后一轮次结束时间或等于开始时间，请修改项目结束时间')
         context = times_by_cover_time(cover_time)
         context.update(cover_time=cover_time.strftime("%Y年%m月%d日"))
         return context

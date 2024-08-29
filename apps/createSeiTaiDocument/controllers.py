@@ -87,7 +87,7 @@ class GenerateSeitaiController(ControllerBase):
         doc.render(context)  # 耗时最长，TODO:异步任务处理？或前端等待？
         try:
             doc.save(sm_seitai_final_file)
-            return ChenResponse(status=200, code=200, message="最终大纲生成成功！")
+            return ChenResponse(status=200, code=200, message="最终测试说明生成成功！")
         except PermissionError as e:
             return ChenResponse(status=400, code=400, message="模版文件已打开，请关闭后再试，{0}".format(e))
 
@@ -126,7 +126,7 @@ class GenerateSeitaiController(ControllerBase):
         doc.render(context)  # 耗时最长，TODO:异步任务处理？或前端等待？
         try:
             doc.save(jl_seitai_final_file)
-            return ChenResponse(status=200, code=200, message="最终大纲生成成功！")
+            return ChenResponse(status=200, code=200, message="最终记录生成成功！")
         except PermissionError as e:
             return ChenResponse(status=400, code=400, message="模版文件已打开，请关闭后再试，{0}".format(e))
 

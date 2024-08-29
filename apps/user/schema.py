@@ -1,7 +1,6 @@
 from apps.user.models import Users
 from django.contrib.auth.models import Group
 from ninja_schema import ModelSchema, model_validator, Schema
-from pydantic import field_validator
 from ninja_extra.exceptions import APIException
 from ninja_extra import status
 from datetime import datetime

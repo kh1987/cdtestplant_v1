@@ -46,20 +46,23 @@ class RoundController(ControllerBase):
         # 先查询该project下面的值
         instance = self.get_object_or_exception(Round, project__id=project_id, key=data.key)
         if instance.key == '0':
-            return ChenResponse(code=400, status=400, message="无法删除初始轮次")
+            return ChenResponse(code=400, status=400, message="无法删除第一轮次数据")
         # （多对多）删除下面case关联的problem关系
         cases = instance.rcField.all()
         for case in cases:
             case.caseField.clear()
-        # 注意：这里删除整个轮次和关联的所以东西TODO:如何设计减少删除损失
         instance.delete()
         # 注意：删除中间key必须发生变化，重写key
         ## 先查询出当前有多少轮次
         round_all_qs = Round.objects.filter(project__id=project_id).order_by('id')
-        ## 按顺序将轮次的key从1~N排序
+        ## 1.按顺序将轮次的key从1~N排序 2.并且将ident改为key值一样 3.将名称改为对应
         index = 0
         for single_qs in round_all_qs:
+            old_key = single_qs.key
             single_qs.key = str(index)
+            single_qs.ident = single_qs.ident.replace(f'R{int(old_key) + 1}', f'R{index + 1}')
+            single_qs.name = single_qs.name.replace(str(int(old_key) + 1), str(index + 1))
+            single_qs.title = single_qs.name
             index = index + 1
             single_qs.save()
             round_delete_sub_node_key(single_qs)

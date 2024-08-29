@@ -1,6 +1,10 @@
+from ninja.errors import HttpError
 from apps.project.models import Project
 from ninja import Schema, ModelSchema
+from pydantic import field_validator
 from typing import List, Optional
+
+window_file_str = ['\\', '/', ':', '*', '?', '"', '<', '>', "|"]
 
 class ProjectRetrieveSchema(ModelSchema):
     class Config:
@@ -18,9 +22,18 @@ class ProjectFilterSchema(Schema):
     soft_type: str = None
 
 class ProjectCreateInput(ModelSchema):
+    ident: str
+
     class Config:
         model = Project
         model_exclude = ['remark', 'update_datetime', 'create_datetime', 'sort', 'id']
+
+    @field_validator('ident')
+    @staticmethod
+    def check_ident_window(val):
+        if any(window_str in val for window_str in window_file_str):
+            raise HttpError(400,message='标识包含window文件名不允许的特殊字符')
+        return val
 
 class DeleteSchema(Schema):
     ids: List[int]

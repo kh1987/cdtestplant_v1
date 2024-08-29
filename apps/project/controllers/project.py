@@ -88,21 +88,21 @@ class ProjectController(ControllerBase):
     @route.put("/update/{project_id}")
     @transaction.atomic
     def update_project(self, project_id: int, payload: ProjectCreateInput):
+        # 判断标识是否是被允许的字符串
         project = self.get_object_or_exception(Project, id=project_id)
-        ident = project.ident
+        old_ident = project.ident
         # 更新操作
         for attr, value in payload.dict().items():
-            # setattr针对的是class
             setattr(project, attr, value)
         project.save()
-        old_ident = ident
         new_ident = project.ident
-        # 更新项目时判断ident是否修改，如果修改则需要改动media里面文件夹名字
-        if project.ident != ident:
+        # 如果新ident不等于老ident，则做 1.更新文件夹名称 2.更新所有轮次中的ident
+        if new_ident != old_ident:
             try:
-                Path(media_path / ident).rename(media_path / project.ident)
+                Path(media_path / old_ident).rename(media_path / project.ident)
                 # 同时要更改round和dut的标识
                 for r in project.pField.all():
+                    print(project)
                     r.ident = r.ident.replace(old_ident, new_ident)
                     r.save()
                 for d in project.pdField.all():
