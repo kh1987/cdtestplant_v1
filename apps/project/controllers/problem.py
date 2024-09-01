@@ -24,12 +24,13 @@ class ProblemController(ControllerBase):
     @transaction.atomic
     @paginate(MyPagination)
     def get_problem_list(self, data: ProblemFilterSchema = Query(...)):
+        project_id = data.project_id
         for attr, value in data.__dict__.items():
             if getattr(data, attr) is None:
                 setattr(data, attr, '')
         case_key = "".join([data.round_id, '-', data.dut_id, '-', data.design_id, '-', data.test_id, '-', data.case_id])
         # 先查询出对应的case
-        case_obj = Case.objects.filter(key=case_key).first()
+        case_obj = Case.objects.filter(project_id=project_id, key=case_key).first()
         # 然后进行过滤
         qs = case_obj.caseField.filter(project__id=data.project_id,
                                        ident__icontains=data.ident,
@@ -64,6 +65,7 @@ class ProblemController(ControllerBase):
     @transaction.atomic
     @paginate(MyPagination)
     def get_all_problems(self, round_key: Optional[str] = False, data: ProblemFilterWithHangSchema = Query(...)):
+        project_id = data.project_id
         for attr, value in data.__dict__.items():
             if getattr(data, attr) is None:
                 setattr(data, attr, '')
@@ -114,7 +116,7 @@ class ProblemController(ControllerBase):
         if round_key:
             pass
         else:
-            case_obj = Case.objects.filter(key=data.key).first()
+            case_obj = Case.objects.filter(project_id=project_id, key=data.key).first()
             if case_obj:
                 for pro_obj in query_final:
                     # 查询关联的case
@@ -155,8 +157,9 @@ class ProblemController(ControllerBase):
     def create_case_demand(self, payload: ProblemCreateInputSchema):
         payload = self.__date_solve(payload)
         asert_dict = payload.dict()
+        project_id = payload.project_id
         # 查询problem的总数
-        problem_count = Problem.objects.filter(project_id=payload.project_id).count()
+        problem_count = Problem.objects.filter(project_id=project_id).count()
         # 查询当前各个前面节点的instance
         pop_keys: List[str] = ["round_key", "dut_key", "design_key", "test_key", "case_key"]
         for pkey in pop_keys:
@@ -168,14 +171,14 @@ class ProblemController(ControllerBase):
         qs.postDate = payload.postDate
         qs.designDate = payload.designDate
         qs.save()
-        # 由于有不关联用例直接创建问题单，所以如下处理
+        # 分两个逻辑处理，无关联创建问题单/case下面创建问题单
         if payload.case_key:
             # 构造case_key
             case_key = "".join(
                 [payload.round_key, "-", payload.dut_key, '-', payload.design_key, '-', payload.test_key, '-',
                  payload.case_key])
             # 查询出所属的case
-            case_obj = Case.objects.filter(key=case_key).first()
+            case_obj = Case.objects.filter(project_id=project_id, key=case_key).first()
             qs.case.add(case_obj)
             qs.save()
         return qs
@@ -264,8 +267,9 @@ class ProblemController(ControllerBase):
     @transaction.atomic
     def relate_problem(self, case_key: str, problem_id: int, val: bool):  # val是将要变成的值
         # 先判断将要变成的值是否为True
-        case_obj = Case.objects.filter(key=case_key).first()
-        problem_obj = Problem.objects.filter(id=problem_id).first()
+        problem_obj: Problem = Problem.objects.filter(id=problem_id).first()
+        project_id = problem_obj.project_id # 根据问题单反推项目id
+        case_obj = Case.objects.filter(project_id=project_id, key=case_key).first()
         flag = False  # 是否操作成功的标志
         if val:
             # 这分支是进行关联操作
