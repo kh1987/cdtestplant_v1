@@ -20,6 +20,7 @@ from apps.project.models import Project
 # 导入工具
 from apps.project.tools.copyDemand import demand_copy_to_design
 from apps.project.tools.delete_change_key import demand_delete_sub_node_key
+from utils.smallTools.interfaceTools import conditionNoneToBlank
 
 @api_controller("/project", auth=JWTAuth(), permissions=[IsAuthenticated], tags=['测试项接口'])
 class TestDemandController(ControllerBase):
@@ -28,9 +29,7 @@ class TestDemandController(ControllerBase):
     @transaction.atomic
     @paginate(MyPagination)
     def get_test_demand_list(self, datafilter: TestDemandFilterSchema = Query(...)):
-        for attr, value in datafilter.__dict__.items():
-            if getattr(datafilter, attr) is None:
-                setattr(datafilter, attr, '')
+        conditionNoneToBlank(datafilter)
         design_key = "".join([datafilter.round_id, '-', datafilter.dut_id, '-', datafilter.design_id])
         qs = TestDemand.objects.filter(project__id=datafilter.project_id, design__key=design_key,
                                        ident__icontains=datafilter.ident,
@@ -120,7 +119,8 @@ class TestDemandController(ControllerBase):
                 data_list = []
                 for item in value:
                     # 只要包含一个就可以添加一个测试子项
-                    if item['subName'] or item['subDesc'] or item['condition'] or item['operation'] or item['observe'] or item['expect']:
+                    if item['subName'] or item['subDesc'] or item['condition'] or item['operation'] or item[
+                        'observe'] or item['expect']:
                         item["testDemand"] = testDemand_qs
                         data_list.append(TestDemandContent(**item))
                 TestDemandContent.objects.bulk_create(data_list)

@@ -1,11 +1,11 @@
-import json
 from apps.project.models import Problem
 from ninja import Field, Schema, ModelSchema
-from typing import List, Optional, Any
+from typing import List, Optional
 
 # 删除schema
 class DeleteSchema(Schema):
     ids: List[int]
+
 
 # 问题单-输出schema
 class ProblemModelOutSchema(ModelSchema):
@@ -70,8 +70,8 @@ class ProblemCreateInputSchema(Schema):
     ident: str = Field(None, alias='ident')
     name: str = Field(None, alias='name')
     grade: str = Field(None, alias='grade')
-    operation: str = Field("", alias='operation') # !重要：由于保存到数据库为null，则查询空字符串无法查询出来
-    result: str = Field("", alias='result') # 问题影响
+    operation: str = Field("", alias='operation')  # !重要：由于保存到数据库为null，则查询空字符串无法查询出来
+    result: str = Field("", alias='result')  # 问题影响
     status: str = Field(None, alias='status')
     type: str = Field(None, alias='type')
     postPerson: str = Field(None, alias='postPerson')

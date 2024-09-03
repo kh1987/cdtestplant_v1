@@ -7,6 +7,7 @@ from django.db import transaction
 from ninja_extra import api_controller, ControllerBase, route
 from ninja_extra.permissions import IsAuthenticated
 from ninja_jwt.authentication import JWTAuth
+from apps.user.models import Users
 from utils.chen_pagination import MyPagination
 from ninja.pagination import paginate
 from ninja import Query
@@ -17,6 +18,8 @@ from apps.project.schemas.project import ProjectRetrieveSchema, ProjectFilterSch
 from utils.util import get_str_dict
 # 时间处理模块
 from apps.project.tool.timeList import time_return_to
+# 反射工具
+from utils.smallTools.interfaceTools import conditionNoneToBlank
 
 media_path = Path.cwd() / 'media'
 base_document_path = Path.cwd() / 'conf/base_document'
@@ -26,9 +29,7 @@ class ProjectController(ControllerBase):
     @route.get("/index", response=List[ProjectRetrieveSchema])
     @paginate(MyPagination)
     def list_project(self, filters: ProjectFilterSchema = Query(...)):
-        for attr, value in filters.__dict__.items():
-            if getattr(filters, attr) is None:
-                setattr(filters, attr, '')
+        conditionNoneToBlank(filters)
         # 处理时间范围
         start_time = self.context.request.GET.get('searchOnlyTimeRange[0]')
         if start_time is None:
@@ -47,11 +48,21 @@ class ProjectController(ControllerBase):
             beginTime__range=date_list, duty_person__icontains=filters.duty_person,
             security_level__icontains=filters.security_level,
             report_type__icontains=filters.report_type, step__icontains=filters.step,
-            member__contains=member_list).order_by(
+            member__contains=member_list, secret__icontains=filters.secret).order_by(
             "-create_datetime")
         # 对软件类型进行处理
         if filters.soft_type != '':
             qs = qs.filter(soft_type=filters.soft_type)
+
+        # ~~role:查询项目的负责人和成员：普通用户只能看到自己参加的项目~~
+        final_qs = []
+        auth_info: Users = self.context.request.auth
+        if auth_info:
+            if auth_info.role != 'admin':
+                for proj in qs:
+                    if proj.duty_person == auth_info.name or auth_info.name in proj.member:
+                        final_qs.append(proj)
+                return final_qs
         return qs
 
     @route.get("/findOneById/{int:project_id}", response=ProjectRetrieveSchema)
@@ -147,12 +158,13 @@ class ProjectController(ControllerBase):
         ## 5.1 计算已执行的用例数
         for case in case_qs:
             exe_flag = True
-            part_flag = 0
-            for case_step in case.step.all():
-                if case_step.status != '1':
-                    exe_flag = False
+            steps = case.step.all()
+            part_flag = steps.count()  # 先设置为全部步骤数量
+            for case_step in steps:
+                if case_step.status != '1':  # 步骤是否状态是1 -> 已执行
+                    exe_flag = False  # 如果是未执行，则整个用例不是已执行
                 else:
-                    part_flag += 1
+                    part_flag -= 1
             if exe_flag:
                 exe_count += 1
             else:

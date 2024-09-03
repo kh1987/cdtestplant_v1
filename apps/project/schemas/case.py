@@ -1,4 +1,4 @@
-from apps.project.models import Case, CaseStep, Problem
+from apps.project.models import Case, CaseStep
 from ninja import Field, Schema, ModelSchema
 from typing import List, Union, Optional
 from datetime import date
@@ -9,12 +9,28 @@ from apps.project.schemas.problem import ProblemModelOutSchema
 class DeleteSchema(Schema):
     ids: List[int]
 
-# 测试项-输出schema
+# 测试步骤输出schema
 class CaseStepSchema(ModelSchema):
     class Config:
         model = CaseStep
         model_fields = ["operation", 'expect', 'result', 'passed', 'status', 'case', 'id']
 
+# 测试用例的步骤输出schema，输出isPassed和isExe转换后的
+class CaseStepWithTransitionSchema(ModelSchema):
+    class Meta:
+        model = CaseStep
+        fields = ["operation", 'expect', 'result', 'passed', 'status', 'case', 'id']
+
+# 输出case：不关联问题单和步骤
+class CaseModelOutSchemaWithoutProblem(ModelSchema):
+    testStep: List[CaseStepWithTransitionSchema]
+    testType: str  # 用例额外字段，用于测试类型FT的标识给前端
+
+    class Config:
+        model = Case
+        model_exclude = ['project', 'round', 'dut', 'design', 'test', 'remark', 'sort']
+
+# 输出case：关联问题单
 class CaseModelOutSchema(ModelSchema):
     testStep: List[CaseStepSchema]
     testType: str  # 用例额外字段，用于测试类型FT的标识给前端
@@ -27,6 +43,7 @@ class CaseModelOutSchema(ModelSchema):
 
 # 查询测试项
 class CaseFilterSchema(Schema):
+    id: int = Field(None, alias='id')
     project_id: int = Field(None, alias='projectId')
     round_id: str = Field(None, alias='round')
     dut_id: str = Field(None, alias='dut')
@@ -74,11 +91,11 @@ class CaseInputSchema(Schema):
     status: str = Field('3', alias="status")
 
 class CaseCreateInputSchema(Schema):
-    project_id: int = Field(..., alias="projectId")
-    round_key: str = Field(..., alias="round")
-    dut_key: str = Field(..., alias="dut")
-    design_key: str = Field(..., alias="designDemand")
-    test_key: str = Field(..., alias="testDemand")
+    project_id: int = Field(None, alias="projectId")
+    round_key: str = Field(None, alias="round")
+    dut_key: str = Field(None, alias="dut")
+    design_key: str = Field(None, alias="designDemand")
+    test_key: str = Field(None, alias="testDemand")
     # 其他字段
     ident: str = Field('', alias='ident')
     name: str = Field('', alias='name')

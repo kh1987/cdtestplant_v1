@@ -1,3 +1,4 @@
+"""该文件主要是小工具，简化接口处理函数写的代码太多"""
 from ninja import Schema
 from django.db.models import QuerySet
 

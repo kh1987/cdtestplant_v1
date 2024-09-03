@@ -18,6 +18,7 @@ from apps.project.schemas.dut import DutModelOutSchema, DutFilterSchema, DutTree
 # 导入自动生成design、demand、case的辅助函数
 from apps.project.tools.auto_create_data import auto_create_jt_and_dm, auto_create_wd
 from apps.project.tools.delete_change_key import dut_delete_sub_node_key
+from utils.smallTools.interfaceTools import conditionNoneToBlank
 
 @api_controller("/project", auth=JWTAuth(), permissions=[IsAuthenticated], tags=['被测件数据'])
 class DutController(ControllerBase):
@@ -25,9 +26,7 @@ class DutController(ControllerBase):
     @transaction.atomic
     @paginate(MyPagination)
     def get_dut_list(self, filters: DutFilterSchema = Query(...)):
-        for attr, value in filters.__dict__.items():
-            if getattr(filters, attr) is None:
-                setattr(filters, attr, '')
+        conditionNoneToBlank(filters)
         qs = Dut.objects.filter(project__id=filters.project_id, round__key=filters.round_id,
                                 ident__icontains=filters.ident,
                                 name__icontains=filters.name,

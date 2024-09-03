@@ -140,7 +140,7 @@ class GenerateControllerDG(ControllerBase):
         # 找出所属项目
         project_qs = get_object_or_404(Project, id=id)
         # 根据项目找出被测件
-        duties_qs = project_qs.pdField.filter(Q(type='XQ') | Q(type='SJ') | Q(type='XY'))
+        duties_qs = project_qs.pdField.filter(Q(type='XQ') | Q(type='SJ') | Q(type='XY') | Q(type='YZ'))
         # 先定义个字典
         std_documents = []
         for duty in duties_qs:
@@ -352,16 +352,14 @@ class GenerateControllerDG(ControllerBase):
         project_qs = get_object_or_404(Project, id=id)
         # 统计测试种类数量-只统计第一轮测试
         project_round_one = project_qs.pField.filter(key=0).first()
-        if project_round_one:
-            pass
-        else:
+        if not project_round_one:
             return ChenResponse(status=400, code=400, message="未找到首轮测试信息!")
         # 通过字典获取-测试方法
         type_dict = {}  # key为测试类型，value为数量
         testDemands = project_round_one.rtField.all()
         for testDemand in testDemands:
             # 获取每个测试项测试类型
-            test_type = get_list_dict('testType', testDemand.testType)[0].get('ident_version')
+            test_type = get_list_dict('testType', [testDemand.testType])[0].get('ident_version')
             # 如果字典没有该key，则创建并value=1
             if not test_type in type_dict:
                 type_dict[test_type] = 1

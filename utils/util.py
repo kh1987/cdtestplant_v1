@@ -1,3 +1,4 @@
+from typing import Any, List
 from apps.dict.models import Dict, DictItem
 from apps.project.models import TestDemand
 from html.parser import HTMLParser
@@ -23,7 +24,8 @@ def get_str_abbr(a, dict_code):
     if dict_obj:
         return dict_obj.show_title
     else:
-        logger.write_warning_log(fragment='字典数据缺失', message=f'查询字段数据缩写问题，字典数据{dict_code}数据可能缺失')
+        logger.write_warning_log(fragment='字典数据缺失',
+                                 message=f'查询字段数据缩写问题，字典数据{dict_code}数据可能缺失')
         return ""
 
 # 传入一个字符串数组（测试项类型），字典标志code，返回(真实title,sort)
@@ -41,7 +43,8 @@ def get_testType(a, dict_code):
     if dict_obj:
         return dict_obj.show_title
     else:
-        logger.write_warning_log(fragment='字典数据查询错误', message=f'查询字段数据缩写问题，字典数据{dict_code}数据可能缺失')
+        logger.write_warning_log(fragment='字典数据查询错误',
+                                 message=f'查询字段数据缩写问题，字典数据{dict_code}数据可能缺失')
         return ""
 
 # 标识处理：获取测试需求（测试项的）生成文档的ident（标识）
@@ -60,7 +63,7 @@ def get_case_ident(demand_ident, case):
     return reveal_ident
 
 # 传入字典code，以及字符串数组返回一个数组，每个数组是dict
-def get_list_dict(dict_code, str_list):
+def get_list_dict(dict_code: str, str_list: List[str]):
     result = []
     qss = DictItem.objects.filter(dict__code=dict_code)
     for st in str_list:

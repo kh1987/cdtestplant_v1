@@ -14,6 +14,7 @@ from apps.project.models import Design, Dut, Round, Project
 from apps.project.schemas.design import DeleteSchema, DesignFilterSchema, DesignModelOutSchema, DesignTreeReturnSchema, \
     DesignTreeInputSchema, DesignCreateOutSchema, DesignCreateInputSchema, MultiDesignCreateInputSchema
 from apps.project.tools.delete_change_key import design_delete_sub_node_key
+from utils.smallTools.interfaceTools import conditionNoneToBlank
 
 @api_controller("/project", auth=JWTAuth(), permissions=[IsAuthenticated], tags=['设计需求数据'])
 class DesignController(ControllerBase):
@@ -21,9 +22,7 @@ class DesignController(ControllerBase):
     @transaction.atomic
     @paginate(MyPagination)
     def get_design_list(self, datafilter: DesignFilterSchema = Query(...)):
-        for attr, value in datafilter.__dict__.items():
-            if getattr(datafilter, attr) is None:
-                setattr(datafilter, attr, '')
+        conditionNoneToBlank(datafilter)
         dut_key = "".join([datafilter.round_id, '-', datafilter.dut_id])
         qs = Design.objects.filter(project__id=datafilter.project_id, dut__key=dut_key,
                                    ident__icontains=datafilter.ident,

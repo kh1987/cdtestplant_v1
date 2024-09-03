@@ -20,6 +20,8 @@ class ProjectFilterSchema(Schema):
     step: Optional[str] = None
     # 新增软件类型：新研/改造
     soft_type: str = None
+    # 新增密级
+    secret: str = None
 
 class ProjectCreateInput(ModelSchema):
     ident: str
@@ -32,7 +34,7 @@ class ProjectCreateInput(ModelSchema):
     @staticmethod
     def check_ident_window(val):
         if any(window_str in val for window_str in window_file_str):
-            raise HttpError(400,message='标识包含window文件名不允许的特殊字符')
+            raise HttpError(400, message='标识包含window文件名不允许的特殊字符')
         return val
 
 class DeleteSchema(Schema):

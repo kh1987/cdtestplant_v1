@@ -16,6 +16,7 @@ from apps.project.schemas.problem import DeleteSchema, ProblemModelOutSchema, Pr
     ProblemTreeReturnSchema, ProblemTreeInputSchema, ProblemCreateOutSchema, ProblemCreateInputSchema, \
     ProblemSingleInputSchema, ProblemUpdateInputSchema, ProblemFilterWithHangSchema
 from utils.util import get_str_abbr
+from utils.smallTools.interfaceTools import conditionNoneToBlank
 
 @api_controller("/project", auth=JWTAuth(), permissions=[IsAuthenticated], tags=['问题单系列'])
 class ProblemController(ControllerBase):
@@ -25,9 +26,7 @@ class ProblemController(ControllerBase):
     @paginate(MyPagination)
     def get_problem_list(self, data: ProblemFilterSchema = Query(...)):
         project_id = data.project_id
-        for attr, value in data.__dict__.items():
-            if getattr(data, attr) is None:
-                setattr(data, attr, '')
+        conditionNoneToBlank(data)
         case_key = "".join([data.round_id, '-', data.dut_id, '-', data.design_id, '-', data.test_id, '-', data.case_id])
         # 先查询出对应的case
         case_obj = Case.objects.filter(project_id=project_id, key=case_key).first()
@@ -45,19 +44,19 @@ class ProblemController(ControllerBase):
         # 遍历通过代码不通过ORM查询闭环方式-巧妙使用numpy中array对象的in方法来判断
         closeMethod1 = self.context.request.GET.get("closeMethod[0]")
         closeMethod2 = self.context.request.GET.get("closeMethod[1]")
-        query_final = []
+        query_add_closeMethod = []
         for query in qs:
             arr = np.array(query.closeMethod)
             if closeMethod1 is None and closeMethod2 is None:
-                query_final.append(query)
+                query_add_closeMethod.append(query)
                 continue
             if closeMethod1 in arr:
-                query_final.append(query)
+                query_add_closeMethod.append(query)
                 continue
             if closeMethod2 in arr:
-                query_final.append(query)
+                query_add_closeMethod.append(query)
                 continue
-        return query_final
+        return query_add_closeMethod
 
     # 搜索全部问题单/或查询轮次下的问题单
     @route.get('/problem/searchAllProblem', response=List[ProblemModelOutSchema], exclude_none=True,
@@ -240,6 +239,7 @@ class ProblemController(ControllerBase):
         case_list = []
         for case in cases:
             case_dict = {
+                'id': case.id,
                 'case': case.title,
                 'round': case.round.title,
                 'dut': case.dut.title,
@@ -268,17 +268,19 @@ class ProblemController(ControllerBase):
     def relate_problem(self, case_key: str, problem_id: int, val: bool):  # val是将要变成的值
         # 先判断将要变成的值是否为True
         problem_obj: Problem = Problem.objects.filter(id=problem_id).first()
-        project_id = problem_obj.project_id # 根据问题单反推项目id
+        project_id = problem_obj.project_id  # 根据问题单反推项目id
         case_obj = Case.objects.filter(project_id=project_id, key=case_key).first()
         flag = False  # 是否操作成功的标志
         if val:
             # 这分支是进行关联操作
             # 5月15日新需求：一个用例只能关联一个问题单
             if case_obj.caseField.count() >= 1:
-                return ChenResponse(code=400, status=400, message='请注意：一个用例只允许关联一个问题单', data={'isOK': False})
+                return ChenResponse(code=400, status=400, message='请注意：一个用例只允许关联一个问题单',
+                                    data={'isOK': False})
             case_obj.caseField.add(problem_obj)
             flag = True
         else:
             case_obj.caseField.remove(problem_obj)
             flag = True
-        return ChenResponse(code=200, status=200, message='关联或取消关联成功...', data={'isOK': flag, 'key': case_obj.key})
+        return ChenResponse(code=200, status=200, message='关联或取消关联成功...',
+                            data={'isOK': flag, 'key': case_obj.key})

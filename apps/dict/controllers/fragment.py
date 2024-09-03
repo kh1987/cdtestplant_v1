@@ -28,7 +28,6 @@ class FragmentOutSchema(ModelSchema):
         model = Fragment
         fields = ['id', 'name', 'belong_doc', 'project', 'is_main', 'content']
 
-
 ## 更新文档片段
 class FragmentUpdateSchema(Schema):
     name: str = None
@@ -52,6 +51,7 @@ class UserFiledController(ControllerBase):
     def get_fragement(self, condition: Query[FragementListSchema]):
         fragment_qs = Fragment.objects.filter(project_id=condition.project_id)
         res_qs = model_retrieve(condition, fragment_qs, ['project_id', 'is_main'])
+        res_qs = res_qs.filter(project_id=condition.project_id)
         return res_qs
 
     @route.delete("/delete", url_name="fragment-delete")

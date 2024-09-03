@@ -15,6 +15,9 @@ from apps.project.schemas.case import DeleteSchema, CaseModelOutSchema, CaseFilt
 from utils.util import get_testType
 from utils.codes import HTTP_INDEX_ERROR, HTTP_EXISTS_CASES
 from apps.project.tools.copyCase import case_move_to_test, case_copy_to_test, case_to_case_copy_or_move
+from utils.smallTools.interfaceTools import conditionNoneToBlank
+# 导入case的schema
+from apps.project.schemas.case import CaseModelOutSchemaWithoutProblem
 
 @api_controller("/project", auth=JWTAuth(), permissions=[IsAuthenticated], tags=['测试用例接口'])
 class CaseController(ControllerBase):
@@ -23,19 +26,23 @@ class CaseController(ControllerBase):
     @transaction.atomic
     @paginate(MyPagination)
     def get_case_list(self, data: CaseFilterSchema = Query(...)):
-        """展示表格case数据"""
-        for attr, value in data.__dict__.items():
-            if getattr(data, attr) is None:
-                setattr(data, attr, '')
-        test_key = "".join([data.round_id, '-', data.dut_id, '-', data.design_id, '-', data.test_id])
-        qs = Case.objects.filter(project__id=data.project_id, test__key=test_key,
-                                 ident__icontains=data.ident,
-                                 name__icontains=data.name,
-                                 designPerson__icontains=data.designPerson,
-                                 testPerson__icontains=data.testPerson,
-                                 monitorPerson__icontains=data.monitorPerson,
-                                 summarize__icontains=data.summarize,
-                                 ).order_by("key")
+        """有id则查询一个case，无id则查询多个"""
+        data_dict = data.dict()
+        case_id = data_dict.pop('id')
+        if case_id:
+            # 当传入了id，则查询单个
+            qs = Case.objects.filter(id=case_id)
+        else:
+            conditionNoneToBlank(data)
+            test_key = "".join([data.round_id, '-', data.dut_id, '-', data.design_id, '-', data.test_id])
+            qs = Case.objects.filter(project__id=data.project_id, test__key=test_key,
+                                     ident__icontains=data.ident,
+                                     name__icontains=data.name,
+                                     designPerson__icontains=data.designPerson,
+                                     testPerson__icontains=data.testPerson,
+                                     monitorPerson__icontains=data.monitorPerson,
+                                     summarize__icontains=data.summarize,
+                                     ).order_by("key")
         # 由于有嵌套query_set存在，把每个用例的schema加上一个字段
         query_list = []
         for query_single in qs:
@@ -48,6 +55,17 @@ class CaseController(ControllerBase):
                 setattr(query_single, 'problem', related_problem)
             query_list.append(query_single)
         return query_list
+
+    @route.get("/getCaseOne", response=CaseModelOutSchemaWithoutProblem, url_name='case-one')
+    @transaction.atomic
+    def get_case_one(self, key: str, projectId: int):
+        """用于在用例树状页面，获取的是promblem信息，这里根据key获取信息"""
+        project_obj = get_object_or_404(Project, id=projectId)
+        case = project_obj.pcField.filter(key=key).first()
+        if case:
+            setattr(case, "testStep", case.step.all().values())
+            setattr(case, 'testType', get_testType(case.test.testType, dict_code='testType'))
+            return case
 
     # 处理树状数据
     @route.get("/getCaseInfo", response=List[CaseTreeReturnSchema], url_name="case-info")

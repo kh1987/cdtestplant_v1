@@ -7,7 +7,7 @@ from apps.project.models import Problem, Round, Project
 from utils.path_utils import project_path
 
 def merge_all_cell(table: Table) -> None:
-    """逐个找第二列和第三列单元格的text，如果一致则合并"""
+    """生成需求研总对照表工具：逐个找第二列和第三列单元格的text，如果一致则合并"""
     col_list = [table.columns[1], table.columns[2]]
     # 合并第二列相同的单元格
     for col_right in col_list:
@@ -25,8 +25,8 @@ def merge_all_cell(table: Table) -> None:
                     temp_text = cell.text
             index += 1
 
-# 生成文档的工具函数 -sm
 def create_sm_docx(template_name: str, context: dict, id: int) -> ChenResponse:
+    """生成最终说明文档工具函数"""
     input_path = Path.cwd() / 'media' / project_path(id) / 'form_template' / 'sm' / template_name
     doc = DocxTemplate(input_path)
     doc.render(context)
@@ -36,8 +36,8 @@ def create_sm_docx(template_name: str, context: dict, id: int) -> ChenResponse:
     except PermissionError as e:
         return ChenResponse(status=400, code=400, message="模版文件已打开，请关闭后再试，{0}".format(e))
 
-# 生成文档的工具函数 -dg
 def create_dg_docx(template_name: str, context: dict, id: int) -> ChenResponse:
+    """生成最终大纲文档工具函数"""
     input_path = Path.cwd() / 'media' / project_path(id) / 'form_template' / 'dg' / template_name
     doc = DocxTemplate(input_path)
     doc.render(context)
@@ -47,8 +47,8 @@ def create_dg_docx(template_name: str, context: dict, id: int) -> ChenResponse:
     except PermissionError as e:
         return ChenResponse(status=400, code=400, message="模版文件已打开，请关闭后再试，{0}".format(e))
 
-# 生成文档的工具函数 -bg
 def create_bg_docx(template_name: str, context: dict, id: int) -> ChenResponse:
+    """生成最终报告文档工具函数"""
     input_path = Path.cwd() / 'media' / project_path(id) / 'form_template' / 'bg' / template_name
     doc = DocxTemplate(input_path)
     doc.render(context)
@@ -58,8 +58,8 @@ def create_bg_docx(template_name: str, context: dict, id: int) -> ChenResponse:
     except PermissionError as e:
         return ChenResponse(status=400, code=400, message="模版文件已打开，请关闭后再试，{0}".format(e))
 
-# 生成文档的工具函数 -wtd
 def create_wtd_docx(template_name: str, context: dict, id: int) -> ChenResponse:
+    """生成最终问题单文档工具函数"""
     input_path = Path.cwd() / 'media' / project_path(id) / 'form_template' / 'wtd' / template_name
     doc = DocxTemplate(input_path)
     doc.render(context)
@@ -69,10 +69,10 @@ def create_wtd_docx(template_name: str, context: dict, id: int) -> ChenResponse:
     except PermissionError as e:
         return ChenResponse(status=400, code=400, message="模版文件已打开，请关闭后再试，{0}".format(e))
 
-# 找到轮次下面的所有problem_qs
 def get_round1_problem(project: Project) -> Any:
     """
-    :param project: 项目Model对象
+    从项目返回第一轮问题单
+    :param project: Project项目Model对象
     :return: 问题单的列表
     """
     all_problem_qs = project.projField.all()
