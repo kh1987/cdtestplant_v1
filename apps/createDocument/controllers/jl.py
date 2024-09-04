@@ -81,7 +81,6 @@ class GenerateControllerJL(ControllerBase):
                         'expect': one.expect,
                         'result': res_list,
                         'passed': passed,
-                        'execution': one.status,
                     }
                     index += 1
                     step_list.append(step_dict)

@@ -44,11 +44,6 @@ def create_bg_round1_zhui(project_obj: Project, dut_str='XQ', round_str='0'):
                                 problem_ident_list.append("".join([problem_prefix, problem.ident]))
                             if len(problem_ident_list) > 0:
                                 is_passed = '未通过'
-                            else:
-                                # 如果没关联问题单，查看是否有未执行的
-                                for case_step in case.step.all():
-                                    if case_step.status == '3':
-                                        is_passed = '/'
                             case_dict = {
                                 'name': case.name,
                                 'ident': get_case_ident(reveal_ident, case),
@@ -87,11 +82,6 @@ def create_bg_round1_zhui(project_obj: Project, dut_str='XQ', round_str='0'):
                             problem_ident_list.append("".join([problem_prefix, problem.ident]))
                         if len(problem_ident_list) > 0:
                             is_passed = '未通过'
-                        else:
-                            # 如果没关联问题单，查看是否有未执行的
-                            for case_step in case.step.all():
-                                if case_step.status == '3':
-                                    is_passed = '/'
                         case_dict = {
                             'name': case.name,
                             'ident': get_case_ident(reveal_ident, case),

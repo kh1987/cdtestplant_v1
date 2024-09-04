@@ -230,10 +230,12 @@ def create_demand_summary(demands: QuerySet, project_ident: str):
             isPassed = True
             isExe = True
             for step in case.step.all():
-                # 步骤中有一步骤未通过、未执行，则整个用例未通过、未执行
-                if step.passed != '1':
+                # 所有步骤有一个未通过则是未通过，所有都执行则是已执行
+                if step.passed == '2':
                     isPassed = False
-                if step.status != '1':
+                    isExe = True
+                    break
+                if step.passed == '3':
                     isExe = False
             if isPassed:
                 demand_dict['pass_count'] += 1

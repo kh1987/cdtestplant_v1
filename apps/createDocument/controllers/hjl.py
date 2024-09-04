@@ -140,7 +140,7 @@ class GenerateControllerHJL(ControllerBase):
                         passed = '通过'
                         if one.passed == '2':
                             passed = '未通过'
-                        elif one.passed == '3':
+                        if one.passed == '3':
                             passed = '未执行'
                         step_dict = {
                             'index': index,
@@ -148,21 +148,8 @@ class GenerateControllerHJL(ControllerBase):
                             'expect': one.expect,
                             'result': res_list,
                             'passed': passed,
-                            'execution': one.status,
                         }
                         step_list.append(step_dict)
-                    # 这里判断里面的单个步骤的执行情况，来输出一个整个用例的执行情况
-                    exe_noncount = 0
-                    execution_str = '已执行'
-                    for ste in step_list:
-                        if ste.get('execution') == '3':
-                            exe_noncount += 1
-                    if exe_noncount > 0 and exe_noncount != len(step_list):
-                        execution_str = '部分执行'
-                    elif exe_noncount == len(step_list):
-                        execution_str = '未执行'
-                    else:
-                        execution_str = '已执行'
                     # 查询所有的problem
                     problem_list = []
                     problem_prefix = "PT"
@@ -180,7 +167,6 @@ class GenerateControllerHJL(ControllerBase):
                         'test_person': case.testPerson,
                         'monitor_person': case.monitorPerson,
                         'step': step_list,
-                        'execution': execution_str,
                         'time': str(case.exe_time) if case.exe_time is not None else str(case.update_datetime),
                         'problems': "、".join(problem_list)
                     }

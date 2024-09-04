@@ -13,13 +13,13 @@ class DeleteSchema(Schema):
 class CaseStepSchema(ModelSchema):
     class Config:
         model = CaseStep
-        model_fields = ["operation", 'expect', 'result', 'passed', 'status', 'case', 'id']
+        model_fields = ["operation", 'expect', 'result', 'passed', 'case', 'id']
 
 # 测试用例的步骤输出schema，输出isPassed和isExe转换后的
 class CaseStepWithTransitionSchema(ModelSchema):
     class Meta:
         model = CaseStep
-        fields = ["operation", 'expect', 'result', 'passed', 'status', 'case', 'id']
+        fields = ["operation", 'expect', 'result', 'passed', 'case', 'id']
 
 # 输出case：不关联问题单和步骤
 class CaseModelOutSchemaWithoutProblem(ModelSchema):
@@ -88,7 +88,6 @@ class CaseInputSchema(Schema):
     expect: str = Field(None, alias="expect")
     result: str = Field(None, alias="result")
     passed: str = Field('3', alias="passed")
-    status: str = Field('3', alias="status")
 
 class CaseCreateInputSchema(Schema):
     project_id: int = Field(None, alias="projectId")

@@ -283,8 +283,8 @@ class CaseStep(CoreModel):
     result = HTMLField(blank=True, null=True, verbose_name="测试步骤-结果", help_text="测试步骤-结果")
     passed = models.CharField(max_length=8, null=True, blank=True, help_text="是否通过", verbose_name="是否通过",
                               default="3")
-    status = models.CharField(max_length=8, null=True, blank=True, help_text="执行状态", verbose_name="执行状态",
-                              default="3")
+    # status = models.CharField(max_length=8, null=True, blank=True, help_text="执行状态", verbose_name="执行状态",
+    #                           default="3")
     case = models.ForeignKey(to="Case", db_constraint=False, related_name="step",
                              on_delete=models.CASCADE, verbose_name='归属的测试用例', help_text='归属的测试用例',
                              related_query_name='stepQ')
