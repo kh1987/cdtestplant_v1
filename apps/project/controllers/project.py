@@ -152,26 +152,25 @@ class ProjectController(ControllerBase):
         # 4.返回研制方信息
         # 5.返回用例信息
         case_qs = project_obj.pcField.all()
-        exe_count = 0
-        noexe_count = 0
-        partexe_count = 0
-        ## 5.1 计算已执行的用例数
+        exe_count = 0  # 已执行数量
+        noexe_count = 0  # 未执行数量
+        partexe_count = 0  # 部分执行数量
+        ## 5.1 计算已执行的用例数 -> 所以的都通过/未通过才算执行，否则部分执行
         for case in case_qs:
-            exe_flag = True
             steps = case.step.all()
-            part_flag = steps.count()  # 先设置为全部步骤数量
-            for case_step in steps:
-                if case_step.status != '1':  # 步骤是否状态是1 -> 已执行
-                    exe_flag = False  # 如果是未执行，则整个用例不是已执行
-                else:
-                    part_flag -= 1
-            if exe_flag:
-                exe_count += 1
-            else:
-                if part_flag == case.step.count():
+            steps_count = steps.count()  # 步骤总数
+            passed_steps_count = steps.filter(passed='1').count()
+            notPassed_steps_count = steps.filter(passed='2').count()
+            notExe_steps_count = steps_count - passed_steps_count - notPassed_steps_count
+            if notExe_steps_count > 0:
+                # 步骤全是未执行，则用例未执行
+                if notExe_steps_count == steps_count:
                     noexe_count += 1
                 else:
                     partexe_count += 1
+            else:
+                exe_count += 1
+
         # 6.计算问题单数
         problems = project_obj.projField.all()
         close_count = 0

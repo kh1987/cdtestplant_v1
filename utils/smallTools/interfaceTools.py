@@ -9,6 +9,7 @@ def conditionNoneToBlank(condition: Schema):
             setattr(condition, attr, '')
 
 def model_retrieve(condition: Schema, qs: QuerySet, exclude_field) -> QuerySet:
+    """该函数合并上面功能，传入qs以及排除字段，全部添加__icontains进行查询"""
     conditionNoneToBlank(condition)
     search_obj = {}
     for k, v in condition.dict(exclude_none=True).items():
